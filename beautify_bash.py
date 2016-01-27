@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""A Bash script beautifier."""
 import re
 import sys
 
@@ -110,8 +111,8 @@ class BeautifyBash:
                     tab += min(net, 0)
                     extab = tab + else_case
                     extab = max(0, extab)
-                    output.append((self.tab_str * self.tab_size * extab)
-                                  + stripped_record)
+                    output.append((self.tab_str * self.tab_size * extab) +
+                                  stripped_record)
                     tab += max(net, 0)
                 if(defer_ext_quote):
                     in_ext_quote = True
