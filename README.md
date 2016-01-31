@@ -2,6 +2,8 @@
 
 <sup>A bash beautifier for the masses</sup>
 
+______________________________________________________________________
+
 Beautysh takes upon itself the hard task of beautifying Bash scripts (yeesh).
 Beautifying Bash scripts is not trivial. Bash scripts aren't like C or Java
 programs — they have a lot of ambiguous syntax, and (shudder) keywords can be
@@ -67,6 +69,7 @@ border cases it doesn't handle). The basic idea is that the originator knew what
  format he wanted in the here-doc, and a beautifier shouldn't try to outguess
 him. So Beautysh does all it can to pass along the here-doc content
 unchanged:
+
     if true
     then
 
