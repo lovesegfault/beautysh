@@ -1,47 +1,32 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# *********************************************************************** #
-#   Copyright (C) 2011, Paul Lutus                                        #
-#                                                                         #
-#   This program is free software; you can redistribute it and/or modify  #
-#   it under the terms of the GNU General Public License as published by  #
-#   the Free Software Foundation; either version 2 of the License, or     #
-#   (at your option) any later version.                                   #
-#                                                                         #
-#   This program is distributed in the hope that it will be useful,       #
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of        #
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         #
-#   GNU General Public License for more details.                          #
-#                                                                         #
-#   You should have received a copy of the GNU General Public License     #
-#   along with this program; if not, write to the                         #
-#   Free Software Foundation, Inc.,                                       #
-#   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
-# *********************************************************************** #
-"""A beautifier for Bash scripts."""
+"""A beautifier for Bash shell scripts written in Python."""
 import re
 import sys
 
-PVERSION = '1.1'
+PVERSION = '1.0'
 
 
 class BeautifyBash:
-    """Main class to handle beautifying."""
+    """Class to handle both module and non-module calls."""
 
     def __init__(self):
-        """Initializer class """
+        """Set tab as space and it's value to 4."""
         self.tab_str = ' '
-        self.tab_size = 2
+        self.tab_size = 4
 
     def read_file(self, fp):
+        """Read input file."""
         with open(fp) as f:
             return f.read()
 
     def write_file(self, fp, data):
+        """Write output to a file."""
         with open(fp, 'w') as f:
             f.write(data)
 
     def beautify_string(self, data, path=''):
+        """Beautify string (file part)."""
         tab = 0
         case_stack = []
         in_here_doc = False
@@ -147,6 +132,7 @@ class BeautifyBash:
         return '\n'.join(output), error
 
     def beautify_file(self, path):
+        """Beautify bash script file."""
         error = False
         if(path == '-'):
             data = sys.stdin.read()
@@ -162,6 +148,7 @@ class BeautifyBash:
         return error
 
     def main(self):
+        """Main beautifying function."""
         error = False
         sys.argv.pop(0)
         if(len(sys.argv) < 1):
