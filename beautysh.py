@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# *************************************************************************** #
+#   Copyright (C) 2011, Paul Lutus                                            #
+#                                                                             #
+#   This program is free software; you can redistribute it and/or modify      #
+#   it under the terms of the GNU General Public License as published by      #
+#   the Free Software Foundation; either version 2 of the License, or         #
+#   (at your option) any later version.                                       #
+#                                                                             #
+#   This program is distributed in the hope that it will be useful,           #
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+#   GNU General Public License for more details.                              #
+#                                                                             #
+#   You should have received a copy of the GNU General Public License         #
+#   along with this program; if not, write to the                             #
+#   Free Software Foundation, Inc.,                                           #
+#   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.                 #
+# **************************************************************************  #
 """A beautifier for Bash shell scripts written in Python."""
 import re
 import sys
@@ -7,7 +25,7 @@ import sys
 PVERSION = '1.0'
 
 
-class BeautifyBash:
+class Beautysh:
     """Class to handle both module and non-module calls."""
 
     def __init__(self):
@@ -161,4 +179,4 @@ class BeautifyBash:
 
 # if not called as a module
 if(__name__ == '__main__'):
-    BeautifyBash().main()
+    Beautysh().main()
