@@ -22,8 +22,6 @@
 import re
 import sys
 
-PVERSION = '1.0'
-
 
 class Beautysh:
     """Class to handle both module and non-module calls."""
