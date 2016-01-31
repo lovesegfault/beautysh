@@ -2,16 +2,16 @@
 
 <sup>A bash beautifier for the masses</sup>
 
-______________________________________________________________________
+________________________________________________________________________________
 
 Beautysh takes upon itself the hard task of beautifying Bash scripts (yeesh).
 Beautifying Bash scripts is not trivial. Bash scripts aren't like C or Java
 programs — they have a lot of ambiguous syntax, and (shudder) keywords can be
 used as variables. Years ago, while testing the first version of this program,
 I encountered this example:
-
-    done=3;echo done;done
-
+```shell
+done=3;echo done;done
+```
 Same name, but three distinct meanings (sigh). The Bash interpreter can sort out
  this perversity, but I decided not to try to recreate the Bash interpreter just
  to beautify a script. This means there will be some border cases this Python
@@ -23,39 +23,45 @@ Bash scripts, its error-free score was roughly 99%.
 Beautysh has three modes of operation:
 
 1.  If presented with a list of file names —
-        beautysh.py file1.sh file2.sh file3.sh
+    ```shell
+    beautysh.py file1.sh file2.sh file3.sh
+    ```
     — for each file name, it will create a backup (i.e. file1.sh~) and overwrite
      the original file with a beautified replacement.
 
 2.  If given '-' as a command-line argument, it will use stdin as its source and
 stdout as its sink:
-        beautysh.py - < infile.sh > outfile.sh
+    ```shell
+    beautysh.py - < infile.sh > outfile.sh
+    ```
 
 3.  If called as a module, it will behave itself and not execute its main()
 function:
+    ```shell
+    #!/usr/bin/env python
+    # -*- coding: utf-8 -*-
 
+    from beautysh import Beautysh
 
-        #!/usr/bin/env python
-        # -*- coding: utf-8 -*-
+    [ ... ]
 
-        from beautysh import Beautysh
-
-        [ ... ]
-
-        result,error = Beautysh().beautify_string(source)
+    result,error = Beautysh().beautify_string(source)
+    ```
 
 As written, Beautysh can beautify large numbers of Bash scripts when called
 from ... well, among other things, a Bash script:
-    #!/bin/sh
+```shell
+#!/bin/sh
 
-    for path in `find /path -name '*.sh'`
-    do
-       beautysh.py $path
-    done
-
+for path in `find /path -name '*.sh'`
+do
+   beautysh.py $path
+done
+```
 As well as the more obvious example:
-
+```shell
     $ beautysh.py *.sh
+```
 
 > **CAUTION**: Because Beautysh overwrites all the files submitted to it, this
 > could have disastrous consequences if the files include some of the
@@ -69,27 +75,27 @@ border cases it doesn't handle). The basic idea is that the originator knew what
  format he wanted in the here-doc, and a beautifier shouldn't try to outguess
 him. So Beautysh does all it can to pass along the here-doc content
 unchanged:
+```shell
+if true
+then
 
-    if true
-    then
+   echo "Before here-doc"
 
-       echo "Before here-doc"
+   # Insert 2 lines in file, then save.
+   #--------Begin here document-----------#
+vi $TARGETFILE <<x23LimitStringx23
+i
+This is line 1 of the example file.
+This is line 2 of the example file.
+^[
+ZZ
+x23LimitStringx23
+   #----------End here document-----------#
 
-       # Insert 2 lines in file, then save.
-       #--------Begin here document-----------#
-    vi $TARGETFILE <<x23LimitStringx23
-    i
-    This is line 1 of the example file.
-    This is line 2 of the example file.
-    ^[
-    ZZ
-    x23LimitStringx23
-       #----------End here document-----------#
+   echo "After here-doc"
 
-       echo "After here-doc"
-
-    fi
-
+fi
+```
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
