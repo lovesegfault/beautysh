@@ -22,6 +22,23 @@ border cases this Python program won't be able to process. But in tests
 with many large Linux system Bash scripts, its error-free score was
 roughly 99%.
 
+Installation
+------------
+
+Simply run
+
+.. code:: shell
+
+    pip install beautysh
+
+or clone the repo and install:
+
+.. code:: shell
+
+    git clone https://github.com/bemeurer/beautysh
+    cd beautysh
+    python setup.py install
+
 Usage
 -----
 

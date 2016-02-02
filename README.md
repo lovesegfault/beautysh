@@ -18,6 +18,19 @@ Same name, but three distinct meanings (sigh). The Bash interpreter can sort out
 program won't be able to process. But in tests with many large Linux system
 Bash scripts, its error-free score was roughly 99%.
 
+## Installation
+
+Simply run
+```shell
+pip install beautysh
+```
+or clone the repo and install:
+```shell
+git clone https://github.com/bemeurer/beautysh
+cd beautysh
+python setup.py install
+```
+
 ## Usage
 
 Beautysh has three modes of operation:
