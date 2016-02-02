@@ -28,7 +28,8 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPL"
+        "v3)",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Text Processing :: Filters",
@@ -36,5 +37,6 @@ setup(
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Utilities"
     ],
-    entry_points={'console_scripts': ['beautysh = beautysh.beautysh:main']}
+    entry_points={'console_scripts': ['beautysh = beautysh.beautysh:main']},
+    py_modules=['beautysh']
 )
