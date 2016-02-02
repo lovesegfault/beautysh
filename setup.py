@@ -1,10 +1,10 @@
 """Setup for beautysh - A bash beautifier for the masses."""
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='beautysh',
     packages=['beautysh'],
-    version='1.2',
+    version='1.0',
     description='A beautifier for Bash shell scripts written in Python.',
     license='GPL',
     author='Bernardo Meurer',
@@ -27,5 +27,5 @@ setup(
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Utilities"
         ],
-    scripts=['beautysh/beautysh.py']
+    entry_points={'console_scripts': ['beautysh = beautysh.__main__:main']}
 )
