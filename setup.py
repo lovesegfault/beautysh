@@ -14,7 +14,7 @@ setup(
     name='beautysh',
     packages=['beautysh'],
     version=get_version(),
-    description='A beautifier for Bash shell scripts written in Python.',
+    description='A Bash beautifier for the masses.',
     license='GPL',
     author='Bernardo Meurer',
     author_email='meurerbernardo@gmail.com',
