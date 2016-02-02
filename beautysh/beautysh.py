@@ -5,6 +5,11 @@ import re
 import sys
 
 
+def main():
+    """Call the main function."""
+    Beautify().main()
+
+
 class Beautify:
     """Class to handle both module and non-module calls."""
 

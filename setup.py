@@ -1,16 +1,25 @@
 """Setup for beautysh - A bash beautifier for the masses."""
 from setuptools import setup
 
+
+def get_version(file_name='beautysh/__init__.py'):
+    """Get version info from __init__."""
+    with open(file_name) as f:
+        for line in f:
+            if "__version__" in line:
+                return eval(line.split('=')[-1])
+
+
 setup(
     name='beautysh',
     packages=['beautysh'],
-    version='1.0',
+    version=get_version(),
     description='A beautifier for Bash shell scripts written in Python.',
     license='GPL',
     author='Bernardo Meurer',
     author_email='meurerbernardo@gmail.com',
     url='https://github.com/bemeurer/beautysh',
-    download_url='https://github.com/bemeurer/beautysh/tarball/1.0',
+    download_url='https://github.com/bemeurer/beautysh/tarball/'+get_version(),
     keywords=['beautify', 'bash', 'shell', 'beautifier', 'script', 'auto'],
     classifiers=[
         "Programming Language :: Python",
@@ -26,6 +35,6 @@ setup(
         "Topic :: Text Processing :: Linguistic",
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Utilities"
-        ],
-    entry_points={'console_scripts': ['beautysh = beautysh.__main__:main']}
+    ],
+    entry_points={'console_scripts': ['beautysh = beautysh.beautysh:main']}
 )
