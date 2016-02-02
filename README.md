@@ -1,9 +1,5 @@
 # Beautysh
 
-<sup>A bash beautifier for the masses</sup>
-
-________________________________________________________________________________
-
 Beautysh takes upon itself the hard task of beautifying Bash scripts (yeesh).
 Beautifying Bash scripts is not trivial. Bash scripts aren't like C or Java
 programs — they have a lot of ambiguous syntax, and (shudder) keywords can be
