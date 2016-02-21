@@ -2,10 +2,10 @@ Beautysh
 ========
 
 Beautysh takes upon itself the hard task of beautifying Bash scripts
-(yeesh). Beautifying Bash scripts is not trivial. Bash scripts aren't
-like C or Java programs — they have a lot of ambiguous syntax, and
-(shudder) keywords can be used as variables. Years ago, while testing
-the first version of this program, I encountered this example:
+(yeesh). Processing Bash scripts is not trivial, they aren't like C or
+Java programs — they have a lot of ambiguous syntax, and (shudder)
+keywords can be used as variables. Years ago, while testing the first
+version of this program, I encountered this example:
 
 .. code:: shell
 
