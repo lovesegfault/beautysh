@@ -168,6 +168,7 @@ class Beautify:
         args = parser.parse_args()
         if (len(sys.argv) < 2):
             parser.print_help()
+            exit()
         if(type(args.indent_size) is list):
             args.indent_size = args.indent_size[0]
         self.tab_size = args.indent_size
