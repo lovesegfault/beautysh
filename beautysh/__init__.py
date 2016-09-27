@@ -1,5 +1,5 @@
 """__init__: Holds version info."""
 
-from beautysh import Beautify
+from .beautysh import Beautify
 
 __version__ = '3.1'
