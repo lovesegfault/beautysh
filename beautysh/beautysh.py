@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """A beautifier for Bash shell scripts written in Python."""
+import argparse
 import re
 import sys
-
-
-def main():
-    """Call the main function."""
-    Beautify().main()
 
 
 class Beautify:
@@ -17,6 +13,7 @@ class Beautify:
         """Set tab as space and it's value to 4."""
         self.tab_str = ' '
         self.tab_size = 4
+        self.backup = False
 
     def read_file(self, fp):
         """Read input file."""
@@ -145,21 +142,33 @@ class Beautify:
             data = self.read_file(path)
             result, error = self.beautify_string(data, path)
             if(data != result):
-                # make a backup copy
-                self.write_file(path + '~', data)
+                if(self.backup):
+                    self.write_file(path+'.bak', data)
                 self.write_file(path, result)
         return error
 
     def main(self):
         """Main beautifying function."""
         error = False
-        sys.argv.pop(0)
-        if(len(sys.argv) < 1):
-            sys.stderr.write(
-                'usage: shell script filenames or \"-\" for stdin.\n')
-        else:
-            for path in sys.argv:
-                error |= self.beautify_file(path)
+        parser = argparse.ArgumentParser(description="A Bash beautifier for the"
+                                                     " masses")
+        parser.add_argument('--indent-size', '-i', nargs=1, type=int, default=4,
+                            help="Sets the number of spaces to be used in "
+                                 "indentation.")
+        parser.add_argument('--files', '-f', nargs='*',
+                            help="Files to be beautified.")
+        parser.add_argument('--backup', '-b', action='store_true',
+                            help="Beautysh will create a backup file in the "
+                                 "same path as the original.")
+        args = parser.parse_args()
+        if (len(sys.argv) < 2):
+            parser.print_help()
+        if(type(args.indent_size) is list):
+            args.indent_size = args.indent_size[0]
+        self.tab_size = args.indent_size
+        self.backup = args.backup
+        for path in args.files:
+            error |= self.beautify_file(path)
         sys.exit((0, 1)[error])
 
 # if not called as a module

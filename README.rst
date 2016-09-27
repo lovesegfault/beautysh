@@ -38,39 +38,48 @@ or clone the repo and install:
 Usage
 -----
 
-Beautysh has three modes of operation:
+Beautysh can be called from the command line such as
 
-1. If presented with a list of file names —
+.. code:: shell
 
-   .. code:: shell
+    beautysh.py -f file1.sh file2.sh file3.sh
 
-       beautysh.py file1.sh file2.sh file3.sh
+in which case it will beautify each one of the files.
 
-   — for each file name, it will create a backup (i.e. file1.sh~) and
-   overwrite the original file with a beautified replacement.
+Available flags are:
 
-2. If given '-' as a command-line argument, it will use stdin as its
-   source and stdout as its sink:
++---------------------+----------+----------------------------------------------+
+| Flag                | Short    | Meaning                                      |
++=====================+==========+==============================================+
+| ``--files``         | ``-f``   | Files to be beautified                       |
++---------------------+----------+----------------------------------------------+
+| ``--indent-size``   | ``-i``   | Number of spaces to be used as indentation   |
++---------------------+----------+----------------------------------------------+
+| ``--backup``        | ``-b``   | Creates a backup file before beautifying     |
++---------------------+----------+----------------------------------------------+
 
-   .. code:: shell
+You can use ``-`` as an argument to ``-f`` and beautysh will use stdin
+as it's source and stdout as it's sink
 
-       beautysh.py - < infile.sh > outfile.sh
+::
 
-3. If called as a module, it will behave itself and not execute its
-   main() function:
+    ```shell
+    beautysh.py - < infile.sh > outfile.sh
+    ```
 
-   .. code:: shell
+You can also call beautysh as a module: \`\`\`shell #!/usr/bin/env
+python # -*- coding: utf-8 -*-
 
-       #!/usr/bin/env python
-       # -*- coding: utf-8 -*-
+::
 
-       from beautysh import Beautysh
+    from beautysh import Beautysh
 
-       [ ... ]
+    [ ... ]
 
-       result,error = Beautysh().beautify_string(source)
+    result,error = Beautysh().beautify_string(source)
+    ```
 
-As written, Beautysh can beautify large numbers of Bash scripts when
+As written, beautysh can beautify large numbers of Bash scripts when
 called from ... well, among other things, a Bash script:
 
 .. code:: shell
@@ -79,14 +88,14 @@ called from ... well, among other things, a Bash script:
 
     for path in `find /path -name '*.sh'`
     do
-       beautysh.py $path
+       beautysh.py -f $path
     done
 
 As well as the more obvious example:
 
 .. code:: shell
 
-        $ beautysh.py *.sh
+        $ beautysh.py -f *.sh
 
     **CAUTION**: Because Beautysh overwrites all the files submitted to
     it, this could have disastrous consequences if the files include

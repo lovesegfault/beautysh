@@ -29,23 +29,28 @@ python setup.py install
 
 ## Usage
 
-Beautysh has three modes of operation:
+Beautysh can be called from the command line such as
+```shell
+beautysh.py -f file1.sh file2.sh file3.sh
+```
+in which case it will beautify each one of the files.
 
-1.  If presented with a list of file names —
-    ```shell
-    beautysh.py file1.sh file2.sh file3.sh
-    ```
-    — for each file name, it will create a backup (i.e. file1.sh~) and overwrite
-     the original file with a beautified replacement.
+Available flags are:
 
-2.  If given '-' as a command-line argument, it will use stdin as its source and
-stdout as its sink:
+|Flag           |Short |Meaning                                   |Usage
+|---------------|------|------------------------------------------|
+|`--files`      |`-f`  |Files to be beautified                    |`-f foo.sh bar.sh`
+|`--indent-size`|`-i`  |Number of spaces to be used as indentation|`-i 4`
+|`--backup`     |`-b`  |Creates a backup file before beautifying  |`-b`
+
+You can use `-` as an argument to `-f` and beautysh will use stdin as it's
+source and stdout as it's sink
+
     ```shell
     beautysh.py - < infile.sh > outfile.sh
     ```
 
-3.  If called as a module, it will behave itself and not execute its main()
-function:
+You can also call beautysh as a module:
     ```shell
     #!/usr/bin/env python
     # -*- coding: utf-8 -*-
@@ -57,19 +62,20 @@ function:
     result,error = Beautysh().beautify_string(source)
     ```
 
-As written, Beautysh can beautify large numbers of Bash scripts when called
+As written, beautysh can beautify large numbers of Bash scripts when called
 from ... well, among other things, a Bash script:
+
 ```shell
 #!/bin/sh
 
 for path in `find /path -name '*.sh'`
 do
-   beautysh.py $path
+   beautysh.py -f $path
 done
 ```
 As well as the more obvious example:
 ```shell
-    $ beautysh.py *.sh
+    $ beautysh.py -f *.sh
 ```
 
 > **CAUTION**: Because Beautysh overwrites all the files submitted to it, this
@@ -84,6 +90,7 @@ border cases it doesn't handle). The basic idea is that the originator knew what
  format he wanted in the here-doc, and a beautifier shouldn't try to outguess
 him. So Beautysh does all it can to pass along the here-doc content
 unchanged:
+
 ```shell
 if true
 then
