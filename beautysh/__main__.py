@@ -1,3 +1,3 @@
-from .beautysh import Beautify
+from beautysh import main
 
-Beautify.main()
+main()
