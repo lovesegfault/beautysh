@@ -48,6 +48,7 @@ Available flags are:
 |`--files`      |`-f`  |Files to beautify                    |`-f foo.sh bar.sh`|
 |`--indent-size`|`-i`  |Number of spaces to use as indentation|`-i 4`|
 |`--backup`     |`-b`  |Create a backup file before beautifying  |`-b`|
+| `--tab`       |`-t`  |Use tabs instead of spaces              | `-t` |
 
 You can use `-` as an argument to `-f` and beautysh will use stdin as it's
 source and stdout as it's sink
@@ -90,7 +91,7 @@ $ beautysh.py -f *.sh
 > **CAUTION**: Because Beautysh overwrites all the files submitted to it, this
 > could have disastrous consequences if the files include some of the
 > increasingly common Bash scripts that have appended binary content (a regime
-> where Beautysh has undefined behavior ). So please — back up your files,
+> where Beautysh has undefined behaviour ). So please — back up your files,
 > and don't treat Beautysh as a harmless utility. Even if that is true
 > most of the time.
 
