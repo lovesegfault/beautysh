@@ -165,6 +165,8 @@ class Beautify:
         parser.add_argument('--backup', '-b', action='store_true',
                             help="Beautysh will create a backup file in the "
                                  "same path as the original.")
+        parser.add_argument('--tab', '-t', action='store_true',
+                            help="Sets indentation to tabs instead of spaces")
         args = parser.parse_args()
         if (len(sys.argv) < 2):
             parser.print_help()
@@ -173,9 +175,13 @@ class Beautify:
             args.indent_size = args.indent_size[0]
         self.tab_size = args.indent_size
         self.backup = args.backup
+        if (args.tab):
+            self.tab_size = 1
+            self.tab_str = '\t'
         for path in args.files:
             error |= self.beautify_file(path)
         sys.exit((0, 1)[error])
+
 
 # if not called as a module
 if(__name__ == '__main__'):
