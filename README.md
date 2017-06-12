@@ -122,6 +122,18 @@ x23LimitStringx23
 
 fi
 ```
+
+Special comments '@formatter:off' and '@formatter:on' can be used to disable formatting around a block of statements.
+
+```shell
+# @formatter:off
+command \
+    --option1 \
+        --option2 \
+            --option3 \
+# @formatter:on
+
+This is modeled after the Eclipse feature.
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
