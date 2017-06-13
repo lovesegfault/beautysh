@@ -41,6 +41,7 @@ class Beautify:
         here_string = ''
         output = []
         line = 1
+        formatter = True
         for record in re.split('\n', data):
             record = record.rstrip()
             stripped_record = record.strip()
@@ -87,10 +88,18 @@ class Beautify:
                         test_record = re.sub(
                             '(.*)%s.*' % ext_quote_string, '\\1',
                             test_record, 1)
-                if(in_ext_quote):
+                if(in_ext_quote or not formatter):
                     # pass on unchanged
                     output.append(record)
+                    if(re.search(r'#\s*@formatter:on', stripped_record)):
+                        formatter = True
+                        continue
                 else:  # not in ext quote
+                    if(re.search(r'#\s*@formatter:off', stripped_record)):
+                        formatter = False
+                        output.append(record)
+                        continue
+
                     inc = len(re.findall(
                         '(\s|\A|;)(case|then|do)(;|\Z|\s)', test_record))
                     inc += len(re.findall('(\{|\(|\[)', test_record))
