@@ -43,12 +43,12 @@ in which case it will beautify each one of the files.
 
 Available flags are:
 
-|Flag           |Short|Meaning                                   |Usage|
-| ------------- | ---- | ---------------------------------------- |----------|
-|`--files`      |`-f`  |Files to beautify                    |`-f foo.sh bar.sh`|
-|`--indent-size`|`-i`  |Number of spaces to use as indentation|`-i 4`|
-|`--backup`     |`-b`  |Create a backup file before beautifying  |`-b`|
-| `--tab`       |`-t`  |Use tabs instead of spaces              | `-t` |
+| Flag            | Short | Meaning                                    | Usage              |
+| --------------- | ----- | ------------------------------------------ |------------------- |
+| `--files`       | `-f`  | Files to beautify                          | `-f foo.sh bar.sh` |
+| `--indent-size` | `-i`  | Number of spaces to use as indentation     | `-i 4`             |
+| `--backup`      | `-b`  | Create a backup file before beautifying    | `-b`               |
+| `--tab`         | `-t`  | Use tabs instead of spaces                 | `-t`               |
 
 You can use `-` as an argument to `-f` and beautysh will use stdin as it's
 source and stdout as it's sink
@@ -123,7 +123,7 @@ x23LimitStringx23
 fi
 ```
 
-Special comments '@formatter:off' and '@formatter:on' can be used to disable formatting around a block of statements.
+Special comments `@formatter:off` and `@formatter:on` are available to disable formatting around a block of statements.
 
 ```shell
 # @formatter:off
@@ -133,7 +133,9 @@ command \
             --option3 \
 # @formatter:on
 
-This is modeled after the Eclipse feature.
+```
+This takes inspiration from the Eclipse feature.
+
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)

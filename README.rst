@@ -56,6 +56,8 @@ Available flags are:
 +---------------------+----------+-------------------------------------------+------------------------+
 | ``--backup``        | ``-b``   | Create a backup file before beautifying   | ``-b``                 |
 +---------------------+----------+-------------------------------------------+------------------------+
+| ``--tab``           | ``-t``   | Use tabs instead of spaces                | ``-t``                 |
++---------------------+----------+-------------------------------------------+------------------------+
 
 You can use ``-`` as an argument to ``-f`` and beautysh will use stdin
 as it's source and stdout as it's sink
@@ -98,9 +100,9 @@ As well as the more obvious example:
     **CAUTION**: Because Beautysh overwrites all the files submitted to
     it, this could have disastrous consequences if the files include
     some of the increasingly common Bash scripts that have appended
-    binary content (a regime where Beautysh has undefined behavior ). So
-    please — back up your files, and don't treat Beautysh as a harmless
-    utility. Even if that is true most of the time.
+    binary content (a regime where Beautysh has undefined behaviour ).
+    So please — back up your files, and don't treat Beautysh as a
+    harmless utility. Even if that is true most of the time.
 
 Beautysh handles Bash here-docs with care(and there are probably some
 border cases it doesn't handle). The basic idea is that the originator
@@ -129,6 +131,20 @@ here-doc content unchanged:
        echo "After here-doc"
 
     fi
+
+Special comments ``@formatter:off`` and ``@formatter:on`` are available
+to disable formatting around a block of statements.
+
+.. code:: shell
+
+    # @formatter:off
+    command \
+        --option1 \
+            --option2 \
+                --option3 \
+    # @formatter:on
+
+This takes inspiration from the Eclipse feature.
 
 --------------
 
