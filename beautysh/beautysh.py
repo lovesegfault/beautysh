@@ -46,6 +46,10 @@ class Beautify:
             record = record.rstrip()
             stripped_record = record.strip()
 
+            # remove spaces before ;; terminators in case statements
+            if case_stack:
+                stripped_record = re.sub(r'\s;;', r';;', stripped_record)
+
             # collapse multiple quotes between ' ... '
             test_record = re.sub(r'\'.*?\'', '', stripped_record)
             # collapse multiple quotes between " ... "
@@ -114,21 +118,24 @@ class Beautify:
                                 'line %d.\n' % (path, line))
                         else:
                             outc += case_stack.pop()
-                    # sepcial handling for bad syntax within case ... esac
+
+                    # special handling for bad syntax within case ... esac
+                    if re.search(r'\bcase\b', test_record):
+                        inc += 1
+                        case_stack.append(1)
+
+                    choice_case = 0
                     if(len(case_stack) > 0):
                         if(re.search('\A[^(]*\)', test_record)):
-                            # avoid overcount
-                            outc -= 2
-                            case_stack[-1] += 1
-                        if(re.search(';;', test_record)):
-                            outc += 1
-                            case_stack[-1] -= 1
+                            inc += 1
+                            choice_case = -1
+
                     # an ad-hoc solution for the "else" keyword
                     else_case = (0, -1)[re.search('^(else|elif)',
                                         test_record) is not None]
                     net = inc - outc
                     tab += min(net, 0)
-                    extab = tab + else_case
+                    extab = tab + else_case + choice_case
                     extab = max(0, extab)
                     output.append((self.tab_str * self.tab_size * extab) +
                                   stripped_record)
@@ -136,8 +143,6 @@ class Beautify:
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
-                if(re.search(r'\bcase\b', test_record)):
-                    case_stack.append(0)
             line += 1
         error = (tab != 0)
         if(error):
