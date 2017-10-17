@@ -46,9 +46,9 @@ class Beautify:
             record = record.rstrip()
             stripped_record = record.strip()
 
-            # remove spaces before ;; terminators in case statements
-            if case_stack:
-                stripped_record = re.sub(r'\s;;', r';;', stripped_record)
+            # ensure space before ;; terminators in case statements
+            if case_level:
+                stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
             # collapse multiple quotes between ' ... '
             test_record = re.sub(r'\'.*?\'', '', stripped_record)
