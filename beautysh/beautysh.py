@@ -33,7 +33,7 @@ class Beautify:
     def beautify_string(self, data, path=''):
         """Beautify string (file part)."""
         tab = 0
-        case_stack = []
+        case_level = 0
         in_here_doc = False
         defer_ext_quote = False
         in_ext_quote = False
@@ -45,6 +45,10 @@ class Beautify:
         for record in re.split('\n', data):
             record = record.rstrip()
             stripped_record = record.strip()
+
+            # ensure space before ;; terminators in case statements
+            if case_level:
+                stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
             # collapse multiple quotes between ' ... '
             test_record = re.sub(r'\'.*?\'', '', stripped_record)
@@ -108,27 +112,31 @@ class Beautify:
                         test_record))
                     outc += len(re.findall('(\}|\)|\])', test_record))
                     if(re.search(r'\besac\b', test_record)):
-                        if(len(case_stack) == 0):
+                        if(case_level == 0):
                             sys.stderr.write(
                                 'File %s: error: "esac" before "case" in '
                                 'line %d.\n' % (path, line))
                         else:
-                            outc += case_stack.pop()
-                    # sepcial handling for bad syntax within case ... esac
-                    if(len(case_stack) > 0):
-                        if(re.search('\A[^(]*\)', test_record)):
-                            # avoid overcount
-                            outc -= 2
-                            case_stack[-1] += 1
-                        if(re.search(';;', test_record)):
                             outc += 1
-                            case_stack[-1] -= 1
+                            case_level -= 1
+
+                    # special handling for bad syntax within case ... esac
+                    if re.search(r'\bcase\b', test_record):
+                        inc += 1
+                        case_level += 1
+
+                    choice_case = 0
+                    if case_level:
+                        if(re.search('\A[^(]*\)', test_record)):
+                            inc += 1
+                            choice_case = -1
+
                     # an ad-hoc solution for the "else" keyword
                     else_case = (0, -1)[re.search('^(else|elif)',
                                         test_record) is not None]
                     net = inc - outc
                     tab += min(net, 0)
-                    extab = tab + else_case
+                    extab = tab + else_case + choice_case
                     extab = max(0, extab)
                     output.append((self.tab_str * self.tab_size * extab) +
                                   stripped_record)
@@ -136,8 +144,6 @@ class Beautify:
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
-                if(re.search(r'\bcase\b', test_record)):
-                    case_stack.append(0)
             line += 1
         error = (tab != 0)
         if(error):
