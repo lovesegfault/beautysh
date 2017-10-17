@@ -33,7 +33,7 @@ class Beautify:
     def beautify_string(self, data, path=''):
         """Beautify string (file part)."""
         tab = 0
-        case_stack = []
+        case_level = 0
         in_here_doc = False
         defer_ext_quote = False
         in_ext_quote = False
@@ -112,20 +112,21 @@ class Beautify:
                         test_record))
                     outc += len(re.findall('(\}|\)|\])', test_record))
                     if(re.search(r'\besac\b', test_record)):
-                        if(len(case_stack) == 0):
+                        if(case_level == 0):
                             sys.stderr.write(
                                 'File %s: error: "esac" before "case" in '
                                 'line %d.\n' % (path, line))
                         else:
-                            outc += case_stack.pop()
+                            outc += 1
+                            case_level -= 1
 
                     # special handling for bad syntax within case ... esac
                     if re.search(r'\bcase\b', test_record):
                         inc += 1
-                        case_stack.append(1)
+                        case_level += 1
 
                     choice_case = 0
-                    if(len(case_stack) > 0):
+                    if case_level:
                         if(re.search('\A[^(]*\)', test_record)):
                             inc += 1
                             choice_case = -1
