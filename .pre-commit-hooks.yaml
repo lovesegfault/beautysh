@@ -1,0 +1,8 @@
+- id: beautysh
+  name: beautysh
+  description: |
+    A Bash beautifier for the masses.
+    https://pypi.python.org/pypi/beautysh
+  entry: beautysh -f
+  language: python
+  types: [shell]
