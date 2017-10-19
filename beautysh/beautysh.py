@@ -46,6 +46,11 @@ class Beautify:
             record = record.rstrip()
             stripped_record = record.strip()
 
+            # preserve blank lines
+            if not stripped_record:
+                output.append(stripped_record)
+                continue
+
             # ensure space before ;; terminators in case statements
             if case_level:
                 stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
