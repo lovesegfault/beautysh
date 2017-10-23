@@ -70,23 +70,23 @@ class Beautify:
             # remove '#' comments
             test_record = re.sub(r'(\A|\s)(#.*)', '', test_record, 1)
             if(not in_here_doc):
-                if(re.search('<<-?', test_record)):
+                if(re.search(r'<<-?', test_record)):
                     here_string = re.sub(
-                        '.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', '\\1',
+                        r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r'\1',
                         stripped_record, 1)
                     in_here_doc = (len(here_string) > 0)
             if(in_here_doc):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
                 if(re.search(here_string, test_record) and not
-                   re.search('<<', test_record)):
+                   re.search(r'<<', test_record)):
                     in_here_doc = False
             else:  # not in here doc
                 if(in_ext_quote):
                     if(re.search(ext_quote_string, test_record)):
                         # provide line after quotes
                         test_record = re.sub(
-                            '.*%s(.*)' % ext_quote_string, '\\1',
+                            r'.*%s(.*)' % ext_quote_string, r'\1',
                             test_record, 1)
                         in_ext_quote = False
                 else:  # not in ext quote
@@ -94,10 +94,10 @@ class Beautify:
                         # apply only after this line has been processed
                         defer_ext_quote = True
                         ext_quote_string = re.sub(
-                            '.*([\'"]).*', '\\1', test_record, 1)
+                            r'.*([\'"]).*', r'\1', test_record, 1)
                         # provide line before quote
                         test_record = re.sub(
-                            '(.*)%s.*' % ext_quote_string, '\\1',
+                            r'(.*)%s.*' % ext_quote_string, r'\1',
                             test_record, 1)
                 if(in_ext_quote or not formatter):
                     # pass on unchanged
@@ -112,12 +112,12 @@ class Beautify:
                         continue
 
                     inc = len(re.findall(
-                        '(\s|\A|;)(case|then|do)(;|\Z|\s)', test_record))
-                    inc += len(re.findall('(\{|\(|\[)', test_record))
+                        r'(\s|\A|;)(case|then|do)(;|\Z|\s)', test_record))
+                    inc += len(re.findall(r'(\{|\(|\[)', test_record))
                     outc = len(re.findall(
-                        '(\s|\A|;)(esac|fi|done|elif)(;|\)|\||\Z|\s)',
+                        r'(\s|\A|;)(esac|fi|done|elif)(;|\)|\||\Z|\s)',
                         test_record))
-                    outc += len(re.findall('(\}|\)|\])', test_record))
+                    outc += len(re.findall(r'(\}|\)|\])', test_record))
                     if(re.search(r'\besac\b', test_record)):
                         if(case_level == 0):
                             sys.stderr.write(
@@ -134,12 +134,12 @@ class Beautify:
 
                     choice_case = 0
                     if case_level:
-                        if(re.search('\A[^(]*\)', test_record)):
+                        if(re.search(r'\A[^(]*\)', test_record)):
                             inc += 1
                             choice_case = -1
 
                     # an ad-hoc solution for the "else" keyword
-                    else_case = (0, -1)[re.search('^(else|elif)',
+                    else_case = (0, -1)[re.search(r'^(else|elif)',
                                         test_record) is not None]
                     net = inc - outc
                     tab += min(net, 0)
