@@ -34,6 +34,8 @@ class Beautify:
         """Beautify string (file part)."""
         tab = 0
         case_level = 0
+        continue_line = False
+        open_brackets = 0
         in_here_doc = False
         defer_ext_quote = False
         in_ext_quote = False
@@ -141,7 +143,8 @@ class Beautify:
                                         test_record) is not None]
                     net = inc - outc
                     tab += min(net, 0)
-                    extab = tab + else_case + choice_case
+                    extab = tab + else_case + choice_case + (
+                        1 if continue_line and not open_brackets else 0)
                     extab = max(0, extab)
                     output.append((self.tab_str * self.tab_size * extab) +
                                   stripped_record)
@@ -149,6 +152,11 @@ class Beautify:
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
+
+            # count open brackets for line continuation
+            open_brackets += len(re.findall(r'\[', stripped_record))
+            open_brackets -= len(re.findall(r'\]', stripped_record))
+            continue_line = re.search(r'\\$', stripped_record)
             line += 1
         error = (tab != 0)
         if(error):
