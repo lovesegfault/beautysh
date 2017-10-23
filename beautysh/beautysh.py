@@ -112,44 +112,48 @@ class Beautify:
                         output.append(record)
                         continue
 
-                    inc = len(re.findall(
-                        r'(\s|\A|;)(case|then|do)(;|\Z|\s)', test_record))
-                    inc += len(re.findall(r'(\{|\(|\[)', test_record))
-                    outc = len(re.findall(
-                        r'(\s|\A|;)(esac|fi|done|elif)(;|\)|\||\Z|\s)',
-                        test_record))
-                    outc += len(re.findall(r'(\}|\)|\])', test_record))
-                    if(re.search(r'\besac\b', test_record)):
-                        if(case_level == 0):
-                            sys.stderr.write(
-                                'File %s: error: "esac" before "case" in '
-                                'line %d.\n' % (path, line))
-                        else:
-                            outc += 1
-                            case_level -= 1
+                    # multi-line conditions are often meticulously formatted
+                    if open_brackets:
+                        output.append(record)
+                    else:
+                        inc = len(re.findall(
+                            r'(\s|\A|;)(case|then|do)(;|\Z|\s)', test_record))
+                        inc += len(re.findall(r'(\{|\(|\[)', test_record))
+                        outc = len(re.findall(
+                            r'(\s|\A|;)(esac|fi|done|elif)(;|\)|\||\Z|\s)',
+                            test_record))
+                        outc += len(re.findall(r'(\}|\)|\])', test_record))
+                        if(re.search(r'\besac\b', test_record)):
+                            if(case_level == 0):
+                                sys.stderr.write(
+                                    'File %s: error: "esac" before "case" in '
+                                    'line %d.\n' % (path, line))
+                            else:
+                                outc += 1
+                                case_level -= 1
 
-                    # special handling for bad syntax within case ... esac
-                    if re.search(r'\bcase\b', test_record):
-                        inc += 1
-                        case_level += 1
-
-                    choice_case = 0
-                    if case_level:
-                        if(re.search(r'\A[^(]*\)', test_record)):
+                        # special handling for bad syntax within case ... esac
+                        if re.search(r'\bcase\b', test_record):
                             inc += 1
-                            choice_case = -1
+                            case_level += 1
 
-                    # an ad-hoc solution for the "else" keyword
-                    else_case = (0, -1)[re.search(r'^(else|elif)',
-                                        test_record) is not None]
-                    net = inc - outc
-                    tab += min(net, 0)
-                    extab = tab + else_case + choice_case + (
-                        1 if continue_line and not open_brackets else 0)
-                    extab = max(0, extab)
-                    output.append((self.tab_str * self.tab_size * extab) +
-                                  stripped_record)
-                    tab += max(net, 0)
+                        choice_case = 0
+                        if case_level:
+                            if(re.search(r'\A[^(]*\)', test_record)):
+                                inc += 1
+                                choice_case = -1
+
+                        # an ad-hoc solution for the "else" keyword
+                        else_case = (0, -1)[re.search(r'^(else|elif)',
+                                            test_record) is not None]
+                        net = inc - outc
+                        tab += min(net, 0)
+                        extab = tab + else_case + choice_case + (
+                            1 if continue_line and not open_brackets else 0)
+                        extab = max(0, extab)
+                        output.append((self.tab_str * self.tab_size * extab) +
+                                      stripped_record)
+                        tab += max(net, 0)
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
