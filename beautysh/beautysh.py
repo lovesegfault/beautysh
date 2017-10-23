@@ -69,12 +69,7 @@ class Beautify:
             test_record = re.sub(r'\\.', '', test_record)
             # remove '#' comments
             test_record = re.sub(r'(\A|\s)(#.*)', '', test_record, 1)
-            if(not in_here_doc):
-                if(re.search(r'<<-?', test_record)):
-                    here_string = re.sub(
-                        r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r'\1',
-                        stripped_record, 1)
-                    in_here_doc = (len(here_string) > 0)
+
             if(in_here_doc):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
@@ -82,6 +77,12 @@ class Beautify:
                    re.search(r'<<', test_record)):
                     in_here_doc = False
             else:  # not in here doc
+                if(re.search(r'<<-?', test_record)):
+                    here_string = re.sub(
+                        r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r'\1',
+                        stripped_record, 1)
+                    in_here_doc = (len(here_string) > 0)
+
                 if(in_ext_quote):
                     if(re.search(ext_quote_string, test_record)):
                         # provide line after quotes
