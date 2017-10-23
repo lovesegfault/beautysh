@@ -84,7 +84,7 @@ class Beautify:
                     if(re.search(ext_quote_string, test_record)):
                         # provide line after quotes
                         test_record = re.sub(
-                            r'.*%s(.*)' % ext_quote_string, '\\1',
+                            r'.*%s(.*)' % ext_quote_string, r'\1',
                             test_record, 1)
                         in_ext_quote = False
                 else:  # not in ext quote
@@ -92,10 +92,10 @@ class Beautify:
                         # apply only after this line has been processed
                         defer_ext_quote = True
                         ext_quote_string = re.sub(
-                            r'.*([\'"]).*', '\\1', test_record, 1)
+                            r'.*([\'"]).*', r'\1', test_record, 1)
                         # provide line before quote
                         test_record = re.sub(
-                            r'(.*)%s.*' % ext_quote_string, '\\1',
+                            r'(.*)%s.*' % ext_quote_string, r'\1',
                             test_record, 1)
                 if(in_ext_quote or not formatter):
                     # pass on unchanged
