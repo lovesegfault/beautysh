@@ -4,18 +4,22 @@ from setuptools import setup
 
 def get_version(file_name='beautysh/__init__.py'):
     """Get version info from __init__."""
-    with open(file_name) as f:
-        for line in f:
+    with open(file_name) as v_file:
+        for line in v_file:
             if "__version__" in line:
                 return eval(line.split('=')[-1])
 
+with open("README.md", "r") as fh:
+    DESCRIPTION = fh.read()
 
 setup(
     name='beautysh',
     packages=['beautysh'],
     version=get_version(),
     description='A Bash beautifier for the masses.',
-    license='GPL',
+    long_description=DESCRIPTION,
+    long_description_content_type="text/markdown",
+    license='MIT',
     author='Bernardo Meurer',
     author_email='meurerbernardo@gmail.com',
     url='https://github.com/bemeurer/beautysh',
@@ -28,8 +32,7 @@ setup(
         "Environment :: Console",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
-        "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPL"
-        "v3)",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Text Processing :: Filters",
