@@ -77,7 +77,7 @@ class Beautify:
                    re.search(r'<<', test_record)):
                     in_here_doc = False
             else:  # not in here doc
-                if(re.search(r'<<-?', test_record)) and not (re.search(r'done.*<<<', test_record)):
+                if(re.search(r'<<-?', test_record)) and not (re.search(r'.*<<<', test_record)):
                     here_string = re.sub(
                         r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r'\1',
                         stripped_record, 1)
