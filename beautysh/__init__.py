@@ -2,4 +2,4 @@
 
 from .beautysh import Beautify
 
-__version__ = '3.10'
+__version__ = '3.11'
