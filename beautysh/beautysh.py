@@ -159,8 +159,8 @@ class Beautify:
                     defer_ext_quote = False
 
             # count open brackets for line continuation
-            open_brackets += len(re.findall(r'\[', stripped_record))
-            open_brackets -= len(re.findall(r'\]', stripped_record))
+            open_brackets += len(re.findall(r'\[', test_record))
+            open_brackets -= len(re.findall(r'\]', test_record))
             continue_line = re.search(r'\\$', stripped_record)
             line += 1
         error = (tab != 0)
