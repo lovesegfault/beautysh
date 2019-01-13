@@ -19,6 +19,7 @@ class Beautify:
         self.tab_str = ' '
         self.tab_size = 4
         self.backup = False
+        self.check_only = False
 
     def read_file(self, fp):
         """Read input file."""
@@ -57,8 +58,12 @@ class Beautify:
             if case_level:
                 stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
+            # first of all, get rid of escaped special characters like single/double quotes
+            test_record = stripped_record.replace("\\'", "")
+            test_record = test_record.replace("\\\"", "")
+
             # collapse multiple quotes between ' ... '
-            test_record = re.sub(r'\'.*?\'', '', stripped_record)
+            test_record = re.sub(r'\'.*?\'', '', test_record)
             # collapse multiple quotes between " ... "
             test_record = re.sub(r'".*?"', '', test_record)
             # collapse multiple quotes between ` ... `
@@ -159,8 +164,8 @@ class Beautify:
                     defer_ext_quote = False
 
             # count open brackets for line continuation
-            open_brackets += len(re.findall(r'\[', stripped_record))
-            open_brackets -= len(re.findall(r'\]', stripped_record))
+            open_brackets += len(re.findall(r'\[', test_record))
+            open_brackets -= len(re.findall(r'\]', test_record))
             continue_line = re.search(r'\\$', stripped_record)
             line += 1
         error = (tab != 0)
@@ -180,9 +185,15 @@ class Beautify:
             data = self.read_file(path)
             result, error = self.beautify_string(data, path)
             if(data != result):
-                if(self.backup):
-                    self.write_file(path+'.bak', data)
-                self.write_file(path, result)
+                if(self.check_only):
+                    if not error:
+                        # we want to return 0 (success) only if the given file is already
+                        # well formatted:
+                        error = (result != data)
+                else:
+                    if(self.backup):
+                        self.write_file(path+'.bak', data)
+                    self.write_file(path, result)
         return error
 
     def main(self):
@@ -198,6 +209,9 @@ class Beautify:
         parser.add_argument('--backup', '-b', action='store_true',
                             help="Beautysh will create a backup file in the "
                                  "same path as the original.")
+        parser.add_argument('--check', '-c', action='store_true',
+                            help="Beautysh will just check the files without doing "
+                                 "any in-place beautify.")
         parser.add_argument('--tab', '-t', action='store_true',
                             help="Sets indentation to tabs instead of spaces")
         args = parser.parse_args()
@@ -208,6 +222,7 @@ class Beautify:
             args.indent_size = args.indent_size[0]
         self.tab_size = args.indent_size
         self.backup = args.backup
+        self.check_only = args.check
         if (args.tab):
             self.tab_size = 1
             self.tab_str = '\t'
