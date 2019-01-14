@@ -58,8 +58,12 @@ class Beautify:
             if case_level:
                 stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
+            # first of all, get rid of escaped special characters like single/double quotes
+            test_record = stripped_record.replace("\\'", "")
+            test_record = test_record.replace("\\\"", "")
+
             # collapse multiple quotes between ' ... '
-            test_record = re.sub(r'\'.*?\'', '', stripped_record)
+            test_record = re.sub(r'\'.*?\'', '', test_record)
             # collapse multiple quotes between " ... "
             test_record = re.sub(r'".*?"', '', test_record)
             # collapse multiple quotes between ` ... `
