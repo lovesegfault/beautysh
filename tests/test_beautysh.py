@@ -10,6 +10,12 @@ TEST_GETOPTS1_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'getopts1_r
 TEST_GETOPTS1_BEAUTIFIED_FILENAME = os.path.join(os.path.dirname(__file__), 'getopts1_beautified.sh')
 TEST_INDENT1_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'indent_test1_raw.sh')
 TEST_INDENT1_BEAUTIFIED_FILENAME = os.path.join(os.path.dirname(__file__), 'indent_test1_beautified.sh')
+TEST_FUNCSTYLES_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'func_styles_raw.sh')
+TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME = [
+    os.path.join(os.path.dirname(__file__), 'func_styles_beautified_style0.sh'),
+    os.path.join(os.path.dirname(__file__), 'func_styles_beautified_style1.sh'),
+    os.path.join(os.path.dirname(__file__), 'func_styles_beautified_style2.sh')
+]
 
 class TestBasic(TestCase):
     
@@ -49,6 +55,16 @@ class TestBasic(TestCase):
         result, error = Beautify().beautify_string(testdata)
         self.assertFalse(error);  # we expect no parsing error
         self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
+
+    def test_func_style0(self):
+        testdata = self.read_file(TEST_FUNCSTYLES_RAW_FILENAME)
+        for idx in range(0,2):
+            expecteddata = self.read_file(TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME[idx])
+            bb = Beautify()
+            bb.apply_function_style = idx
+            result, error = bb.beautify_string(testdata)
+            self.assertFalse(error);  # we expect no parsing error
+            self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
 
 
 if __name__ == "__main__":

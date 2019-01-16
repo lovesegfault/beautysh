@@ -5,6 +5,22 @@ import argparse
 import re
 import sys
 
+# correct function style detection is obtained only if following regex are tested in sequence.
+# styles are listed as follows:
+# 0) function keyword, open/closed parentheses
+# 1) function keyword, NO open/closed parentheses
+# 2) NO function keyword, open/closed parentheses
+FUNCTION_STYLE_REGEX = [
+    r'\bfunction\s+(\w*)\s*\(\s*\)',
+    r'\bfunction\s+(\w*)\s*',
+    r'\b\s*(\w*)\s*\(\s*\)'
+]
+
+FUNCTION_STYLE_REPLACEMENT = [
+    'function \g<1>()',
+    'function \g<1>',
+    '\g<1>()'
+]
 
 def main():
     """Call the main function."""
@@ -20,6 +36,7 @@ class Beautify:
         self.tab_size = 4
         self.backup = False
         self.check_only = False
+        self.apply_function_style = None # default is no change based on function style
 
     def read_file(self, fp):
         """Read input file."""
@@ -31,6 +48,44 @@ class Beautify:
         with open(fp, 'w') as f:
             f.write(data)
 
+    def detect_function_style(self, test_record):
+        index = 0
+        for regex in FUNCTION_STYLE_REGEX:
+            if re.search(regex, test_record):
+                return index
+            index+=1
+        return None
+    
+    def change_function_style(self, stripped_record, func_decl_style):
+        if func_decl_style is None:
+            return stripped_record
+        if self.apply_function_style is None:
+            # user does not want to enforce any specific function style
+            return stripped_record
+        regex = FUNCTION_STYLE_REGEX[func_decl_style]
+        replacement = FUNCTION_STYLE_REPLACEMENT[self.apply_function_style]
+        return re.sub(regex, replacement, stripped_record)
+
+    def get_test_record(self, source_line):
+        # first of all, get rid of escaped special characters like single/double quotes
+        # that may impact later "collapse" attempts
+        test_record = source_line.replace("\\'", "")
+        test_record = test_record.replace("\\\"", "")
+
+        # collapse multiple quotes between ' ... '
+        test_record = re.sub(r'\'.*?\'', '', test_record)
+        # collapse multiple quotes between " ... "
+        test_record = re.sub(r'".*?"', '', test_record)
+        # collapse multiple quotes between ` ... `
+        test_record = re.sub(r'`.*?`', '', test_record)
+        # collapse multiple quotes between \` ... ' (weird case)
+        test_record = re.sub(r'\\`.*?\'', '', test_record)
+        # strip out any escaped single characters
+        test_record = re.sub(r'\\.', '', test_record)
+        # remove '#' comments
+        test_record = re.sub(r'(\A|\s)(#.*)', '', test_record, 1)
+        return test_record
+    
     def beautify_string(self, data, path=''):
         """Beautify string (file part)."""
         tab = 0
@@ -58,23 +113,8 @@ class Beautify:
             if case_level:
                 stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
-            # first of all, get rid of escaped special characters like single/double quotes
-            test_record = stripped_record.replace("\\'", "")
-            test_record = test_record.replace("\\\"", "")
-
-            # collapse multiple quotes between ' ... '
-            test_record = re.sub(r'\'.*?\'', '', test_record)
-            # collapse multiple quotes between " ... "
-            test_record = re.sub(r'".*?"', '', test_record)
-            # collapse multiple quotes between ` ... `
-            test_record = re.sub(r'`.*?`', '', test_record)
-            # collapse multiple quotes between \` ... ' (weird case)
-            test_record = re.sub(r'\\`.*?\'', '', test_record)
-            # strip out any escaped single characters
-            test_record = re.sub(r'\\.', '', test_record)
-            # remove '#' comments
-            test_record = re.sub(r'(\A|\s)(#.*)', '', test_record, 1)
-
+            test_record = self.get_test_record(stripped_record)
+            
             if(in_here_doc):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
@@ -148,6 +188,12 @@ class Beautify:
                                 inc += 1
                                 choice_case = -1
 
+                        # detect functions
+                        func_decl_style = self.detect_function_style(test_record)
+                        if func_decl_style != None:
+                             #sys.stderr.write("Found function declaration on line %d [%s] with style %d\n" % (line, stripped_record, func_decl_style))
+                             stripped_record = self.change_function_style(stripped_record, func_decl_style)
+
                         # an ad-hoc solution for the "else" keyword
                         else_case = (0, -1)[re.search(r'^(else|elif)',
                                             test_record) is not None]
@@ -214,18 +260,28 @@ class Beautify:
                                  "any in-place beautify.")
         parser.add_argument('--tab', '-t', action='store_true',
                             help="Sets indentation to tabs instead of spaces")
+        parser.add_argument('--force-function-style', '-s', nargs=1, type=int, default=1,
+                            help="Force a specific Bash function formatting")
         args = parser.parse_args()
         if (len(sys.argv) < 2):
             parser.print_help()
             exit()
         if(type(args.indent_size) is list):
             args.indent_size = args.indent_size[0]
+        if not args.files:
+            sys.stdout.write("Please provide at least one input file\n")
+            exit()
         self.tab_size = args.indent_size
         self.backup = args.backup
         self.check_only = args.check
         if (args.tab):
             self.tab_size = 1
             self.tab_str = '\t'
+        if(type(args.force_function_style) is list):
+            if args.force_function_style[0] < 0 or args.force_function_style[0] > 2:
+                sys.stdout.write("Invalid value for the function style. Please provide a value in range [0-2].\n")
+                exit()
+            self.apply_function_style = args.force_function_style[0]
         for path in args.files:
             error |= self.beautify_file(path)
         sys.exit((0, 1)[error])
