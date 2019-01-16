@@ -90,7 +90,8 @@ class Beautify:
         """Beautify string (file part)."""
         tab = 0
         case_level = 0
-        continue_line = False
+        prev_line_had_continue = None
+        continue_line = None
         open_brackets = 0
         in_here_doc = False
         defer_ext_quote = False
@@ -115,7 +116,18 @@ class Beautify:
 
             test_record = self.get_test_record(stripped_record)
             
-            if(in_here_doc):  # pass on with no changes
+            # detect whether this line ends with line continuation character:
+            prev_line_had_continue = continue_line
+            continue_line = re.search(r'\\$', stripped_record)
+
+            if continue_line:
+                # remove contents of strings initiated on current line but that continue on next line
+                # (in particular we need to ignore brackets they may contain!)
+                test_record = re.sub(r'"[^"]*?\\$', '', test_record)
+
+            inside_multiline_continuation = (continue_line is not None) and (prev_line_had_continue is not None)
+
+            if(in_here_doc) or (inside_multiline_continuation):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
                 if(re.search(here_string, test_record) and not
@@ -199,8 +211,7 @@ class Beautify:
                                             test_record) is not None]
                         net = inc - outc
                         tab += min(net, 0)
-                        extab = tab + else_case + choice_case + (
-                            1 if continue_line and not open_brackets else 0)
+                        extab = tab + else_case + choice_case
                         extab = max(0, extab)
                         output.append((self.tab_str * self.tab_size * extab) +
                                       stripped_record)
@@ -212,7 +223,6 @@ class Beautify:
             # count open brackets for line continuation
             open_brackets += len(re.findall(r'\[', test_record))
             open_brackets -= len(re.findall(r'\]', test_record))
-            continue_line = re.search(r'\\$', stripped_record)
             line += 1
         error = (tab != 0)
         if(error):
