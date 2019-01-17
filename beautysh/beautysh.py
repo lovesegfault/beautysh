@@ -7,9 +7,9 @@ import sys
 
 # correct function style detection is obtained only if following regex are tested in sequence.
 # styles are listed as follows:
-# 0) function keyword, open/closed parentheses
-# 1) function keyword, NO open/closed parentheses
-# 2) NO function keyword, open/closed parentheses
+# 0) function keyword, open/closed parentheses, e.g.      function foo()
+# 1) function keyword, NO open/closed parentheses, e.g.   function foo
+# 2) NO function keyword, open/closed parentheses, e.g.   foo()
 FUNCTION_STYLE_REGEX = [
     r'\bfunction\s+(\w*)\s*\(\s*\)',
     r'\bfunction\s+(\w*)\s*',
@@ -49,7 +49,10 @@ class Beautify:
             f.write(data)
 
     def detect_function_style(self, test_record):
+        """Returns the index for the function declaration style detected in the given string
+           or None if no function declarations are detected."""
         index = 0
+        # IMPORTANT: apply regex sequentially and stop on the first match:
         for regex in FUNCTION_STYLE_REGEX:
             if re.search(regex, test_record):
                 return index
@@ -57,6 +60,8 @@ class Beautify:
         return None
     
     def change_function_style(self, stripped_record, func_decl_style):
+        """Converts a function definition syntax from the 'func_decl_style' to the one that has been
+           set in self.apply_function_style and returns the string with the converted syntax."""
         if func_decl_style is None:
             return stripped_record
         if self.apply_function_style is None:
@@ -67,6 +72,8 @@ class Beautify:
         return re.sub(regex, replacement, stripped_record)
 
     def get_test_record(self, source_line):
+        """Takes the given Bash source code line and simplifies it by removing stuff that is not
+           useful for the purpose of indentation level calculation"""
         # first of all, get rid of escaped special characters like single/double quotes
         # that may impact later "collapse" attempts
         test_record = source_line.replace("\\'", "")
@@ -203,7 +210,6 @@ class Beautify:
                         # detect functions
                         func_decl_style = self.detect_function_style(test_record)
                         if func_decl_style != None:
-                             #sys.stderr.write("Found function declaration on line %d [%s] with style %d\n" % (line, stripped_record, func_decl_style))
                              stripped_record = self.change_function_style(stripped_record, func_decl_style)
 
                         # an ad-hoc solution for the "else" keyword
@@ -252,16 +258,36 @@ class Beautify:
                     self.write_file(path, result)
         return error
 
+    def print_help(self, parser):
+        parser.print_help()
+        sys.stdout.write("\nBash function styles that can be specified via --force-function-style are:\n")
+        sys.stdout.write("  fnpar: function keyword, open/closed parentheses, e.g.      function foo()\n")
+        sys.stdout.write("  fnonly: function keyword, no open/closed parentheses, e.g.  function foo\n")
+        sys.stdout.write("  par: no function keyword, open/closed parentheses, e.g.     foo()\n")
+        sys.stdout.write("\n")
+    
+    def parse_function_style(self, style_name):
+        # map the user-provided function style to our range 0-2
+        if style_name == "fnpar":
+            return 0
+        elif style_name == "fnonly":
+            return 1
+        elif style_name == "par":
+            return 2
+        return None
+
     def main(self):
         """Main beautifying function."""
         error = False
         parser = argparse.ArgumentParser(description="A Bash beautifier for the"
-                                                     " masses")
+                                                     " masses", add_help=False)
         parser.add_argument('--indent-size', '-i', nargs=1, type=int, default=4,
                             help="Sets the number of spaces to be used in "
                                  "indentation.")
         parser.add_argument('--files', '-f', nargs='*',
-                            help="Files to be beautified.")
+                            help="Files to be beautified. This is mandatory. "
+                            "If - is provided as filename, then beautysh reads "
+                            "from stdin and writes on stdout.")
         parser.add_argument('--backup', '-b', action='store_true',
                             help="Beautysh will create a backup file in the "
                                  "same path as the original.")
@@ -269,12 +295,14 @@ class Beautify:
                             help="Beautysh will just check the files without doing "
                                  "any in-place beautify.")
         parser.add_argument('--tab', '-t', action='store_true',
-                            help="Sets indentation to tabs instead of spaces")
-        parser.add_argument('--force-function-style', '-s', nargs=1, type=int, default=1,
-                            help="Force a specific Bash function formatting")
+                            help="Sets indentation to tabs instead of spaces.")
+        parser.add_argument('--force-function-style', '-s', nargs=1,
+                            help="Force a specific Bash function formatting. See below for more info.")
+        parser.add_argument('--help', '-h', action='store_true',
+                            help="Print this help message.")
         args = parser.parse_args()
-        if (len(sys.argv) < 2):
-            parser.print_help()
+        if (len(sys.argv) < 2) or args.help:
+            self.print_help(parser)
             exit()
         if(type(args.indent_size) is list):
             args.indent_size = args.indent_size[0]
@@ -287,11 +315,12 @@ class Beautify:
         if (args.tab):
             self.tab_size = 1
             self.tab_str = '\t'
-        if(type(args.force_function_style) is list):
-            if args.force_function_style[0] < 0 or args.force_function_style[0] > 2:
-                sys.stdout.write("Invalid value for the function style. Please provide a value in range [0-2].\n")
+        if (type(args.force_function_style) is list):
+            provided_style = self.parse_function_style(args.force_function_style[0])
+            if provided_style is None:
+                sys.stdout.write("Invalid value for the function style. See --help for details.\n")
                 exit()
-            self.apply_function_style = args.force_function_style[0]
+            self.apply_function_style = provided_style
         for path in args.files:
             error |= self.beautify_file(path)
         sys.exit((0, 1)[error])
