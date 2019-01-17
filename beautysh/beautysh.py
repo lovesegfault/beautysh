@@ -263,7 +263,7 @@ class Beautify:
         sys.stdout.write("\nBash function styles that can be specified via --force-function-style are:\n")
         sys.stdout.write("  fnpar: function keyword, open/closed parentheses, e.g.      function foo()\n")
         sys.stdout.write("  fnonly: function keyword, no open/closed parentheses, e.g.  function foo\n")
-        sys.stdout.write("  par: no function keyword, open/closed parentheses, e.g.     foo()\n")
+        sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
         sys.stdout.write("\n")
     
     def parse_function_style(self, style_name):
@@ -272,7 +272,7 @@ class Beautify:
             return 0
         elif style_name == "fnonly":
             return 1
-        elif style_name == "par":
+        elif style_name == "paronly":
             return 2
         return None
 
