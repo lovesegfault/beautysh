@@ -11,15 +11,15 @@ import sys
 # 1) function keyword, NO open/closed parentheses, e.g.   function foo
 # 2) NO function keyword, open/closed parentheses, e.g.   foo()
 FUNCTION_STYLE_REGEX = [
-    r'\bfunction\s+(\w*)\s*\(\s*\)',
+    r'\bfunction\s+(\w*)\s*\(\s*\)\s*',
     r'\bfunction\s+(\w*)\s*',
-    r'\b\s*(\w*)\s*\(\s*\)'
+    r'\b\s*(\w*)\s*\(\s*\)\s*'
 ]
 
 FUNCTION_STYLE_REPLACEMENT = [
-    'function \g<1>()',
-    'function \g<1>',
-    '\g<1>()'
+    'function \g<1>() ',
+    'function \g<1> ',
+    '\g<1>() '
 ]
 
 def main():
@@ -69,7 +69,8 @@ class Beautify:
             return stripped_record
         regex = FUNCTION_STYLE_REGEX[func_decl_style]
         replacement = FUNCTION_STYLE_REPLACEMENT[self.apply_function_style]
-        return re.sub(regex, replacement, stripped_record)
+        changed_record = re.sub(regex, replacement, stripped_record)
+        return changed_record.strip()
 
     def get_test_record(self, source_line):
         """Takes the given Bash source code line and simplifies it by removing stuff that is not

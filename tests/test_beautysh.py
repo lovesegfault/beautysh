@@ -17,7 +17,7 @@ TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME = [
     os.path.join(os.path.dirname(__file__), 'func_styles_beautified_style2.sh')
 ]
 
-class TestBasic(TestCase):
+class TestBeautysh(TestCase):
     
     # internal utilities:
     
@@ -33,6 +33,15 @@ class TestBasic(TestCase):
         self.assertEqual(len(valuelines), len(expectedlines), "Wrong line count in actual value:\n{}".format(value))
         for idx in range(0,len(expectedlines)):
             self.assertEqual(expectedlines[idx], valuelines[idx])
+
+    def verify_func_style(self, idx):
+        testdata = self.read_file(TEST_FUNCSTYLES_RAW_FILENAME)
+        expecteddata = self.read_file(TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME[idx])
+        bb = Beautify()
+        bb.apply_function_style = idx
+        result, error = bb.beautify_string(testdata)
+        self.assertFalse(error);  # we expect no parsing error
+        self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
 
     # unit tests:
         
@@ -57,15 +66,11 @@ class TestBasic(TestCase):
         self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
 
     def test_func_style0(self):
-        testdata = self.read_file(TEST_FUNCSTYLES_RAW_FILENAME)
-        for idx in range(0,2):
-            expecteddata = self.read_file(TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME[idx])
-            bb = Beautify()
-            bb.apply_function_style = idx
-            result, error = bb.beautify_string(testdata)
-            self.assertFalse(error);  # we expect no parsing error
-            self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
-
-
+        self.verify_func_style(0)
+    def test_func_style1(self):
+        self.verify_func_style(1)
+    def test_func_style2(self):
+        self.verify_func_style(2)
+        
 if __name__ == "__main__":
     unittest.main()
