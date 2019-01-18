@@ -8,7 +8,7 @@ THIS_SCRIPT_LOCATION="$(dirname $0)"
 ALL_UNIT_TEST_FILES="$(ls -1 $THIS_SCRIPT_LOCATION/*.sh | grep -v $THIS_SCRIPT_NAME)"
 for file in $ALL_UNIT_TEST_FILES; do
 	echo "Verifying $file ..."
-	source $file
+	/bin/bash $file </dev/null >/dev/null 2>&1
 	if [ $? -ne 0 ]; then
 		echo "Please fix unit test script $file. Bash refuses to load it!"
 		exit 2 # fail
