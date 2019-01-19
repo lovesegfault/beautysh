@@ -10,3 +10,4 @@ install:
 
 script:
   - python setup.py test
+  - tests/test_beautysh_scripts.sh

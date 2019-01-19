@@ -27,7 +27,7 @@ function function_style2a()
     echo "test"
 }
 
-function function_style2b(){
+function function_style2b() {
     echo "test"
 }
 
