@@ -4,6 +4,7 @@
 import argparse
 import re
 import sys
+import pkg_resources  # part of setuptools
 
 # correct function style detection is obtained only if following regex are tested in sequence.
 # styles are listed as follows:
@@ -277,11 +278,17 @@ class Beautify:
             return 2
         return None
 
+    def get_version(self):
+        try:
+            return pkg_resources.require("beautysh")[0].version
+        except pkg_resources.DistributionNotFound:
+            return "Not Available"
+
     def main(self):
         """Main beautifying function."""
         error = False
-        parser = argparse.ArgumentParser(description="A Bash beautifier for the"
-                                                     " masses", add_help=False)
+        parser = argparse.ArgumentParser(
+            description="A Bash beautifier for the masses, version {}".format(self.get_version()), add_help=False)
         parser.add_argument('--indent-size', '-i', nargs=1, type=int, default=4,
                             help="Sets the number of spaces to be used in "
                                  "indentation.")
@@ -299,11 +306,16 @@ class Beautify:
                             help="Sets indentation to tabs instead of spaces.")
         parser.add_argument('--force-function-style', '-s', nargs=1,
                             help="Force a specific Bash function formatting. See below for more info.")
+        parser.add_argument('--version', '-v', action='store_true',
+                            help="Prints the version and exits.")
         parser.add_argument('--help', '-h', action='store_true',
                             help="Print this help message.")
         args = parser.parse_args()
         if (len(sys.argv) < 2) or args.help:
             self.print_help(parser)
+            exit()
+        if args.version:
+            sys.stdout.write("%s\n" % self.get_version())
             exit()
         if(type(args.indent_size) is list):
             args.indent_size = args.indent_size[0]
