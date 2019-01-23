@@ -5,7 +5,7 @@ function mytest()
 	echo "Commands in this part will be formatted and indented normally as usual"
 	
 	# @formatter:off
-	command \
+	echo \
 	    --option1 \
 	        --option2 \
 	            --option3 \
@@ -13,7 +13,7 @@ function mytest()
 }
 
 # @formatter:off
-command \
+echo \
     --option1 \
         --option2 \
             --option3 \
