@@ -99,8 +99,9 @@ class Beautify:
         """Beautify string (file part)."""
         tab = 0
         case_level = 0
-        prev_line_had_continue = None
-        continue_line = None
+        prev_line_had_continue = False
+        continue_line = False
+        started_multiline_quoted_string = False
         open_brackets = 0
         in_here_doc = False
         defer_ext_quote = False
@@ -127,22 +128,31 @@ class Beautify:
             
             # detect whether this line ends with line continuation character:
             prev_line_had_continue = continue_line
-            continue_line = re.search(r'\\$', stripped_record)
+            continue_line = True if (re.search(r'\\$', stripped_record)!=None) else False
+            inside_multiline_quoted_string = prev_line_had_continue and continue_line and started_multiline_quoted_string
 
-            if continue_line:
-                # remove contents of strings initiated on current line but that continue on next line
-                # (in particular we need to ignore brackets they may contain!)
-                test_record = re.sub(r'"[^"]*?\\$', '', test_record)
-
-            inside_multiline_continuation = (continue_line is not None) and (prev_line_had_continue is not None)
-
-            if(in_here_doc) or (inside_multiline_continuation):  # pass on with no changes
+            if(in_here_doc) or (inside_multiline_quoted_string):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
                 if(re.search(here_string, test_record) and not
                    re.search(r'<<', test_record)):
                     in_here_doc = False
-            else:  # not in here doc
+            else:  # not in here doc or inside multiline-quoted
+
+                if continue_line:
+                    if prev_line_had_continue:
+                        # this line is not STARTING a multiline-quoted string... we may be in the middle
+                        # of such a multiline string though
+                        started_multiline_quoted_string = False
+                    else:
+                        # remove contents of strings initiated on current line but that continue on next line
+                        # (in particular we need to ignore brackets they may contain!)
+                        [test_record, num_subs] = re.subn(r'"[^"]*?\\$', '', test_record)
+                        started_multiline_quoted_string = True if num_subs>0 else False
+                else:
+                    # this line is not STARTING a multiline-quoted string
+                    started_multiline_quoted_string = False
+
                 if(re.search(r'<<-?', test_record)) and not (re.search(r'.*<<<', test_record)):
                     here_string = re.sub(
                         r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r'\1',
@@ -214,12 +224,17 @@ class Beautify:
                         if func_decl_style != None:
                              stripped_record = self.change_function_style(stripped_record, func_decl_style)
 
-                        # an ad-hoc solution for the "else" keyword
+                        # an ad-hoc solution for the "else" or "elif" keyword
                         else_case = (0, -1)[re.search(r'^(else|elif)',
                                             test_record) is not None]
                         net = inc - outc
                         tab += min(net, 0)
+                        
+                        # while 'tab' is preserved across multiple lines, 'extab' is not and is used for
+                        # some adjustments:
                         extab = tab + else_case + choice_case
+                        if prev_line_had_continue and not open_brackets:
+                            extab+=1
                         extab = max(0, extab)
                         output.append((self.tab_str * self.tab_size * extab) +
                                       stripped_record)
