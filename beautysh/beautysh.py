@@ -102,6 +102,7 @@ class Beautify:
         prev_line_had_continue = False
         continue_line = False
         started_multiline_quoted_string = False
+        ended_multiline_quoted_string = False
         open_brackets = 0
         in_here_doc = False
         defer_ext_quote = False
@@ -131,7 +132,14 @@ class Beautify:
             continue_line = True if (re.search(r'\\$', stripped_record)!=None) else False
             inside_multiline_quoted_string = prev_line_had_continue and continue_line and started_multiline_quoted_string
 
-            if(in_here_doc) or (inside_multiline_quoted_string):  # pass on with no changes
+            if not continue_line and prev_line_had_continue and started_multiline_quoted_string:
+                # remove contents of strings initiated on previous lines and that are ending on this line:
+                [test_record, num_subs] = re.subn(r'^[^"]*"', '', test_record)
+                ended_multiline_quoted_string = True if num_subs>0 else False
+            else:
+                ended_multiline_quoted_string = False
+    
+            if(in_here_doc) or (inside_multiline_quoted_string) or (ended_multiline_quoted_string):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
                 if(re.search(here_string, test_record) and not
@@ -233,7 +241,7 @@ class Beautify:
                         # while 'tab' is preserved across multiple lines, 'extab' is not and is used for
                         # some adjustments:
                         extab = tab + else_case + choice_case
-                        if prev_line_had_continue and not open_brackets:
+                        if prev_line_had_continue and not open_brackets and not ended_multiline_quoted_string:
                             extab+=1
                         extab = max(0, extab)
                         output.append((self.tab_str * self.tab_size * extab) +
@@ -242,10 +250,10 @@ class Beautify:
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
-
-            # count open brackets for line continuation
-            open_brackets += len(re.findall(r'\[', test_record))
-            open_brackets -= len(re.findall(r'\]', test_record))
+    
+                # count open brackets for line continuation
+                open_brackets += len(re.findall(r'\[', test_record))
+                open_brackets -= len(re.findall(r'\]', test_record))
             line += 1
         error = (tab != 0)
         if(error):
