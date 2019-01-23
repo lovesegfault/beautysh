@@ -26,6 +26,22 @@ class TestBeautysh(TestCase):
         """Read input file."""
         with open(fp) as f:
             return f.read()
+        
+    def get_string_highlighted_whitespaces(self, str):
+        if len(str)==0:
+            return str
+        
+        # do the replace only for whitespaces at the beginning of the string:
+        output = ""
+        idx = 0
+        while str[idx]==' ' or str[idx]=='\t':
+            if str[idx]==' ':
+                output+='.'
+            elif str[idx]=='\t':
+                output+='T'
+            idx+=1
+        output+=str[idx:]
+        return output
     
     def assertIdenticalMultilineStrings(self, expected, value):
         expectedlines = expected.split('\n')
@@ -34,8 +50,9 @@ class TestBeautysh(TestCase):
         self.assertEqual(len(valuelines), len(expectedlines), "Wrong line count in actual value:\n{}".format(value))
         for idx in range(0,len(expectedlines)):
             self.assertEqual(expectedlines[idx], valuelines[idx], 
-                             "Line {} is different! Expected {} chars:\n[{}]\nActual {} chars:\n[{}]"
-                             .format(idx+1, len(expectedlines[idx]), expectedlines[idx], len(valuelines[idx]), valuelines[idx]))
+                             "Line {} is different!\nExpected {} chars:\n[{}]\nActual string is {} chars:\n[{}]"
+                             .format(idx+1, len(expectedlines[idx]), self.get_string_highlighted_whitespaces(expectedlines[idx]), \
+                                     len(valuelines[idx]), self.get_string_highlighted_whitespaces(valuelines[idx])))
 
     def verify_func_style(self, idx):
         testdata = self.read_file(TEST_FUNCSTYLES_RAW_FILENAME)
