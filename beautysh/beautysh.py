@@ -18,9 +18,9 @@ FUNCTION_STYLE_REGEX = [
 ]
 
 FUNCTION_STYLE_REPLACEMENT = [
-    'function \g<1>() ',
-    'function \g<1> ',
-    '\g<1>() '
+    r'function \g<1>() ',
+    r'function \g<1> ',
+    r'\g<1>() '
 ]
 
 def main():
@@ -59,7 +59,7 @@ class Beautify:
                 return index
             index+=1
         return None
-    
+
     def change_function_style(self, stripped_record, func_decl_style):
         """Converts a function definition syntax from the 'func_decl_style' to the one that has been
            set in self.apply_function_style and returns the string with the converted syntax."""
@@ -94,7 +94,7 @@ class Beautify:
         # remove '#' comments
         test_record = re.sub(r'(\A|\s)(#.*)', '', test_record, 1)
         return test_record
-    
+
     def beautify_string(self, data, path=''):
         """Beautify string (file part)."""
         tab = 0
@@ -126,7 +126,7 @@ class Beautify:
                 stripped_record = re.sub(r'(\S);;', r'\1 ;;', stripped_record)
 
             test_record = self.get_test_record(stripped_record)
-            
+
             # detect whether this line ends with line continuation character:
             prev_line_had_continue = continue_line
             continue_line = True if (re.search(r'\\$', stripped_record)!=None) else False
@@ -138,7 +138,7 @@ class Beautify:
                 ended_multiline_quoted_string = True if num_subs>0 else False
             else:
                 ended_multiline_quoted_string = False
-    
+
             if(in_here_doc) or (inside_multiline_quoted_string) or (ended_multiline_quoted_string):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
@@ -237,7 +237,7 @@ class Beautify:
                                             test_record) is not None]
                         net = inc - outc
                         tab += min(net, 0)
-                        
+
                         # while 'tab' is preserved across multiple lines, 'extab' is not and is used for
                         # some adjustments:
                         extab = tab + else_case + choice_case
@@ -250,7 +250,7 @@ class Beautify:
                 if(defer_ext_quote):
                     in_ext_quote = True
                     defer_ext_quote = False
-    
+
                 # count open brackets for line continuation
                 open_brackets += len(re.findall(r'\[', test_record))
                 open_brackets -= len(re.findall(r'\]', test_record))
@@ -290,7 +290,7 @@ class Beautify:
         sys.stdout.write("  fnonly: function keyword, no open/closed parentheses, e.g.  function foo\n")
         sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
         sys.stdout.write("\n")
-    
+
     def parse_function_style(self, style_name):
         # map the user-provided function style to our range 0-2
         if style_name == "fnpar":
