@@ -9,7 +9,7 @@ def get_version(file_name='beautysh/__init__.py'):
             if "__version__" in line:
                 return eval(line.split('=')[-1])
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding='utf8') as fh:
     DESCRIPTION = fh.read()
 
 setup(
