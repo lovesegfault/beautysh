@@ -1,5 +1,6 @@
 """Setup for beautysh - A bash beautifier for the masses."""
 from setuptools import setup
+import sys
 
 
 def get_version(file_name='beautysh/__init__.py'):
@@ -9,8 +10,14 @@ def get_version(file_name='beautysh/__init__.py'):
             if "__version__" in line:
                 return eval(line.split('=')[-1])
 
-with open("README.md", "r", encoding='utf8') as fh:
-    DESCRIPTION = fh.read()
+
+if sys.version_info[0] < 3:
+    with open("README.md", "r") as readme:
+        DESCRIPTION = readme.read().decode("UTF-8")
+else:
+    with open("README.md", "r", encoding="UTF-8") as readme:
+        DESCRIPTION = readme.read()
+
 
 setup(
     name='beautysh',
