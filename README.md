@@ -1,4 +1,4 @@
-# Beautysh [![Build Status](https://travis-ci.org/bemeurer/beautysh.svg?branch=master)](https://travis-ci.org/bemeurer/beautysh)
+# Beautysh [![Build Status](https://travis-ci.org/lovesegfault/beautysh.svg?branch=master)](https://travis-ci.org/lovesegfault/beautysh)
 
 This program takes upon itself the hard task of beautifying Bash scripts
 (yeesh). Processing Bash scripts is not trivial, they aren't like C or Java
