@@ -7,7 +7,7 @@ keywords as variables. Years ago, while testing the first version of this
 program, I encountered this example:
 
 ```shell
-while true; do done=3; echo done; done
+while true; do done=3; echo done; echo $done; done
 ```
 Same name, but three distinct meanings (sigh). The Bash interpreter can sort out
 this perversity, but I decided not to try to recreate the Bash interpreter to
