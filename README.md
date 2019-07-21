@@ -36,7 +36,7 @@ python setup.py install
 You can call Beautysh from the command line such as
 
 ```shell
-beautysh.py -f file1.sh file2.sh file3.sh
+beautysh -f file1.sh file2.sh file3.sh
 ```
 
 in which case it will beautify each one of the files.
