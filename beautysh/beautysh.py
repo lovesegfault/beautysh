@@ -315,10 +315,6 @@ class Beautify:
         parser.add_argument('--indent-size', '-i', nargs=1, type=int, default=4,
                             help="Sets the number of spaces to be used in "
                                  "indentation.")
-        parser.add_argument('--files', '-f', nargs='*',
-                            help="Files to be beautified. This is mandatory. "
-                            "If - is provided as filename, then beautysh reads "
-                            "from stdin and writes on stdout.")
         parser.add_argument('--backup', '-b', action='store_true',
                             help="Beautysh will create a backup file in the "
                                  "same path as the original.")
@@ -333,6 +329,10 @@ class Beautify:
                             help="Prints the version and exits.")
         parser.add_argument('--help', '-h', action='store_true',
                             help="Print this help message.")
+        parser.add_argument('files', metavar='FILE', nargs='+',
+                            help="Files to be beautified. This is mandatory. "
+                            "If - is provided as filename, then beautysh reads "
+                            "from stdin and writes on stdout.")
         args = parser.parse_args()
         if (len(sys.argv) < 2) or args.help:
             self.print_help(parser)
