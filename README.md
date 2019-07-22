@@ -36,7 +36,7 @@ python setup.py install
 You can call Beautysh from the command line such as
 
 ```shell
-beautysh -f file1.sh file2.sh file3.sh
+beautysh file1.sh file2.sh file3.sh
 ```
 
 in which case it will beautify each one of the files.
@@ -46,10 +46,6 @@ Available flags are:
 ```
   --indent-size INDENT_SIZE, -i INDENT_SIZE
                         Sets the number of spaces to be used in indentation.
-  --files [FILES [FILES ...]], -f [FILES [FILES ...]]
-                        Files to be beautified. This is mandatory. If - is
-                        provided as filename, then beautysh reads from stdin
-                        and writes on stdout.
   --backup, -b          Beautysh will create a backup file in the same path as
                         the original.
   --check, -c           Beautysh will just check the files without doing any
@@ -94,14 +90,14 @@ from a variety of means,including a Bash script:
 
 for path in `find /path -name '*.sh'`
 do
-   beautysh -f $path
+   beautysh $path
 done
 ```
 
 As well as the more obvious example:
 
 ```shell
-$ beautysh -f *.sh
+$ beautysh *.sh
 ```
 
 > **CAUTION**: Because Beautysh overwrites all the files submitted to it, this
