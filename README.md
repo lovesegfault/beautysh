@@ -70,7 +70,7 @@ Bash function styles that can be specified via --force-function-style are:
 Example of use to reformat stdin and print on stdout:
 
 ```shell
-beautysh.py - < infile.sh > outfile.sh
+beautysh - < infile.sh > outfile.sh
 ```
 
 You can also call beautysh as a module:
@@ -94,14 +94,14 @@ from a variety of means,including a Bash script:
 
 for path in `find /path -name '*.sh'`
 do
-   beautysh.py -f $path
+   beautysh -f $path
 done
 ```
 
 As well as the more obvious example:
 
 ```shell
-$ beautysh.py -f *.sh
+$ beautysh -f *.sh
 ```
 
 > **CAUTION**: Because Beautysh overwrites all the files submitted to it, this
