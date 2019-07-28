@@ -329,7 +329,7 @@ class Beautify:
                             help="Prints the version and exits.")
         parser.add_argument('--help', '-h', action='store_true',
                             help="Print this help message.")
-        parser.add_argument('files', metavar='FILE', nargs='+',
+        parser.add_argument('files', metavar='FILE', nargs='*',
                             help="Files to be beautified. This is mandatory. "
                             "If - is provided as filename, then beautysh reads "
                             "from stdin and writes on stdout.")
