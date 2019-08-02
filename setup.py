@@ -48,7 +48,7 @@ setup(
         "Topic :: Utilities"
     ],
     entry_points={'console_scripts': ['beautysh = beautysh.beautysh:main']},
-    py_modules=['beautysh'],
+    py_modules=['beautysh/beautysh'],
     test_suite='nose.collector',
     tests_require=['nose']
 )
