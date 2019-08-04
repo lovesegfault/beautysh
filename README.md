@@ -148,6 +148,19 @@ command \
 ```
 This takes inspiration from the Eclipse feature.
 
+## How to install the sublime-text plugin
+
+### OSX platform
+1. Open Sublime.
+2. Go to "Preferences -> Browse Packages".
+3. This would open a Finder with the package path. For me, it opens up this path: "/Users/ankitshubham/Library/Application Support/Sublime Text 2/Packages/".
+4. Clone the repo or download and extract the archive file at this location. After performing this step, I have beautysh at the path "/Users/ankitshubham/Library/Application Support/Sublime Text 2/Packages/beautysh".
+5. Its done.
+
+## How to run:
+
+### OSX platform
+Open the shell script, which you want to beautify, in sublime-text and press `Control+Shift+b`.
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
