@@ -1,0 +1,6 @@
+[
+    {
+        "keys": ["ctrl+shift+b"],
+        "command": "beautysh"
+    }
+]
