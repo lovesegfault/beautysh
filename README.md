@@ -150,7 +150,7 @@ This takes inspiration from the Eclipse feature.
 
 ## How to install the sublime-text plugin
 
-### OSX platform
+### MacOS platform
 1. Open Sublime.
 2. Go to "Preferences -> Browse Packages".
 3. This would open a Finder with the package path. For me, it opens up this path: "/Users/ankitshubham/Library/Application Support/Sublime Text 2/Packages/".
