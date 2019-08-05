@@ -3,15 +3,8 @@ import subprocess
 
 class BeautyshCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		p = subprocess.Popen(                                                  \
-				[                                                              \
-					'python',                                                  \
-					sublime.packages_path()+'/beautysh/beautysh/beautysh.py',  \
-					str(self.view.file_name())                                 \
-				],                                                             \
-				stdout=subprocess.PIPE,                                        \
-				stderr=subprocess.PIPE,                                        \
-				stdin=None)
+		beautysh_cmd = ['python', sublime.packages_path()+'/beautysh/beautysh/beautysh.py', str(self.view.file_name())]
+		p = subprocess.Popen(beautysh_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=None)
 		stdout, stderr = p.communicate()
 		
 		## Uncomment follwing lines for printing stdout and stderr, might be
