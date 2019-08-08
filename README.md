@@ -156,7 +156,7 @@ Pending
 
 ### Running:
 
-Open the shell script, which you want to beautify, in sublime-text and press `Control+Shift+b`.
+Pending
 
 ________________________________________________________________________________
 
