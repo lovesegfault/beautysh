@@ -147,17 +147,6 @@ command \
 
 ```
 This takes inspiration from the Eclipse feature.
-
-## Sublime Text Plugin
-
-### Installing
-
-Pending
-
-### Running:
-
-Pending
-
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
