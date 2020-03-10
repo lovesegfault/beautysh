@@ -47,7 +47,7 @@ class Beautify:
     def write_file(self, fp, data):
         """Write output to a file."""
         with open(fp, 'w') as f:
-            f.write(data)
+            f.write(data, newline='\n')
 
     def detect_function_style(self, test_record):
         """Returns the index for the function declaration style detected in the given string
