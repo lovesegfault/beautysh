@@ -9,10 +9,11 @@ in
       (
         python3Full.withPackages (
           ps: with ps; [
-            setuptools
             flake8
             nose
             python-language-server
+            setuptools
+            twine
           ]
         )
       )
