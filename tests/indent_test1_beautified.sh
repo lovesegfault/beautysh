@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # this small snippet is to test against regressions for issue#29
-#    https://github.com/bemeurer/beautysh/issues/29
+#    https://github.com/lovesegfault/beautysh/issues/29
 
 function string_with_brackets_inside1()
 {

@@ -26,7 +26,7 @@ pip install beautysh
 or clone the repo and install:
 
 ```shell
-git clone https://github.com/bemeurer/beautysh
+git clone https://github.com/lovesegfault/beautysh
 cd beautysh
 python setup.py install
 ```

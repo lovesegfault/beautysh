@@ -29,8 +29,8 @@ setup(
     license='MIT',
     author='Bernardo Meurer',
     author_email='meurerbernardo@gmail.com',
-    url='https://github.com/bemeurer/beautysh',
-    download_url='https://github.com/bemeurer/beautysh/tarball/'+get_version(),
+    url='https://github.com/lovesegfault/beautysh',
+    download_url='https://github.com/lovesegfault/beautysh/tarball/'+get_version(),
     keywords=['beautify', 'bash', 'shell', 'beautifier', 'script', 'auto'],
     classifiers=[
         "Programming Language :: Python",
