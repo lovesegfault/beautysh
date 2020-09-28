@@ -71,15 +71,15 @@ beautysh - < infile.sh > outfile.sh
 
 You can also call beautysh as a module:
 
-```shell
+```python
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from beautysh import Beautysh
+from beautysh import Beautify
 
 [ ... ]
 
-result,error = Beautysh().beautify_string(source)
+result,error = Beautify().beautify_string(source)
 ```
 
 As written, beautysh can beautify large numbers of Bash scripts when called
