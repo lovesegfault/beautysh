@@ -12,9 +12,9 @@ import pkg_resources  # part of setuptools
 # 1) function keyword, NO open/closed parentheses, e.g.   function foo
 # 2) NO function keyword, open/closed parentheses, e.g.   foo()
 FUNCTION_STYLE_REGEX = [
-    r'\bfunction\s+(.*)\s*\(\s*\)\s*',
-    r'\bfunction\s+(.*)\s*',
-    r'\b\s*(.*)\s*\(\s*\)\s*'
+    r'\bfunction\s+(\S*)\s*\(\s*\)\s*',
+    r'\bfunction\s+(\w*)\s*',
+    r'\b(\s*)+(\S*)\s*\(\s*\)\s*'
 ]
 
 FUNCTION_STYLE_REPLACEMENT = [
