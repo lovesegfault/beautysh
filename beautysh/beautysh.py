@@ -18,9 +18,9 @@ FUNCTION_STYLE_REGEX = [
 ]
 
 FUNCTION_STYLE_REPLACEMENT = [
-    r'function \g<1>() ',
+    r'function \g<1> () ',
     r'function \g<1> ',
-    r'\g<1>() '
+    r'\g<1> () '
 ]
 
 def main():
