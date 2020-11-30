@@ -25,8 +25,8 @@ FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>(
 
 =======
 FUNCTION_STYLE_REPLACEMENT = [
-    r'function\g<1>() ',
-    r'function\g<1> ',
+    r'function \g<1>() ',
+    r'function \g<1> ',
     r'\g<1>() '
 ]
 >>>>>>> 336c3c5 (Update beautysh.py):beautysh/beautysh.py
