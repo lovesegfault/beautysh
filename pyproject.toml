@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "beautysh"
+version = "6.0.1"
+description = "A Bash beautifier for the masses."
+authors = ["Bernardo Meurer <bernardo@meurer.org>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.3"
+black = "^21.4b2"
+
+[tool.semantic_release]
+version_variable = ["pyproject.toml:version"]
+build_command = "poetry build"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
