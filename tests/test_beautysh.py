@@ -16,11 +16,15 @@ TEST_FUNCSTYLES_BEAUTIFIED_STYLE_FILENAME = [
 ]
 
 TEST_GENERIC_TEST_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'generic_test')
+
 TEST_HEREDOC1_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'heredoc_test1_raw.sh')
 TEST_HEREDOC1_BEAUTIFIED_FILENAME = os.path.join(os.path.dirname(__file__), 'heredoc_test1_beautified.sh')
 
 TEST_NOFORMATTER1_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'noformatter_test1_raw.sh')
 TEST_NOFORMATTER1_BEAUTIFIED_FILENAME = os.path.join(os.path.dirname(__file__), 'noformatter_test1_beautified.sh')
+
+TEST_ELIF1_RAW_FILENAME = os.path.join(os.path.dirname(__file__), 'elif_test1_raw.sh')
+TEST_ELIF1_BEAUTIFIED_FILENAME = os.path.join(os.path.dirname(__file__), 'elif_test1_beautified.sh')
 
 class TestBeautysh(TestCase):
     
@@ -121,6 +125,13 @@ class TestBeautysh(TestCase):
         result, error = Beautify().beautify_string(testdata)
         self.assertFalse(error);  # we expect no parsing error
         self.assertIdenticalMultilineStrings(expecteddata, result) # we expect no change in formatting
+    
+    def test_elif1(self):
+        testdata = self.read_file(TEST_ELIF1_RAW_FILENAME)
+        expecteddata = self.read_file(TEST_ELIF1_BEAUTIFIED_FILENAME)
+        result, error = Beautify().beautify_string(testdata)
+        self.assertFalse(error);
+        self.assertIdenticalMultilineStrings(expectedresult, result)
 
 if __name__ == "__main__":
     unittest.main()
