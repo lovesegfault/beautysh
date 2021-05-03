@@ -147,6 +147,27 @@ command \
 
 ```
 This takes inspiration from the Eclipse feature.
+
+## Contributing
+
+Contributions are welcome and appreciated, however test cases must be added to
+prevent regression. Adding a test case is easy, and involves the following:
+
+1. Create a file `tests/my_test_name_raw.sh` containing the unformatted version
+   of your test case.
+1. Create a file `tests/my_test_name_beautified.sh` containing the formatted version
+   of your test case.
+1. Register your test case in `tests/test_beautysh.py` by adding a new function
+   to the `# unit tests:` section. It should look something like this:
+  ```python3
+  def test_my_test_name(self):
+      testdata = self.read_file(TEST_MY_TEST_NAME_RAW_FILENAME)
+      expecteddata = self.read_file(TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME)
+      result, error = Beautify().beautify_string(testdata)
+      self.assertFalse(error);
+      self.assertIdenticalMultilineStrings(expectedresult, result)
+  ```
+
 ________________________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
