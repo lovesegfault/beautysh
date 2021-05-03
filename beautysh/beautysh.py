@@ -232,9 +232,8 @@ class Beautify:
                         if func_decl_style != None:
                              stripped_record = self.change_function_style(stripped_record, func_decl_style)
 
-                        # an ad-hoc solution for the "else" or "elif" keyword
-                        else_case = (0, -1)[re.search(r'^(else|elif)',
-                                            test_record) is not None]
+                        # an ad-hoc solution for the "else" keyword
+                        else_case = (0, -1)[re.search(r'^else', test_record) is not None]
                         net = inc - outc
                         tab += min(net, 0)
 
