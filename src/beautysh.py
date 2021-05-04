@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """A beautifier for Bash shell scripts written in Python."""
 import argparse
 import re
