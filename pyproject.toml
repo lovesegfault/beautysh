@@ -5,6 +5,9 @@ description = "A Bash beautifier for the masses."
 authors = ["Bernardo Meurer <bernardo@meurer.org>"]
 license = "MIT"
 
+[tool.poetry.scripts]
+beautysh = "beautysh:main"
+
 [tool.poetry.dependencies]
 python = "^3.6.2"
 
