@@ -28,6 +28,7 @@ beautysh = "beautysh:main"
 
 [tool.poetry.dependencies]
 python = "^3.6.2"
+colorama = "^0.4.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.3"
@@ -37,6 +38,7 @@ flakehell = "^0.9.0"
 pre-commit = "^2.12.1"
 python-language-server = "^0.36.2"
 mypy = "^0.812"
+types-colorama = "^0.4.0"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"

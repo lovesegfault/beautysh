@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """A beautifier for Bash shell scripts written in Python."""
 import argparse
+import difflib
+import os
 import re
 import sys
 
 import pkg_resources  # part of setuptools
+from colorama import Fore
 
 # correct function style detection is obtained only if following regex are
 # tested in sequence.  styles are listed as follows:
@@ -35,6 +38,7 @@ class Beautify:
         self.backup = False
         self.check_only = False
         self.apply_function_style = None  # default is no change based on function style
+        self.color = True
 
     def read_file(self, fp):
         """Read input file."""
@@ -287,11 +291,36 @@ class Beautify:
                         # we want to return 0 (success) only if the given file is already
                         # well formatted:
                         error = result != data
+                        if error:
+                            self.print_diff(data, result)
                 else:
                     if self.backup:
                         self.write_file(path + ".bak", data)
                     self.write_file(path, result)
         return error
+
+    def color_diff(self, diff):
+        for line in diff:
+            if line.startswith("+"):
+                yield Fore.GREEN + line + Fore.RESET
+            elif line.startswith("-"):
+                yield Fore.RED + line + Fore.RESET
+            elif line.startswith("^"):
+                yield Fore.BLUE + line + Fore.RESET
+            else:
+                yield line
+
+    def print_diff(self, original: str, formatted: str):
+        original_lines = original.splitlines()
+        formatted_lines = formatted.splitlines()
+
+        delta = difflib.unified_diff(
+            original_lines, formatted_lines, "original", "formatted", lineterm=""
+        )
+        if self.color:
+            delta = self.color_diff(delta)
+
+        print("\n".join(delta))
 
     def print_help(self, parser):
         parser.print_help()
@@ -398,6 +427,8 @@ class Beautify:
                 sys.stdout.write("Invalid value for the function style. See --help for details.\n")
                 exit()
             self.apply_function_style = provided_style
+        if "NO_COLOR" in os.environ:
+            self.color = False
         for path in args.files:
             error |= self.beautify_file(path)
         sys.exit((0, 1)[error])
