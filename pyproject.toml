@@ -14,9 +14,14 @@ python = "^3.6.2"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.3"
 black = "^21.4b2"
+isort = "^5.8.0"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
 
 [tool.semantic_release]
 version_variable = ["pyproject.toml:version"]

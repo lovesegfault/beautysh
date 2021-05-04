@@ -4,6 +4,7 @@
 import argparse
 import re
 import sys
+
 import pkg_resources  # part of setuptools
 
 # correct function style detection is obtained only if following regex are tested in sequence.

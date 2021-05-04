@@ -1,6 +1,7 @@
-from beautysh import Beautify
-from unittest import TestCase
 import os
+from unittest import TestCase
+
+from beautysh import Beautify
 
 
 def get_string(s):
