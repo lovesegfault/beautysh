@@ -44,13 +44,3 @@ repos:
       entry: flakehell lint
       language: system
       pass_filenames: false
-    - id: nixpkgs-fmt
-      name: nixpkgs-fmt
-      entry: nixpkgs-fmt
-      language: system
-      files: \.nix$
-    - id: nix-linter
-      name: nix-linter
-      entry: nix-linter
-      language: system
-      files: \.nix$
