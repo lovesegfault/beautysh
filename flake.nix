@@ -16,6 +16,7 @@
   outputs = { nixpkgs, flake-utils, poetry2nix, self }: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; overlays = [ poetry2nix.overlay ]; };
+      projectDir = ./.;
     in
     {
       defaultApp = self.apps.${system}.beautysh;
@@ -26,8 +27,8 @@
         program = "${self.packages.${system}.beautysh}/bin/beautysh";
       };
 
-      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication rec {
-        projectDir = ./.;
+      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication {
+        inherit projectDir;
 
         checkPhase = ''
           pytest

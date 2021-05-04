@@ -17,7 +17,6 @@ black = "^21.4b2"
 isort = "^5.8.0"
 flakehell = "^0.9.0"
 pre-commit = "^2.12.1"
-python-semantic-release = "^7.15.4"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"
@@ -41,10 +40,6 @@ mccabe = ["+*"]
 pycodestyle = ["+*", "-W503"]
 pyflakes = ["+*"]
 pylint = ["+*"]
-
-[tool.semantic_release]
-version_toml = "pyproject.toml:tool.poetry.version"
-build_command = "make build"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
