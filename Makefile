@@ -1,5 +1,7 @@
 .PHONY: lint test update
 
+default: lint test build
+
 lint:
 	poetry run pre-commit run --all-files
 
