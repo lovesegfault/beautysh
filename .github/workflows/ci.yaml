@@ -1,0 +1,63 @@
+name: CI
+on: [ push, pull_request ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v13
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v10
+        with:
+          name: bernardo
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+      - name: lint
+        run: nix develop -c make lint
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v13
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v10
+        with:
+          name: bernardo
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+      - name: test
+        run: nix develop -c make test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: cachix/install-nix-action@v13
+        with:
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - uses: cachix/cachix-action@v10
+        with:
+          name: bernardo
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+      - name: build
+        run: nix develop -c make build
+      - name: nix build
+        run: nix build -L
