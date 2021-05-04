@@ -46,6 +46,7 @@
         ];
 
         PYTHONPATH = ./src;
+        MYPYPATH = ./src;
       };
     });
 }

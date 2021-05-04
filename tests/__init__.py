@@ -45,7 +45,7 @@ class BeautyshTest(TestCase):
                 ),
             )
 
-    def generate_test_tuple(self, test_name: str) -> Tuple[Path, Path]:
+    def generate_test_tuple(self, test_name: str) -> Tuple[str, str]:
         raw = self.fixture_dir / "{}_raw.sh".format(test_name)
         formatted = self.fixture_dir / "{}_formatted.sh".format(test_name)
         return self.read_file(raw), self.read_file(formatted)
