@@ -40,9 +40,10 @@
         buildInputs = with pkgs; [
           self.packages.${system}.beautysh.devEnv
 
-          poetry
           nix-linter
           nixpkgs-fmt
+          poetry
+          pre-commit
         ];
 
         PYTHONPATH = ./src;
