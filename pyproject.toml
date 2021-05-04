@@ -15,13 +15,30 @@ python = "^3.6.2"
 pytest = "^6.2.3"
 black = "^21.4b2"
 isort = "^5.8.0"
+flakehell = "^0.9.0"
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"
 
+[tool.black]
+line-length = 99
+
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+line_length = 99
+
+[tool.flakehell]
+exclude = ["build"]
+max_line_length = 99
+# c.f. https://github.com/flakehell/flakehell/issues/10
+extended_default_ignore=[ ]
+
+[tool.flakehell.plugins]
+mccabe = ["+*"]
+pycodestyle = ["+*", "-W503"]
+pyflakes = ["+*"]
+pylint = ["+*"]
 
 [tool.semantic_release]
 version_variable = ["pyproject.toml:version"]

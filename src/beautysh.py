@@ -7,8 +7,8 @@ import sys
 
 import pkg_resources  # part of setuptools
 
-# correct function style detection is obtained only if following regex are tested in sequence.
-# styles are listed as follows:
+# correct function style detection is obtained only if following regex are
+# tested in sequence.  styles are listed as follows:
 # 0) function keyword, open/closed parentheses, e.g.      function foo()
 # 1) function keyword, NO open/closed parentheses, e.g.   function foo
 # 2) NO function keyword, open/closed parentheses, e.g.   foo()
@@ -59,8 +59,9 @@ class Beautify:
         return None
 
     def change_function_style(self, stripped_record, func_decl_style):
-        """Converts a function definition syntax from the 'func_decl_style' to the one that has been
-        set in self.apply_function_style and returns the string with the converted syntax."""
+        """Converts a function definition syntax from the 'func_decl_style' to
+        the one that has been set in self.apply_function_style and returns the
+        string with the converted syntax."""
         if func_decl_style is None:
             return stripped_record
         if self.apply_function_style is None:
@@ -127,21 +128,14 @@ class Beautify:
 
             # detect whether this line ends with line continuation character:
             prev_line_had_continue = continue_line
-            continue_line = (
-                True if (re.search(r"\\$", stripped_record) != None) else False
-            )
+            continue_line = True if (re.search(r"\\$", stripped_record) is not None) else False
             inside_multiline_quoted_string = (
-                prev_line_had_continue
-                and continue_line
-                and started_multiline_quoted_string
+                prev_line_had_continue and continue_line and started_multiline_quoted_string
             )
 
-            if (
-                not continue_line
-                and prev_line_had_continue
-                and started_multiline_quoted_string
-            ):
-                # remove contents of strings initiated on previous lines and that are ending on this line:
+            if not continue_line and prev_line_had_continue and started_multiline_quoted_string:
+                # remove contents of strings initiated on previous lines and
+                # that are ending on this line:
                 [test_record, num_subs] = re.subn(r'^[^"]*"', "", test_record)
                 ended_multiline_quoted_string = True if num_subs > 0 else False
             else:
@@ -154,33 +148,27 @@ class Beautify:
             ):  # pass on with no changes
                 output.append(record)
                 # now test for here-doc termination string
-                if re.search(here_string, test_record) and not re.search(
-                    r"<<", test_record
-                ):
+                if re.search(here_string, test_record) and not re.search(r"<<", test_record):
                     in_here_doc = False
             else:  # not in here doc or inside multiline-quoted
 
                 if continue_line:
                     if prev_line_had_continue:
-                        # this line is not STARTING a multiline-quoted string... we may be in the middle
-                        # of such a multiline string though
+                        # this line is not STARTING a multiline-quoted string...
+                        # we may be in the middle of such a multiline string
+                        # though
                         started_multiline_quoted_string = False
                     else:
-                        # remove contents of strings initiated on current line but that continue on next line
-                        # (in particular we need to ignore brackets they may contain!)
-                        [test_record, num_subs] = re.subn(
-                            r'"[^"]*?\\$', "", test_record
-                        )
-                        started_multiline_quoted_string = (
-                            True if num_subs > 0 else False
-                        )
+                        # remove contents of strings initiated on current line
+                        # but that continue on next line (in particular we need
+                        # to ignore brackets they may contain!)
+                        [test_record, num_subs] = re.subn(r'"[^"]*?\\$', "", test_record)
+                        started_multiline_quoted_string = True if num_subs > 0 else False
                 else:
                     # this line is not STARTING a multiline-quoted string
                     started_multiline_quoted_string = False
 
-                if (re.search(r"<<-?", test_record)) and not (
-                    re.search(r".*<<<", test_record)
-                ):
+                if (re.search(r"<<-?", test_record)) and not (re.search(r".*<<<", test_record)):
                     here_string = re.sub(
                         r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r"\1", stripped_record, 1
                     )
@@ -189,9 +177,7 @@ class Beautify:
                 if in_ext_quote:
                     if re.search(ext_quote_string, test_record):
                         # provide line after quotes
-                        test_record = re.sub(
-                            r".*%s(.*)" % ext_quote_string, r"\1", test_record, 1
-                        )
+                        test_record = re.sub(r".*%s(.*)" % ext_quote_string, r"\1", test_record, 1)
                         in_ext_quote = False
                 else:  # not in ext quote
                     if re.search(r'(\A|\s)(\'|")', test_record):
@@ -199,9 +185,7 @@ class Beautify:
                         defer_ext_quote = True
                         ext_quote_string = re.sub(r'.*([\'"]).*', r"\1", test_record, 1)
                         # provide line before quote
-                        test_record = re.sub(
-                            r"(.*)%s.*" % ext_quote_string, r"\1", test_record, 1
-                        )
+                        test_record = re.sub(r"(.*)%s.*" % ext_quote_string, r"\1", test_record, 1)
                 if in_ext_quote or not formatter:
                     # pass on unchanged
                     output.append(record)
@@ -218,9 +202,7 @@ class Beautify:
                     if open_brackets:
                         output.append(record)
                     else:
-                        inc = len(
-                            re.findall(r"(\s|\A|;)(case|then|do)(;|\Z|\s)", test_record)
-                        )
+                        inc = len(re.findall(r"(\s|\A|;)(case|then|do)(;|\Z|\s)", test_record))
                         inc += len(re.findall(r"(\{|\(|\[)", test_record))
                         outc = len(
                             re.findall(
@@ -252,22 +234,21 @@ class Beautify:
 
                         # detect functions
                         func_decl_style = self.detect_function_style(test_record)
-                        if func_decl_style != None:
+                        if func_decl_style is not None:
                             stripped_record = self.change_function_style(
                                 stripped_record, func_decl_style
                             )
 
                         # an ad-hoc solution for the "else" or "elif ... then" keywords
                         else_case = (0, -1)[
-                            re.search(r"^(else|elif\s.*?;\s+?then)", test_record)
-                            is not None
+                            re.search(r"^(else|elif\s.*?;\s+?then)", test_record) is not None
                         ]
 
                         net = inc - outc
                         tab += min(net, 0)
 
-                        # while 'tab' is preserved across multiple lines, 'extab' is not and is used for
-                        # some adjustments:
+                        # while 'tab' is preserved across multiple lines,
+                        # 'extab' is not and is used for some adjustments:
                         extab = tab + else_case + choice_case
                         if (
                             prev_line_had_continue
@@ -276,9 +257,7 @@ class Beautify:
                         ):
                             extab += 1
                         extab = max(0, extab)
-                        output.append(
-                            (self.tab_str * self.tab_size * extab) + stripped_record
-                        )
+                        output.append((self.tab_str * self.tab_size * extab) + stripped_record)
                         tab += max(net, 0)
                 if defer_ext_quote:
                     in_ext_quote = True
@@ -290,9 +269,7 @@ class Beautify:
             line += 1
         error = tab != 0
         if error:
-            sys.stderr.write(
-                "File %s: error: indent/outdent mismatch: %d.\n" % (path, tab)
-            )
+            sys.stderr.write("File %s: error: indent/outdent mismatch: %d.\n" % (path, tab))
         return "\n".join(output), error
 
     def beautify_file(self, path):
@@ -328,9 +305,7 @@ class Beautify:
         sys.stdout.write(
             "  fnonly: function keyword, no open/closed parentheses, e.g.  function foo\n"
         )
-        sys.stdout.write(
-            "  paronly: no function keyword, open/closed parentheses, e.g. foo()\n"
-        )
+        sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
         sys.stdout.write("\n")
 
     def parse_function_style(self, style_name):
@@ -353,9 +328,7 @@ class Beautify:
         """Main beautifying function."""
         error = False
         parser = argparse.ArgumentParser(
-            description="A Bash beautifier for the masses, version {}".format(
-                self.get_version()
-            ),
+            description="A Bash beautifier for the masses, version {}".format(self.get_version()),
             add_help=False,
         )
         parser.add_argument(
@@ -370,15 +343,13 @@ class Beautify:
             "--backup",
             "-b",
             action="store_true",
-            help="Beautysh will create a backup file in the "
-            "same path as the original.",
+            help="Beautysh will create a backup file in the " "same path as the original.",
         )
         parser.add_argument(
             "--check",
             "-c",
             action="store_true",
-            help="Beautysh will just check the files without doing "
-            "any in-place beautify.",
+            help="Beautysh will just check the files without doing " "any in-place beautify.",
         )
         parser.add_argument(
             "--tab",
@@ -395,9 +366,7 @@ class Beautify:
         parser.add_argument(
             "--version", "-v", action="store_true", help="Prints the version and exits."
         )
-        parser.add_argument(
-            "--help", "-h", action="store_true", help="Print this help message."
-        )
+        parser.add_argument("--help", "-h", action="store_true", help="Print this help message.")
         parser.add_argument(
             "files",
             metavar="FILE",
@@ -427,9 +396,7 @@ class Beautify:
         if type(args.force_function_style) is list:
             provided_style = self.parse_function_style(args.force_function_style[0])
             if provided_style is None:
-                sys.stdout.write(
-                    "Invalid value for the function style. See --help for details.\n"
-                )
+                sys.stdout.write("Invalid value for the function style. See --help for details.\n")
                 exit()
             self.apply_function_style = provided_style
         for path in args.files:

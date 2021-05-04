@@ -71,15 +71,12 @@ beautysh - < infile.sh > outfile.sh
 
 You can also call beautysh as a module:
 
-```python
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+```python3
 from beautysh import Beautify
 
-[ ... ]
+source = "my_string"
 
-result,error = Beautify().beautify_string(source)
+result, error = Beautify().beautify_string(source)
 ```
 
 As written, beautysh can beautify large numbers of Bash scripts when called
@@ -160,12 +157,14 @@ prevent regression. Adding a test case is easy, and involves the following:
 1. Register your test case in `tests/test_beautysh.py` by adding a new function
    to the `# unit tests:` section. It should look something like this:
   ```python3
+  TEST_MY_TEST_NAME_RAW_FILENAME = "my_test_name_raw.sh"
+  TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME = "my_test_name_beautified.sh"
   def test_my_test_name(self):
-      testdata = self.read_file(TEST_MY_TEST_NAME_RAW_FILENAME)
-      expecteddata = self.read_file(TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME)
-      result, error = Beautify().beautify_string(testdata)
-      self.assertFalse(error);
-      self.assertIdenticalMultilineStrings(expectedresult, result)
+      test_data = self.read_file(TEST_MY_TEST_NAME_RAW_FILENAME)
+      expected_data = self.read_file(TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME)
+      result, error = Beautify().beautify_string(test_data)
+      self.assertFalse(error)
+      self.assertIdenticalMultilineStrings(expected_data, result)
   ```
 
 ________________________________________________________________________________
