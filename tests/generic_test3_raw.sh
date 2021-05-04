@@ -53,7 +53,7 @@ else
     echo "The larger of the two numbers is $return_val."
 fi
 # =========================================================
-  
+
 exit 0
 
 #  Exercises:

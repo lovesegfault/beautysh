@@ -64,4 +64,3 @@ commented-bad.sh: line 3: foo_bar_bazz: parameter null or not set
 : <<'COMMENTBLOCK'
 
 # Thank you, Kurt Pfeifle, for pointing this out.
-

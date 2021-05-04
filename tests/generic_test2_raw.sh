@@ -30,7 +30,7 @@ do
   echo "Entry #$icount = $var"
   let "icount += 1"
   echo
-done  
+done
 
 
 # Thanks to Stephane Chazelas for providing this instructive example.

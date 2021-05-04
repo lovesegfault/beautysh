@@ -49,4 +49,3 @@ function function_style3c
 function function_style3d {
     echo "test"
 }
-
