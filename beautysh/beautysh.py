@@ -344,7 +344,7 @@ class Beautify:
 
     def get_version(self):
         try:
-            return pkg_resources.require("beautysh")[0].version
+            return pkg_resources.get_distribution("beautysh")[0].version
         except pkg_resources.DistributionNotFound:
             return "Not Available"
 
