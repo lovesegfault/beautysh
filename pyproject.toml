@@ -12,6 +12,9 @@ python = "^3.6.2"
 pytest = "^6.2.3"
 black = "^21.4b2"
 
+[tool.pytest.ini_options]
+addopts = "-v -Wdefault"
+
 [tool.semantic_release]
 version_variable = ["pyproject.toml:version"]
 build_command = "poetry build"
