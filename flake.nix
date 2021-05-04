@@ -30,7 +30,7 @@
           projectDir = ./.;
 
           checkPhase = ''
-            pytest -v -Wdefault
+            pytest
           '';
 
           devEnv = pkgs.poetry2nix.mkPoetryEnv { inherit projectDir; };
@@ -44,6 +44,8 @@
             nix-linter
             nixpkgs-fmt
           ];
+
+          PYTHONPATH = ./src;
         };
       });
   }

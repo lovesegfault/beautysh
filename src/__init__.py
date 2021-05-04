@@ -1,1 +1,0 @@
-from .beautysh import Beautify
