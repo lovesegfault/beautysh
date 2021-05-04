@@ -33,13 +33,11 @@
         checkPhase = ''
           pytest
         '';
-
-        devEnv = pkgs.poetry2nix.mkPoetryEnv { inherit projectDir; };
       };
 
       devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
-          self.packages.${system}.beautysh.devEnv
+          (pkgs.poetry2nix.mkPoetryEnv { inherit projectDir; })
 
           nix-linter
           nixpkgs-fmt
