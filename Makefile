@@ -3,10 +3,10 @@
 lint:
 	poetry run pre-commit run --all-files
 
-test: lint
+test:
 	poetry run pytest
 
-build: test
+build:
 	poetry build
 
 update:
