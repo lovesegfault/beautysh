@@ -28,7 +28,7 @@ or clone the repo and install:
 ```shell
 git clone https://github.com/lovesegfault/beautysh
 cd beautysh
-python setup.py install
+poetry install
 ```
 
 ## Usage
@@ -61,12 +61,6 @@ Bash function styles that can be specified via --force-function-style are:
   fnpar: function keyword, open/closed parentheses, e.g.      function foo()
   fnonly: function keyword, no open/closed parentheses, e.g.  function foo
   paronly: no function keyword, open/closed parentheses, e.g. foo()
-```
-
-Example of use to reformat stdin and print on stdout:
-
-```shell
-beautysh - < infile.sh > outfile.sh
 ```
 
 You can also call beautysh as a module:
