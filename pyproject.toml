@@ -4,6 +4,24 @@ version = "6.0.1"
 description = "A Bash beautifier for the masses."
 authors = ["Bernardo Meurer <bernardo@meurer.org>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/lovesegfault/beautysh"
+repository = "https://github.com/lovesegfault/beautysh"
+keywords = ["beautify", "bash", "shell", "beautifier", "script", "auto"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Text Processing :: Filters",
+    "Topic :: Utilities"
+]
+include = ["LICENSE"]
+
 
 [tool.poetry.scripts]
 beautysh = "beautysh:main"
