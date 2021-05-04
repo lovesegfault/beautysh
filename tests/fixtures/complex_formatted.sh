@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # ref-params.sh: Dereferencing a parameter passed to a function.
 #                (Complex Example) -- taken from https://www.tldp.org/LDP/abs/html/complexfunct.html#DEREFERENCECL
 
 ITERATIONS=3  # How many times to get input.
 icount=1
 
-function my_read() {
+my_read () {
     #  Called with my_read varname,
     #+ outputs the previous value between brackets as the default value,
     #+ then asks for a new value.

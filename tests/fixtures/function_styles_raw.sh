@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # this small snippet is to test beautysh function-style detector
 # NOTE: using the string "function" in the function name itself we do a deeper test

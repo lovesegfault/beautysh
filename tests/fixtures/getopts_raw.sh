@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Shell file taken from Bash v5 source folder (tests/getopts1.sub)
 
 aflag=

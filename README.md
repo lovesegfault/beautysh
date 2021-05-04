@@ -150,21 +150,15 @@ This takes inspiration from the Eclipse feature.
 Contributions are welcome and appreciated, however test cases must be added to
 prevent regression. Adding a test case is easy, and involves the following:
 
-1. Create a file `tests/my_test_name_raw.sh` containing the unformatted version
+1. Create a file `tests/fixtures/my_test_name_raw.sh` containing the unformatted version
    of your test case.
-1. Create a file `tests/my_test_name_beautified.sh` containing the formatted version
+1. Create a file `tests/fixtures/my_test_name_formatted.sh` containing the formatted version
    of your test case.
-1. Register your test case in `tests/test_beautysh.py` by adding a new function
-   to the `# unit tests:` section. It should look something like this:
+1. Register your test case in `tests/test_integration.py`, It should look
+   something like this:
   ```python3
-  TEST_MY_TEST_NAME_RAW_FILENAME = "my_test_name_raw.sh"
-  TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME = "my_test_name_beautified.sh"
   def test_my_test_name(self):
-      test_data = self.read_file(TEST_MY_TEST_NAME_RAW_FILENAME)
-      expected_data = self.read_file(TEST_MY_TEST_NAME_BEAUTIFIED_FILENAME)
-      result, error = Beautify().beautify_string(test_data)
-      self.assertFalse(error)
-      self.assertIdenticalMultilineStrings(expected_data, result)
+      self.assert_formatting("my_test_name")
   ```
 
 ________________________________________________________________________________

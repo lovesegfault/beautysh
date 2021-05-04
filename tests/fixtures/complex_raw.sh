@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # ref-params.sh: Dereferencing a parameter passed to a function.
 #                (Complex Example) -- taken from https://www.tldp.org/LDP/abs/html/complexfunct.html#DEREFERENCECL
 

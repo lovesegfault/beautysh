@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-function mytest()
+function test()
 {
     echo "Commands in this part will be formatted and indented normally as usual"
 
@@ -8,13 +8,6 @@ function mytest()
 	echo \
 	    --option1 \
 	        --option2 \
-	            --option3 \
+	            --option3
 	# @formatter:on
 }
-
-# @formatter:off
-echo \
-    --option1 \
-        --option2 \
-            --option3 \
-# @formatter:on

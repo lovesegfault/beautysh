@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # commentblock.sh -- example script taken from https://www.tldp.org/LDP/abs/html/here-docs.html
 
 : <<COMMENTBLOCK
