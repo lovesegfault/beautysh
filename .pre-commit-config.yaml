@@ -1,0 +1,56 @@
+repos:
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+      - id: check-useless-excludes
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: fix-encoding-pragma
+        args: ["--remove"]
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+    - id: black
+      name: Black
+      entry: black --check .
+      language: system
+      pass_filenames: false
+    - id: isort
+      name: Isort
+      entry: isort --check --diff .
+      language: system
+      pass_filenames: false
+    - id: flakehell
+      name: Flakehell
+      entry: flakehell lint
+      language: system
+      pass_filenames: false
+    - id: nixpkgs-fmt
+      name: nixpkgs-fmt
+      entry: nixpkgs-fmt
+      language: system
+      files: \.nix$
+    - id: nix-linter
+      name: nix-linter
+      entry: nix-linter
+      language: system
+      files: \.nix$
