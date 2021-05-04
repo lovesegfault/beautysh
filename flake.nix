@@ -26,13 +26,20 @@
           program = "${self.packages.${system}.beautysh}/bin/beautysh";
         };
 
-        packages.beautysh = pkgs.poetry2nix.mkPoetryApplication {
+        packages.beautysh = pkgs.poetry2nix.mkPoetryApplication rec {
           projectDir = ./.;
+
+          checkPhase = ''
+            pytest -v -Wdefault
+          '';
+
+          devEnv = pkgs.poetry2nix.mkPoetryEnv { inherit projectDir; };
         };
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            (pkgs.poetry2nix.mkPoetryEnv { projectDir = ./.; })
+            self.packages.${system}.beautysh.devEnv
+
             poetry
             nix-linter
             nixpkgs-fmt
