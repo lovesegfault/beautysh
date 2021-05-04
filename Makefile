@@ -1,6 +1,10 @@
-.PHONY: lint test update
+.PHONY: format lint test update
 
 default: lint test build
+
+format:
+	isort .
+	black .
 
 lint:
 	poetry run pre-commit run --all-files
