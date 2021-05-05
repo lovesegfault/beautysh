@@ -17,16 +17,16 @@ from colorama import Fore
 FUNCTION_STYLE_REGEX = [
     r'\bfunction\s+(.*)\s*\(\s*\)\s*',
     r'\bfunction\s+(.*)\s*',
-    r'\b\s*(.*)\s*\(\s*\)\s*'
+    r'\b(\s*)\s+(.*)\s*\(\s*\)\s*'
 ]
 
-FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>() "]
-#
-# FUNCTION_STYLE_REPLACEMENT = [
-    # r'function \g<1> () ',
-    # r'function \g<1> ',
-    # r'\g<1> () '
-# ]
+FUNCTION_STYLE_REPLACEMENT = [
+    r"function \g<1>() ",
+    r"function \g<1> ",
+    r"\g<1>() "
+
+]
+
 
 def main():
     """Call the main function."""
