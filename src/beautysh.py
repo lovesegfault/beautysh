@@ -20,13 +20,13 @@ FUNCTION_STYLE_REGEX = [
     r'\b\s*(.*)\s*\(\s*\)\s*'
 ]
 
-# FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>() "]
-
-FUNCTION_STYLE_REPLACEMENT = [
-    r'function \g<1> () ',
-    r'function \g<1> ',
-    r'\g<1> () '
-]
+FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>() "]
+#
+# FUNCTION_STYLE_REPLACEMENT = [
+    # r'function \g<1> () ',
+    # r'function \g<1> ',
+    # r'\g<1> () '
+# ]
 
 def main():
     """Call the main function."""
