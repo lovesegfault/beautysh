@@ -9,7 +9,7 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v13
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
           install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
             experimental-features = nix-command flakes
@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v13
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
           install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
             experimental-features = nix-command flakes
@@ -47,7 +47,7 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v13
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/cvzc8mz8jp1k2iaqq5x8kvx6rh8yh3qz/install
+          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
           install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
             experimental-features = nix-command flakes
