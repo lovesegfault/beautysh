@@ -33,7 +33,7 @@ colorama = "^0.4.4"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.3"
 black = "^21.6b0"
-isort = "^5.9.0"
+isort = "^5.9.1"
 flakehell = "^0.9.0"
 pre-commit = "^2.13.0"
 python-language-server = "^0.36.2"
