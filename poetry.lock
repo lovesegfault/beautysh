@@ -469,7 +469,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-colorama"
-version = "0.4.1"
+version = "0.4.2"
 description = "Typing stubs for colorama"
 category = "dev"
 optional = false
@@ -539,7 +539,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6.2"
-content-hash = "aa958015921bf440677c6ad7ce2bba3c454460b9109d208b16dda16c8a4ae142"
+content-hash = "920b59b298ea9fbda9abe3d36bfc73985a5984e56fb5d1b89edff44eded287b5"
 
 [metadata.files]
 appdirs = [
@@ -821,7 +821,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
 types-colorama = [
-    {file = "types_colorama-0.4.1-py2.py3-none-any.whl", hash = "sha256:a105d85ee4dc6e4c0903433ea6a83be86d0eac8c7ea5f636a3ba5efb5ae7d523"},
+    {file = "types-colorama-0.4.2.tar.gz", hash = "sha256:ae4f7fcb533e529c182b934423b0c589452ec8b3470430b2ee7baf06cb7f4a8d"},
+    {file = "types_colorama-0.4.2-py2.py3-none-any.whl", hash = "sha256:42bd280fad509c698e1485f9658493076d315d189a5014be843dffee2d264902"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.0-py2-none-any.whl", hash = "sha256:0ac0f89795dd19de6b97debb0c6af1c70987fd80a2d62d1958f7e56fcc31b497"},
