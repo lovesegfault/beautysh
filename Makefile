@@ -15,10 +15,10 @@ format:
 	black .
 
 lint:
-	poetry run pre-commit run --all-files
+	pre-commit run --all-files
 
 test:
-	poetry run pytest
+	pytest
 
 build:
 	poetry build

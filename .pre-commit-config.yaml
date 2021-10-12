@@ -39,9 +39,9 @@ repos:
       entry: isort --check --diff .
       language: system
       pass_filenames: false
-    - id: flakehell
-      name: Flakehell
-      entry: flakehell lint
+    - id: flake8
+      name: Flake8
+      entry: flake8 .
       language: system
       pass_filenames: false
     - id: mypy

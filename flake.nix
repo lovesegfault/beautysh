@@ -27,26 +27,23 @@
         program = "${self.packages.${system}.beautysh}/bin/beautysh";
       };
 
-      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication {
-        inherit projectDir;
+      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication { inherit projectDir; };
 
-        checkPhase = ''
-          pytest
-        '';
-      };
-
-      devShell = pkgs.mkShell {
-        buildInputs = with pkgs; [
-          (pkgs.poetry2nix.mkPoetryEnv { inherit projectDir; })
-
+      devShell =
+      let
+        beatyshEnv = pkgs.poetry2nix.mkPoetryEnv {
+          inherit projectDir;
+          editablePackageSources.beautysh = ./beautysh;
+        };
+      in
+      beatyshEnv.env.overrideAttrs (old: {
+        nativeBuildInputs = with pkgs; old.nativeBuildInputs ++ [
           nix-linter
           nixpkgs-fmt
-          poetry
           pre-commit
+          poetry
+          pyright
         ];
-
-        PYTHONPATH = ./src;
-        MYPYPATH = ./src;
-      };
+      });
     });
 }
