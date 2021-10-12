@@ -27,7 +27,10 @@
         program = "${self.packages.${system}.beautysh}/bin/beautysh";
       };
 
-      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication { inherit projectDir; };
+      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication {
+        inherit projectDir;
+        checkPhase = "pytest";
+      };
 
       devShell =
       let
