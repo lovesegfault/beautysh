@@ -297,7 +297,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-colorama"
-version = "0.4.3"
+version = "0.4.4"
 description = "Typing stubs for colorama"
 category = "main"
 optional = false
@@ -530,8 +530,8 @@ typed-ast = [
     {file = "typed_ast-1.4.3.tar.gz", hash = "sha256:fb1bbeac803adea29cedd70781399c99138358c26d05fcbd23c13016b7f5ec65"},
 ]
 types-colorama = [
-    {file = "types-colorama-0.4.3.tar.gz", hash = "sha256:3b2c7877878f2ba8cd1c2b3da524158f718c10e2fe046f91948b43459b69dc6a"},
-    {file = "types_colorama-0.4.3-py3-none-any.whl", hash = "sha256:3cdd76e8080a146d55b7281b352a4330be6d7ba91217d28c7e3a50dc433d4b89"},
+    {file = "types-colorama-0.4.4.tar.gz", hash = "sha256:873b532af2bc07f79fd72e00d4df266a11c96272ece548ae568d3ca0f80113bd"},
+    {file = "types_colorama-0.4.4-py3-none-any.whl", hash = "sha256:01a4f967a248e7bbf2afb42da42310f673f155bd46f0185b3d968ab60058df6d"},
 ]
 types-setuptools = [
     {file = "types-setuptools-57.4.0.tar.gz", hash = "sha256:5034f81b237429c1dc0ad84d3e9015e74730400c4db2b4db40daba216d39289b"},
