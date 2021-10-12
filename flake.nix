@@ -16,21 +16,33 @@
   outputs = { nixpkgs, flake-utils, poetry2nix, self }: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; overlays = [ poetry2nix.overlay ]; };
+      inherit (pkgs.lib) attrValues last listToAttrs mapAttrs nameValuePair replaceStrings;
       projectDir = ./.;
+      pyVersions = [ "3.6" "3.7" "3.8" "3.9" ];
+      pyLatest = "python${last pyVersions}";
     in
     {
       defaultApp = self.apps.${system}.beautysh;
-      defaultPackage = self.packages.${system}.beautysh;
+      defaultPackage = pkgs.linkFarmFromDrvs "beautysh" (attrValues self.packages.${system});
 
       apps.beautysh = {
         type = "app";
-        program = "${self.packages.${system}.beautysh}/bin/beautysh";
+        program = "${self.packages.${system}.${"beautysh-${pyLatest}"}}/bin/beautysh";
       };
 
-      packages.beautysh = pkgs.poetry2nix.mkPoetryApplication {
-        inherit projectDir;
-        checkPhase = "pytest";
-      };
+      packages =
+        let
+          pyVersionToNix = v: "python${replaceStrings ["."] [""] v}";
+          pyOuts = map
+            (v: nameValuePair "beautysh-python${v}" pkgs.${pyVersionToNix v})
+            pyVersions;
+          mkBeautysh = python: pkgs.poetry2nix.mkPoetryApplication {
+            inherit projectDir python;
+            checkPhase = "pytest";
+          };
+
+        in
+        mapAttrs (_: mkBeautysh) (listToAttrs pyOuts);
 
       devShell =
       let
