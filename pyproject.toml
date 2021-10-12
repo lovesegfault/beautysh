@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "beautysh"
-version = "6.2.0"
+version = "6.2.1"
 description = "A Bash beautifier for the masses."
 authors = ["Bernardo Meurer <bernardo@meurer.org>"]
 license = "MIT"
