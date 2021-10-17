@@ -30,7 +30,7 @@
         program = "${self.packages.${system}.${"beautysh-${pyLatest}"}}/bin/beautysh";
       };
 
-      packages =
+      packages = flake-utils.lib.flattenTree (
         let
           pyVersionToNix = v: "python${replaceStrings ["."] [""] v}";
           pyOuts = map
@@ -42,23 +42,24 @@
           };
 
         in
-        mapAttrs (_: mkBeautysh) (listToAttrs pyOuts);
+        mapAttrs (_: mkBeautysh) (listToAttrs pyOuts)
+      );
 
       devShell =
-      let
-        beatyshEnv = pkgs.poetry2nix.mkPoetryEnv {
-          inherit projectDir;
-          editablePackageSources.beautysh = ./beautysh;
-        };
-      in
-      beatyshEnv.env.overrideAttrs (old: {
-        nativeBuildInputs = with pkgs; old.nativeBuildInputs ++ [
-          nix-linter
-          nixpkgs-fmt
-          pre-commit
-          poetry
-          pyright
-        ];
-      });
+        let
+          beatyshEnv = pkgs.poetry2nix.mkPoetryEnv {
+            inherit projectDir;
+            editablePackageSources.beautysh = ./beautysh;
+          };
+        in
+        beatyshEnv.env.overrideAttrs (old: {
+          nativeBuildInputs = with pkgs; old.nativeBuildInputs ++ [
+            nix-linter
+            nixpkgs-fmt
+            pre-commit
+            poetry
+            pyright
+          ];
+        });
     });
 }
