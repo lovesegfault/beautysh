@@ -34,7 +34,7 @@ types-setuptools = "^57.4.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 black = "^21.10b0"
-isort = "^5.9.3"
+isort = "^5.10.0"
 mypy = "^0.910"
 flake8 = "^4.0.1"
 
