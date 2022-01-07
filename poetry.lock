@@ -296,7 +296,7 @@ python-versions = "*"
 
 [[package]]
 name = "types-setuptools"
-version = "57.4.5"
+version = "57.4.6"
 description = "Typing stubs for setuptools"
 category = "main"
 optional = false
@@ -479,8 +479,8 @@ types-colorama = [
     {file = "types_colorama-0.4.5-py3-none-any.whl", hash = "sha256:6a5250d969cc3d055ffa50dc584b0957487fce277610a8a68cab489e68907ce3"},
 ]
 types-setuptools = [
-    {file = "types-setuptools-57.4.5.tar.gz", hash = "sha256:a4600efdca68a33204ad9c083fd9966d63aee61a7d007e912b6afc6ff57d6e02"},
-    {file = "types_setuptools-57.4.5-py3-none-any.whl", hash = "sha256:920a7c1ee120025e939a1707f8fd09a1266edbf7848eae7b8de7c5909a824cc8"},
+    {file = "types-setuptools-57.4.6.tar.gz", hash = "sha256:65ef8946fc31aed946177629e681861217aceb8fc9b75a44ba987d7eea9388aa"},
+    {file = "types_setuptools-57.4.6-py3-none-any.whl", hash = "sha256:b1be17770e830432571bcb81a78fed13df32ca787550ed575dfbc921816ad18a"},
 ]
 typing-extensions = [
     {file = "typing_extensions-3.10.0.2-py2-none-any.whl", hash = "sha256:d8226d10bc02a29bcc81df19a26e56a9647f8b0a6d4a83924139f4a8b01f17b7"},
