@@ -35,7 +35,7 @@ types-setuptools = "^57.4.0"
 pytest = "^6.2.5"
 black = "^21.12b0"
 isort = "^5.10.1"
-mypy = "^0.930"
+mypy = "^0.931"
 flake8 = "^4.0.1"
 
 [tool.pytest.ini_options]
