@@ -17,7 +17,7 @@
     let
       pkgs = import nixpkgs { inherit system; overlays = [ poetry2nix.overlay ]; };
       inherit (pkgs.lib) attrValues last listToAttrs mapAttrs nameValuePair replaceStrings;
-      pyVersions = [ "3.7" "3.8" "3.9" ];
+      pyVersions = [ "3.7" "3.8" "3.9" "3.10" ];
       pyLatest = "python${last pyVersions}";
     in
     {
