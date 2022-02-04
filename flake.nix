@@ -19,7 +19,7 @@
       pyVersions = map (v: "python${v}") [ "37" "38" "39" "310" ];
       addBeautysh = pyVer: final: prev: {
         "${pyVer}" = prev.${pyVer}.override {
-          packageOverrides = pyFinal: pyPrev: {
+          packageOverrides = pyFinal: _: {
             beautysh = final.poetry2nix.mkPoetryApplication {
               inherit (pyFinal) python;
               projectDir = ./.;
