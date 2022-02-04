@@ -33,9 +33,10 @@
       packages = flake-utils.lib.flattenTree (
         let
           pyVersionToNix = v: "python${replaceStrings ["."] [""] v}";
+          pyNixVersions = map pyVersionToNix pyVersions;
           pyOuts = map
-            (v: nameValuePair "beautysh-python${v}" pkgs.${pyVersionToNix v})
-            pyVersions;
+            (v: nameValuePair "beautysh-${v}" pkgs.${v})
+            pyNixVersions;
           mkBeautysh = python: pkgs.poetry2nix.mkPoetryApplication {
             inherit projectDir python;
             checkPhase = "pytest";
