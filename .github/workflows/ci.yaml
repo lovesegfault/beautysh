@@ -13,16 +13,15 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v16
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
-          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
-            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            experimental-features = nix-command flakes recursive-nix
       - uses: cachix/cachix-action@v10
         with:
           name: bernardo
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: lint
-        run: nix develop -c make lint
+        run: cachix watch-exec bernardo -- nix develop -c make lint
 
   test:
     runs-on: ubuntu-latest
@@ -32,16 +31,15 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v16
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
-          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
-            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            experimental-features = nix-command flakes recursive-nix
       - uses: cachix/cachix-action@v10
         with:
           name: bernardo
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: test
-        run: nix develop -c make test
+        run: cachix watch-exec bernardo -- nix develop -c make test
 
   build:
     runs-on: ubuntu-latest
@@ -51,15 +49,14 @@ jobs:
           fetch-depth: 0
       - uses: cachix/install-nix-action@v16
         with:
-          install_url: https://nixos-nix-install-tests.cachix.org/serve/ipa0c64h689jb4ys6hxsky2r8xpld0hv/install
-          install_options: '--tarball-url-prefix https://nixos-nix-install-tests.cachix.org/serve'
           extra_nix_config: |
-            experimental-features = nix-command flakes
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+            experimental-features = nix-command flakes recursive-nix
       - uses: cachix/cachix-action@v10
         with:
           name: bernardo
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
       - name: build
-        run: nix develop -c make build
+        run: cachix watch-exec bernardo -- nix develop -c make build
       - name: nix build
-        run: nix build -L
+        run: cachix watch-exec bernardo -- nix build -L
