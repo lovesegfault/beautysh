@@ -17,7 +17,6 @@
     let
       pkgs = import nixpkgs { inherit system; overlays = [ poetry2nix.overlay ]; };
       inherit (pkgs.lib) attrValues last listToAttrs mapAttrs nameValuePair replaceStrings;
-      projectDir = ./.;
       pyVersions = [ "3.7" "3.8" "3.9" ];
       pyLatest = "python${last pyVersions}";
     in
@@ -38,7 +37,8 @@
             (v: nameValuePair "beautysh-${v}" pkgs.${v})
             pyNixVersions;
           mkBeautysh = python: pkgs.poetry2nix.mkPoetryApplication {
-            inherit projectDir python;
+            inherit python;
+            projectDir = ./.;
             checkPhase = "pytest";
           };
 
@@ -49,7 +49,7 @@
       devShell =
         let
           beatyshEnv = pkgs.poetry2nix.mkPoetryEnv {
-            inherit projectDir;
+            projectDir = ./.;
             editablePackageSources.beautysh = ./beautysh;
           };
         in
