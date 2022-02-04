@@ -5,7 +5,7 @@ repos:
       - id: check-useless-excludes
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.4.0
+    rev: v4.1.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -23,7 +23,6 @@ repos:
       - id: fix-byte-order-marker
       - id: fix-encoding-pragma
         args: ["--remove"]
-      - id: forbid-new-submodules
       - id: mixed-line-ending
       - id: trailing-whitespace
 
