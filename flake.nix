@@ -13,54 +13,62 @@
     };
   };
 
-  outputs = { nixpkgs, utils, poetry2nix, self }: utils.lib.eachDefaultSystem (system:
+  outputs = { self, nixpkgs, poetry2nix, utils }:
     let
-      pkgs = import nixpkgs { inherit system; overlays = [ poetry2nix.overlay ]; };
-      inherit (pkgs.lib) attrValues last listToAttrs mapAttrs nameValuePair replaceStrings;
-      pyVersions = [ "3.7" "3.8" "3.9" "3.10" ];
-      pyLatest = "python${last pyVersions}";
+      inherit (nixpkgs) lib;
+      pyVersions = map (v: "python${v}") [ "37" "38" "39" "310" ];
+      addBeautysh = pyVer: final: prev: {
+        "${pyVer}" = prev.${pyVer}.override {
+          packageOverrides = pyFinal: pyPrev: {
+            beautysh = final.poetry2nix.mkPoetryApplication {
+              inherit (pyFinal) python;
+              projectDir = ./.;
+              checkPhase = "pytest";
+            };
+          };
+        };
+        "${pyVer}Packages" = final.${pyVer}.pkgs;
+      };
     in
     {
-      defaultApp = self.apps.${system}.beautysh;
-      defaultPackage = pkgs.linkFarmFromDrvs "beautysh" (attrValues self.packages.${system});
+      overlay = lib.composeManyExtensions ([ poetry2nix.overlay ] ++ (map addBeautysh pyVersions));
+    } // utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; overlays = [ self.overlay ]; };
+        pyLatest = lib.last pyVersions;
+      in
+      {
+        defaultApp = self.apps.${system}.beautysh;
+        defaultPackage = pkgs.linkFarmFromDrvs "beautysh" (lib.attrValues self.packages.${system});
+        apps.beautysh = {
+          type = "app";
+          program = "${self.packages.${system}."beautysh-${pyLatest}"}/bin/beautysh";
+        };
+        packages =
+          let
+            fmtName = pyVer: "beautysh-${pyVer}";
+            getPkg = pyVer: pkgs.${pyVer}.pkgs.beautysh;
+            allVers = map (v: lib.nameValuePair (fmtName v) (getPkg v)) pyVersions;
+          in
+          utils.lib.flattenTree (lib.listToAttrs allVers);
 
-      apps.beautysh = {
-        type = "app";
-        program = "${self.packages.${system}.${"beautysh-${pyLatest}"}}/bin/beautysh";
-      };
-
-      packages = utils.lib.flattenTree (
-        let
-          pyVersionToNix = v: "python${replaceStrings ["."] [""] v}";
-          pyNixVersions = map pyVersionToNix pyVersions;
-          pyOuts = map
-            (v: nameValuePair "beautysh-${v}" pkgs.${v})
-            pyNixVersions;
-          mkBeautysh = python: pkgs.poetry2nix.mkPoetryApplication {
-            inherit python;
-            projectDir = ./.;
-            checkPhase = "pytest";
-          };
-
-        in
-        mapAttrs (_: mkBeautysh) (listToAttrs pyOuts)
-      );
-
-      devShell =
-        let
-          beatyshEnv = pkgs.poetry2nix.mkPoetryEnv {
-            projectDir = ./.;
-            editablePackageSources.beautysh = ./beautysh;
-          };
-        in
-        beatyshEnv.env.overrideAttrs (old: {
-          nativeBuildInputs = with pkgs; old.nativeBuildInputs ++ [
-            nix-linter
-            nixpkgs-fmt
-            pre-commit
-            poetry
-            pyright
-          ];
-        });
-    });
+        devShell =
+          let
+            beautysh = pkgs.poetry2nix.mkPoetryEnv {
+              python = pkgs.${pyLatest};
+              projectDir = ./.;
+              editablePackageSources.beautysh = ./beautysh;
+            };
+          in
+          beautysh.env.overrideAttrs (old: {
+            nativeBuildInputs = with pkgs; old.nativeBuildInputs ++ [
+              nix-linter
+              nixpkgs-fmt
+              poetry
+              pre-commit
+              pyright
+              rnix-lsp
+            ];
+          });
+      });
 }
