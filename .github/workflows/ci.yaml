@@ -70,11 +70,6 @@ jobs:
         with:
           name: bernardo
           signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-      - name: build
-        run: |
-          cachix watch-exec bernardo -- \
-            nix develop .\#packages.x86_64-linux.${{ matrix.pkg }} \
-            -c make build
       - name: nix build
         run: |
           cachix watch-exec bernardo -- \
