@@ -17,21 +17,24 @@
     let
       inherit (nixpkgs) lib;
       pyVersions = map (v: "python${v}") [ "37" "38" "39" "310" ];
-      addBeautysh = pyVer: final: prev: {
-        "${pyVer}" = prev.${pyVer}.override {
-          packageOverrides = pyFinal: _: {
-            beautysh = final.poetry2nix.mkPoetryApplication {
-              inherit (pyFinal) python;
-              projectDir = ./.;
-              checkPhase = "pytest";
-            };
-          };
-        };
-        "${pyVer}Packages" = final.${pyVer}.pkgs;
-      };
     in
     {
-      overlay = lib.composeManyExtensions ([ poetry2nix.overlay ] ++ (map addBeautysh pyVersions));
+      overlay =
+        let
+          addBeautysh = pyVer: final: prev: {
+            "${pyVer}" = prev.${pyVer}.override {
+              packageOverrides = pyFinal: _: {
+                beautysh = final.poetry2nix.mkPoetryApplication {
+                  inherit (pyFinal) python;
+                  projectDir = ./.;
+                  checkPhase = "pytest";
+                };
+              };
+            };
+            "${pyVer}Packages" = final.${pyVer}.pkgs;
+          };
+        in
+        lib.composeManyExtensions ([ poetry2nix.overlay ] ++ (map addBeautysh pyVersions));
     } // utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; overlays = [ self.overlay ]; };
@@ -50,7 +53,7 @@
             getPkg = pyVer: pkgs.${pyVer}.pkgs.beautysh;
             allVers = map (v: lib.nameValuePair (fmtName v) (getPkg v)) pyVersions;
           in
-          utils.lib.flattenTree (lib.listToAttrs allVers);
+          lib.listToAttrs allVers;
 
         devShell =
           let
