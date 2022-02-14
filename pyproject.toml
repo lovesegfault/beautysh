@@ -32,7 +32,7 @@ types-colorama = "^0.4.3"
 types-setuptools = "^57.4.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.0.0"
+pytest = "^7.0.1"
 black = "^22.1"
 isort = "^5.10.1"
 mypy = "^0.931"
