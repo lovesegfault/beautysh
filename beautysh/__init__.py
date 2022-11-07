@@ -365,7 +365,7 @@ class Beautify:
             nargs=1,
             type=int,
             default=4,
-            help="Sets the number of spaces to be used in " "indentation.",
+            help="Sets the number of spaces to be used in " "indentation. Default is 4.",
         )
         parser.add_argument(
             "--backup",

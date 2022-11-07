@@ -46,6 +46,7 @@ Available flags are:
 ```
   --indent-size INDENT_SIZE, -i INDENT_SIZE
                         Sets the number of spaces to be used in indentation.
+                        Default is 4.
   --backup, -b          Beautysh will create a backup file in the same path as
                         the original.
   --check, -c           Beautysh will just check the files without doing any
