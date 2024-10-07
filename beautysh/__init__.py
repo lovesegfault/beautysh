@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-import pkg_resources  # part of setuptools
+import importlib.metadata
 from colorama import Fore
 
 # correct function style detection is obtained only if following regex are
@@ -348,8 +348,8 @@ class Beautify:
 
     def get_version(self):
         try:
-            return pkg_resources.require("beautysh")[0].version
-        except pkg_resources.DistributionNotFound:
+            return importlib.metadata.version("beautysh")
+        except importlib.metadata.PackageNotFoundError:
             return "Not Available"
 
     def main(self):
