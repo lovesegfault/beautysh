@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "beautysh"
-version = "6.2.1"
+version = "6.2.2"
 description = "A Bash beautifier for the masses."
-authors = ["Bernardo Meurer <bernardo@meurer.org>"]
+authors = ["Bernardo Meurer <bernardo@meurer.org>"
+    "Adam Ryczkowski <adam@statystyka.net>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/lovesegfault/beautysh"
@@ -26,7 +27,7 @@ include = ["LICENSE"]
 beautysh = "beautysh:main"
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = "^3.8.0"
 colorama = "^0.4.4"
 types-colorama = "^0.4.3"
 types-setuptools = "^57.4.0"
