@@ -2,7 +2,7 @@
 name = "beautysh"
 version = "6.2.2"
 description = "A Bash beautifier for the masses."
-authors = ["Bernardo Meurer <bernardo@meurer.org>"
+authors = ["Bernardo Meurer <bernardo@meurer.org>",
     "Adam Ryczkowski <adam@statystyka.net>"]
 license = "MIT"
 readme = "README.md"
