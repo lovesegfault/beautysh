@@ -57,3 +57,7 @@ function function::style3e {
 function function@style3f {
     echo "test"
 }
+
+function function-style3g {
+    echo "test"
+}
