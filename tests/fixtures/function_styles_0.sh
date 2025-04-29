@@ -49,3 +49,11 @@ function function_style3c()
 function function_style3d() {
     echo "test"
 }
+
+function function::style3e() {
+    echo "test"
+}
+
+function function@style3f() {
+    echo "test"
+}
