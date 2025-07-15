@@ -26,7 +26,7 @@ include = ["LICENSE"]
 beautysh = "beautysh:main"
 
 [tool.poetry.dependencies]
-python = "^3.6.2"
+python = "^3.10"
 colorama = "^0.4.4"
 types-colorama = "^0.4.3"
 types-setuptools = "^57.4.0"
