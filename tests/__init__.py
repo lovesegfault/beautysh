@@ -1,13 +1,11 @@
 from pathlib import Path
 from typing import Tuple
-from unittest import TestCase
 
 from beautysh import Beautify
 
 
-class BeautyshTest(TestCase):
-    def __init__(self, method_name: str, fixture_dir: Path):
-        TestCase.__init__(self, method_name)
+class BeautyshTest:
+    def __init__(self, fixture_dir: Path):
         self.fixture_dir = fixture_dir
 
     def read_file(self, file: Path) -> str:
@@ -33,16 +31,14 @@ class BeautyshTest(TestCase):
     def assert_equal_multiline_strings(self, actual: str, expected: str):
         actual_lines = actual.split("\n")
         expected_lines = expected.split("\n")
-        self.assertEqual(len(actual_lines), len(expected_lines), "Mismatched line counts")
+        assert len(actual_lines) == len(expected_lines), "Mismatched line counts"
         for idx in range(0, len(expected_lines)):
-            self.assertEqual(
-                expected_lines[idx],
-                actual_lines[idx],
-                ("Mismatch on line {}:\n" "Expected: {}\n" "Got: {}\n").format(
-                    idx + 1,
-                    self.highlight_string(expected_lines[idx]),
-                    self.highlight_string(actual_lines[idx]),
-                ),
+            assert expected_lines[idx] == actual_lines[idx], (
+                "Mismatch on line {}:\n" "Expected: {}\n" "Got: {}\n"
+            ).format(
+                idx + 1,
+                self.highlight_string(expected_lines[idx]),
+                self.highlight_string(actual_lines[idx]),
             )
 
     def generate_test_tuple(self, test_name: str) -> Tuple[str, str]:
@@ -53,5 +49,6 @@ class BeautyshTest(TestCase):
     def assert_formatting(self, test_name: str):
         raw, formatted = self.generate_test_tuple(test_name)
         test, error = Beautify().beautify_string(raw)
-        self.assertFalse(error)
+        assert not error
         self.assert_equal_multiline_strings(test, formatted)
+
