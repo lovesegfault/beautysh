@@ -80,6 +80,10 @@ def test_getopts(fixture_dir):
     assert_formatting(fixture_dir, "getopts")
 
 
+def test_function_hyphen(fixture_dir):
+    assert_formatting(fixture_dir, "function_hyphen")
+
+
 def test_function_styles(fixture_dir):
     """Test all three function style formatting options."""
     raw = read_file(fixture_dir / "function_styles_raw.sh")
