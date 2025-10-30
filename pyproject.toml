@@ -23,9 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "colorama>=0.4.4",
-    "setuptools",
-    "types-colorama>=0.4.3",
-    "types-setuptools>=57.4.0",
 ]
 
 [project.urls]
@@ -42,6 +39,7 @@ dev = [
     "isort>=5.10.1",
     "mypy>=0.931",
     "flake8>=4.0.1",
+    "types-colorama>=0.4.3",
 ]
 
 [tool.pytest.ini_options]
