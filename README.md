@@ -126,11 +126,30 @@ Variable styles that can be specified via --variable-style are:
 You can also call beautysh as a module:
 
 ```python3
-from beautysh import Beautify
+from beautysh import BashFormatter
 
 source = "my_string"
 
-result, error = Beautify().beautify_string(source)
+formatter = BashFormatter(indent_size=4)
+result, error = formatter.beautify_string(source)
+```
+
+For more control, you can use individual components:
+
+```python3
+from beautysh import BashParser, StyleTransformer, BashFormatter
+
+# Parse and analyze Bash syntax
+parser = BashParser()
+test_record = parser.get_test_record('if [ "$x" = "y" ]; then')
+
+# Transform styles
+transformer = StyleTransformer()
+transformed = transformer.apply_variable_style('echo $HOME', 'braces')  # -> 'echo ${HOME}'
+
+# Format complete scripts
+formatter = BashFormatter(indent_size=2, variable_style='braces')
+formatted, error = formatter.beautify_string(script)
 ```
 
 As written, beautysh can beautify large numbers of Bash scripts when called
@@ -214,12 +233,13 @@ nix develop
 pytest tests/
 
 # Run type checker
-mypy .
+mypy beautysh/
 
-# Run linter
-flake8 .
+# Run linter and formatter
+ruff check beautysh/ tests/
+ruff format beautysh/ tests/
 
-# Format code
+# Format all code (Nix, YAML, Markdown, Python)
 nix fmt
 
 # Run all pre-commit checks
@@ -230,8 +250,35 @@ The development shell provides:
 
 - Python 3.12 with all dependencies
 - Editable install (changes to code are immediately reflected)
-- All development tools (pytest, mypy, flake8, black, isort)
+- All development tools (pytest, mypy, ruff, hypothesis)
 - Pre-commit hooks automatically installed
+
+### Architecture
+
+Beautysh has a modular architecture for maintainability:
+
+- **`beautysh/parser.py`** - Bash syntax parsing and analysis
+- **`beautysh/formatter.py`** - Core formatting logic with indentation calculation
+- **`beautysh/transformers.py`** - Style transformations (function/variable styles)
+- **`beautysh/config.py`** - Configuration loading (pyproject.toml, EditorConfig)
+- **`beautysh/cli.py`** - Command-line interface
+- **`beautysh/diff.py`** - Diff output for check mode
+- **`beautysh/types.py`** - Type definitions and dataclasses
+- **`beautysh/constants.py`** - Pre-compiled regex patterns and constants
+
+### Performance Tools
+
+The `tools/` directory contains performance analysis scripts:
+
+```shell
+# Benchmark formatter performance
+python tools/benchmark.py
+
+# Profile with cProfile to identify hotspots
+python tools/profile_formatter.py
+```
+
+See [tools/README.md](tools/README.md) for details.
 
 ### Using uv
 
@@ -263,15 +310,21 @@ def test_my_test_name(fixture_dir):
 Before submitting a PR, please ensure:
 
 - All tests pass: `pytest tests/`
-- Code is formatted: `nix fmt` (or `black . && isort .`)
-- Type checking passes: `mypy .`
-- Linting passes: `flake8 .`
+- Code is formatted and linted: `ruff check --fix . && ruff format .`
+- Type checking passes: `mypy beautysh/`
 
 Or simply run all checks at once:
 
 ```shell
 pre-commit run --all-files
 ```
+
+This will run:
+
+- pytest (all 172 tests including property-based tests)
+- mypy (type checking)
+- ruff (linting and formatting)
+- treefmt (Nix, YAML, Markdown formatting)
 
 ______________________________________________________________________
 
