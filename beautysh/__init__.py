@@ -482,13 +482,14 @@ class Beautify:
         parser = argparse.ArgumentParser(
             description="A Bash beautifier for the masses, version {}".format(self.get_version()),
             add_help=False,
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         )
         parser.add_argument(
             "--indent-size",
             "-i",
             type=int,
             default=config.get("indent_size", 4),
-            help="Sets the number of spaces to be used in " "indentation.",
+            help="Sets the number of spaces to be used in indentation.",
         )
         parser.add_argument(
             "--backup",
