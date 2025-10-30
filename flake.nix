@@ -121,6 +121,7 @@
             ]
           );
 
+          devEnv = devPythonSet.mkVirtualEnv "beautysh-dev-env" workspace.deps.all;
         in
         {
           # Packages exposed by the flake
@@ -132,8 +133,7 @@
           # Development shell
           devShells.default = pkgs.mkShell {
             packages = [
-              # Development Python environment with all dependencies including dev deps
-              (devPythonSet.mkVirtualEnv "beautysh-dev-env" workspace.deps.all)
+              devEnv
               pkgs.uv
             ];
 
@@ -180,15 +180,15 @@
               treefmt.enable = true;
               ruff = {
                 enable = true;
-                entry = lib.mkForce "${devPythonSet.mkVirtualEnv "ruff-env" workspace.deps.all}/bin/ruff check";
+                entry = lib.mkForce "${devEnv}/bin/ruff check";
               };
               mypy = {
                 enable = true;
-                entry = lib.mkForce "${devPythonSet.mkVirtualEnv "mypy-env" workspace.deps.all}/bin/mypy";
+                entry = lib.mkForce "${devEnv}/bin/mypy";
               };
               pytest = {
                 enable = true;
-                entry = lib.mkForce "${devPythonSet.mkVirtualEnv "pytest-env" workspace.deps.all}/bin/pytest";
+                entry = lib.mkForce "${devEnv}/bin/pytest";
                 pass_filenames = false;
               };
             };
