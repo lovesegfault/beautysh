@@ -22,6 +22,7 @@ jobs:
         run: |
           echo "matrix=$(nix eval --json 'github:${{ github.repository }}/${{ github.sha }}#githubActions.matrix')" >> "$GITHUB_OUTPUT"
   nix-matrix:
+    name: ${{ matrix.name }} (${{ matrix.system }})
     runs-on: ${{ matrix.os }}
     needs: nix-eval
     strategy:
