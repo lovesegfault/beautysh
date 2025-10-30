@@ -1,4 +1,4 @@
-# Beautysh [![CI](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml/badge.svg)](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml)
+# beautysh [![CI](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml/badge.svg)](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml)
 
 This program takes upon itself the hard task of beautifying Bash scripts
 (yeesh). Processing Bash scripts is not trivial, they aren't like C or Java
@@ -18,13 +18,28 @@ Bash scripts, its error-free score was ~99%.
 
 ## Installation
 
-If you have `pip` set up you can do
+### Using pip
 
 ```shell
 pip install beautysh
 ```
 
-or clone the repo and install with uv:
+### Using Nix (recommended for development)
+
+```shell
+nix run github:lovesegfault/beautysh -- --help
+```
+
+Or add to your `flake.nix`:
+
+```nix
+{
+  inputs.beautysh.url = "github:lovesegfault/beautysh";
+  # ...
+}
+```
+
+### From source with uv
 
 ```shell
 git clone https://github.com/lovesegfault/beautysh
@@ -141,6 +156,49 @@ command \
 
 This takes inspiration from the Eclipse feature.
 
+## Development
+
+### Using Nix (recommended)
+
+The easiest way to start developing is with Nix:
+
+```shell
+# Enter development shell with all dependencies
+nix develop
+
+# Run tests
+pytest tests/
+
+# Run type checker
+mypy .
+
+# Run linter
+flake8 .
+
+# Format code
+nix fmt
+
+# Run all pre-commit checks
+pre-commit run --all-files
+```
+
+The development shell provides:
+
+- Python 3.12 with all dependencies
+- Editable install (changes to code are immediately reflected)
+- All development tools (pytest, mypy, flake8, black, isort)
+- Pre-commit hooks automatically installed
+
+### Using uv
+
+```shell
+# Install dependencies
+uv sync
+
+# Activate virtual environment and run tests
+uv run pytest tests/
+```
+
 ## Contributing
 
 Contributions are welcome and appreciated, however test cases must be added to
@@ -150,12 +208,25 @@ prevent regression. Adding a test case is easy, and involves the following:
    of your test case.
 1. Create a file `tests/fixtures/my_test_name_formatted.sh` containing the formatted version
    of your test case.
-1. Register your test case in `tests/test_integration.py`, It should look
+1. Register your test case in `tests/test_integration.py`. It should look
    something like this:
 
-```python3
-def test_my_test_name(self):
-    self.assert_formatting("my_test_name")
+```python
+def test_my_test_name(fixture_dir):
+    assert_formatting(fixture_dir, "my_test_name")
+```
+
+Before submitting a PR, please ensure:
+
+- All tests pass: `pytest tests/`
+- Code is formatted: `nix fmt` (or `black . && isort .`)
+- Type checking passes: `mypy .`
+- Linting passes: `flake8 .`
+
+Or simply run all checks at once:
+
+```shell
+pre-commit run --all-files
 ```
 
 ______________________________________________________________________
