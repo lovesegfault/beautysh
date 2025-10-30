@@ -73,8 +73,8 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
-  create-tag:
-    name: Create and push tag
+  github-release:
+    name: Create GitHub Release
     needs: [validate, build]
     runs-on: ubuntu-latest
     permissions:
@@ -85,20 +85,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT }}
-      - name: Create and push tag
-        run: |
-          TAG="${{ needs.validate.outputs.tag }}"
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
-  github-release:
-    name: Create GitHub Release
-    needs: [validate, create-tag]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
       - name: Download distributions
         uses: actions/download-artifact@v5
         with:
@@ -113,3 +99,4 @@ jobs:
           files: dist/*
           draft: false
           prerelease: false
+          token: ${{ secrets.PAT }}
