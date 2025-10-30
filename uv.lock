@@ -14,6 +14,7 @@ version = "6.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "colorama" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 
 [package.dev-dependencies]
@@ -35,7 +36,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "colorama", specifier = ">=0.4.4" }]
+requires-dist = [
+    { name = "colorama", specifier = ">=0.4.4" },
+    { name = "tomli", marker = "python_full_version < '3.11'", specifier = ">=1.0.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [

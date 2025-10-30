@@ -23,6 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "colorama>=0.4.4",
+    "tomli>=1.0.0; python_version < '3.11'",
 ]
 
 [project.urls]
@@ -30,7 +31,7 @@ Homepage = "https://github.com/lovesegfault/beautysh"
 Repository = "https://github.com/lovesegfault/beautysh"
 
 [project.scripts]
-beautysh = "beautysh:main"
+beautysh = "beautysh.__main__:main"
 
 [dependency-groups]
 dev = [

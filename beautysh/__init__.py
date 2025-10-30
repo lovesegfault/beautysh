@@ -6,6 +6,12 @@ import os
 import re
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 from colorama import Fore
 
@@ -23,9 +29,20 @@ FUNCTION_STYLE_REGEX = [
 FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>() "]
 
 
-def main():
-    """Call the main function."""
-    Beautify().main()
+def load_config_from_pyproject():
+    """Load beautysh configuration from pyproject.toml if it exists."""
+    pyproject_path = Path.cwd() / "pyproject.toml"
+
+    if not pyproject_path.exists():
+        return {}
+
+    try:
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
+        return data.get("tool", {}).get("beautysh", {})
+    except Exception:
+        # If we can't read the config, just return empty dict
+        return {}
 
 
 class Beautify:
@@ -352,9 +369,17 @@ class Beautify:
         except PackageNotFoundError:
             return "Not Available"
 
-    def main(self):
-        """Main beautifying function."""
+    def main(self, argv):
+        """Main beautifying function.
+
+        Args:
+            argv: List of command-line arguments (excluding program name).
+        """
         error = False
+
+        # Load configuration from pyproject.toml if available
+        config = load_config_from_pyproject()
+
         parser = argparse.ArgumentParser(
             description="A Bash beautifier for the masses, version {}".format(self.get_version()),
             add_help=False,
@@ -362,33 +387,36 @@ class Beautify:
         parser.add_argument(
             "--indent-size",
             "-i",
-            nargs=1,
             type=int,
-            default=4,
+            default=config.get("indent_size", 4),
             help="Sets the number of spaces to be used in " "indentation.",
         )
         parser.add_argument(
             "--backup",
             "-b",
             action="store_true",
+            default=config.get("backup", False),
             help="Beautysh will create a backup file in the " "same path as the original.",
         )
         parser.add_argument(
             "--check",
             "-c",
             action="store_true",
+            default=config.get("check", False),
             help="Beautysh will just check the files without doing " "any in-place beautify.",
         )
         parser.add_argument(
             "--tab",
             "-t",
             action="store_true",
+            default=config.get("tab", False),
             help="Sets indentation to tabs instead of spaces.",
         )
         parser.add_argument(
             "--force-function-style",
             "-s",
-            nargs=1,
+            type=str,
+            default=config.get("force_function_style"),
             help="Force a specific Bash function formatting. See below for more info.",
         )
         parser.add_argument(
@@ -403,37 +431,30 @@ class Beautify:
             "If - is provided as filename, then beautysh reads "
             "from stdin and writes on stdout.",
         )
-        args = parser.parse_args()
-        if (len(sys.argv) < 2) or args.help:
+        args = parser.parse_args(argv)
+        if (len(argv) < 1) or args.help:
             self.print_help(parser)
-            exit()
+            return 0
         if args.version:
             sys.stdout.write("%s\n" % self.get_version())
-            exit()
-        if type(args.indent_size) is list:
-            args.indent_size = args.indent_size[0]
+            return 0
         if not args.files:
             sys.stdout.write("Please provide at least one input file\n")
-            exit()
+            return 1
         self.tab_size = args.indent_size
         self.backup = args.backup
         self.check_only = args.check
         if args.tab:
             self.tab_size = 1
             self.tab_str = "\t"
-        if type(args.force_function_style) is list:
-            provided_style = self.parse_function_style(args.force_function_style[0])
+        if args.force_function_style is not None:
+            provided_style = self.parse_function_style(args.force_function_style)
             if provided_style is None:
                 sys.stdout.write("Invalid value for the function style. See --help for details.\n")
-                exit()
+                return 1
             self.apply_function_style = provided_style
         if "NO_COLOR" in os.environ:
             self.color = False
         for path in args.files:
             error |= self.beautify_file(path)
-        sys.exit((0, 1)[error])
-
-
-# if not called as a module
-if __name__ == "__main__":
-    Beautify().main()
+        return 1 if error else 0

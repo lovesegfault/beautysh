@@ -57,6 +57,23 @@ beautysh file1.sh file2.sh file3.sh
 
 in which case it will beautify each one of the files.
 
+### Configuration File
+
+You can configure beautysh using `pyproject.toml`:
+
+```toml
+[tool.beautysh]
+indent_size = 4
+tab = false
+backup = false
+check = false
+force_function_style = "fnpar"  # Options: fnpar, fnonly, paronly
+```
+
+All configuration options can be overridden by command-line arguments.
+
+### Command-Line Options
+
 Available flags are:
 
 ```
