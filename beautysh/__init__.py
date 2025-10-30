@@ -89,6 +89,7 @@ class Beautify:
         self.backup = False
         self.check_only = False
         self.apply_function_style = None  # default is no change based on function style
+        self.variable_style = None  # Options: 'braces' (force ${VAR}), None (no change)
         self.color = True
 
     def read_file(self, fp):
@@ -353,6 +354,11 @@ class Beautify:
         error = tab != 0
         if error:
             sys.stderr.write("File %s: error: indent/outdent mismatch: %d.\n" % (path, tab))
+
+        # Apply variable style transformation if requested
+        if self.variable_style is not None:
+            output = [self.apply_variable_style(line) for line in output]
+
         return "\n".join(output), error
 
     def beautify_file(self, path):
@@ -426,6 +432,23 @@ class Beautify:
             return 2
         return None
 
+    def apply_variable_style(self, line):
+        """Apply variable style transformation to a line.
+
+        Args:
+            line: The line to transform
+
+        Returns:
+            Transformed line with variable style applied
+        """
+        if self.variable_style == "braces":
+            # Transform $VAR to ${VAR}, but only for simple variables
+            # Pattern: $ followed by alphanumeric/underscore, but not already in braces
+            # Negative lookbehind (?<!{) ensures we don't match ${VAR}
+            # \b word boundary ensures we get complete variable names
+            line = re.sub(r"\$(?!{)([a-zA-Z_][a-zA-Z0-9_]*)\b", r"${\1}", line)
+        return line
+
     def get_version(self):
         try:
             return version("beautysh")
@@ -496,6 +519,13 @@ class Beautify:
             help="Force a specific Bash function formatting. See below for more info.",
         )
         parser.add_argument(
+            "--variable-style",
+            type=str,
+            choices=["braces"],
+            default=config.get("variable_style"),
+            help="Force a specific variable style. 'braces' transforms $VAR to ${VAR}.",
+        )
+        parser.add_argument(
             "--version", "-v", action="store_true", help="Prints the version and exits."
         )
         parser.add_argument("--help", "-h", action="store_true", help="Print this help message.")
@@ -529,6 +559,8 @@ class Beautify:
                 sys.stdout.write("Invalid value for the function style. See --help for details.\n")
                 return 1
             self.apply_function_style = provided_style
+        if args.variable_style is not None:
+            self.variable_style = args.variable_style
         if "NO_COLOR" in os.environ:
             self.color = False
         for path in args.files:

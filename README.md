@@ -74,6 +74,7 @@ tab = false
 backup = false
 check = false
 force_function_style = "fnpar"  # Options: fnpar, fnonly, paronly
+variable_style = "braces"  # Options: braces
 ```
 
 #### EditorConfig
@@ -106,6 +107,8 @@ Available flags are:
   --force-function-style FORCE_FUNCTION_STYLE, -s FORCE_FUNCTION_STYLE
                         Force a specific Bash function formatting. See below
                         for more info.
+  --variable-style VARIABLE_STYLE
+                        Force a specific variable style. See below for options.
   --version, -v         Prints the version and exits.
   --help, -h            Print this help message.
 
@@ -113,6 +116,11 @@ Bash function styles that can be specified via --force-function-style are:
   fnpar: function keyword, open/closed parentheses, e.g.      function foo()
   fnonly: function keyword, no open/closed parentheses, e.g.  function foo
   paronly: no function keyword, open/closed parentheses, e.g. foo()
+
+Variable styles that can be specified via --variable-style are:
+  braces: transform $VAR to ${VAR} for consistency (e.g., $HOME becomes ${HOME})
+          Note: Special variables ($?, $1, etc.) and parameter expansions
+          (${VAR:-default}) are left unchanged.
 ```
 
 You can also call beautysh as a module:
