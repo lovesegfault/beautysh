@@ -22,9 +22,9 @@ from editorconfig import EditorConfigError, get_properties
 # 1) function keyword, NO open/closed parentheses, e.g.   function foo
 # 2) NO function keyword, open/closed parentheses, e.g.   foo()
 FUNCTION_STYLE_REGEX = [
-    r"\bfunction\s+([\w-]+)\s*\(\s*\)\s*",
-    r"\bfunction\s+([\w-]+)\s*",
-    r"\b\s*([\w-]+)\s*\(\s*\)\s*",
+    r"\bfunction\s+([\w:@-]+)\s*\(\s*\)\s*",
+    r"\bfunction\s+([\w:@-]+)\s*",
+    r"\b\s*([\w:@-]+)\s*\(\s*\)\s*",
 ]
 
 FUNCTION_STYLE_REPLACEMENT = [r"function \g<1>() ", r"function \g<1> ", r"\g<1>() "]

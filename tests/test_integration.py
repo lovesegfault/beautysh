@@ -73,6 +73,7 @@ def test_getopts(fixture_dir):
 
 
 def test_function_hyphen(fixture_dir):
+    """Test function names with special characters (-, :, @)."""
     assert_formatting(fixture_dir, "function_hyphen")
 
 

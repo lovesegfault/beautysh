@@ -16,3 +16,11 @@ echo "test"
 get-repos() {
 echo "repos"
 }
+
+function namespace::function() {
+echo "colon"
+}
+
+function module@helper() {
+echo "at-sign"
+}
