@@ -14,6 +14,7 @@ except ModuleNotFoundError:
     import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 from colorama import Fore
+from editorconfig import EditorConfigError, get_properties
 
 # correct function style detection is obtained only if following regex are
 # tested in sequence.  styles are listed as follows:
@@ -42,6 +43,39 @@ def load_config_from_pyproject():
         return data.get("tool", {}).get("beautysh", {})
     except Exception:
         # If we can't read the config, just return empty dict
+        return {}
+
+
+def load_config_from_editorconfig(filepath):
+    """Load configuration from .editorconfig for the given file.
+
+    Args:
+        filepath: Path to the file being formatted (used to find relevant .editorconfig)
+
+    Returns:
+        dict: Configuration dictionary with beautysh-compatible keys
+    """
+    try:
+        props = get_properties(str(filepath))
+        config = {}
+
+        # Map EditorConfig indent_style to beautysh tab setting
+        if "indent_style" in props:
+            if props["indent_style"] == "tab":
+                config["tab"] = True
+            elif props["indent_style"] == "space":
+                config["tab"] = False
+
+        # Map EditorConfig indent_size to beautysh indent_size
+        if "indent_size" in props:
+            try:
+                config["indent_size"] = int(props["indent_size"])
+            except (ValueError, TypeError):
+                pass  # Invalid indent_size, ignore it
+
+        return config
+    except EditorConfigError:
+        # If EditorConfig parsing fails, return empty config
         return {}
 
 
@@ -377,8 +411,21 @@ class Beautify:
         """
         error = False
 
-        # Load configuration from pyproject.toml if available
-        config = load_config_from_pyproject()
+        # Build merged config with priority: EditorConfig < pyproject.toml < CLI args
+        # First, try to load EditorConfig if we're processing a file
+        editorconfig_settings = {}
+        if argv and argv[0] not in ["-h", "--help", "-v", "--version"]:
+            # Find first file argument (skip flags)
+            for arg in argv:
+                if not arg.startswith("-") and arg != "-":
+                    editorconfig_settings = load_config_from_editorconfig(arg)
+                    break
+
+        # Load pyproject.toml config (overrides EditorConfig)
+        pyproject_config = load_config_from_pyproject()
+
+        # Merge configs: EditorConfig < pyproject.toml
+        config = {**editorconfig_settings, **pyproject_config}
 
         parser = argparse.ArgumentParser(
             description="A Bash beautifier for the masses, version {}".format(self.get_version()),

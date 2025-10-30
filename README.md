@@ -57,9 +57,15 @@ beautysh file1.sh file2.sh file3.sh
 
 in which case it will beautify each one of the files.
 
-### Configuration File
+### Configuration
 
-You can configure beautysh using `pyproject.toml`:
+Beautysh supports multiple configuration sources with the following priority (highest to lowest):
+
+1. **Command-line arguments** (highest priority)
+1. **pyproject.toml** - `[tool.beautysh]` section
+1. **EditorConfig** - `.editorconfig` files (lowest priority)
+
+#### pyproject.toml
 
 ```toml
 [tool.beautysh]
@@ -70,7 +76,20 @@ check = false
 force_function_style = "fnpar"  # Options: fnpar, fnonly, paronly
 ```
 
-All configuration options can be overridden by command-line arguments.
+#### EditorConfig
+
+Beautysh respects [EditorConfig](https://editorconfig.org/) settings:
+
+```ini
+[*.sh]
+indent_style = space  # or "tab"
+indent_size = 4
+```
+
+Supported EditorConfig properties:
+
+- `indent_style`: Maps to `--tab` flag (space/tab)
+- `indent_size`: Maps to `--indent-size` option
 
 ### Command-Line Options
 
