@@ -1,5 +1,7 @@
 """Test utilities and helpers for beautysh tests."""
+
 from pathlib import Path
+from typing import Optional
 
 from beautysh import Beautify
 
@@ -33,9 +35,9 @@ def assert_equal_multiline_strings(actual: str, expected: str):
     actual_lines = actual.split("\n")
     expected_lines = expected.split("\n")
 
-    assert len(actual_lines) == len(expected_lines), (
-        f"Mismatched line counts: expected {len(expected_lines)}, got {len(actual_lines)}"
-    )
+    assert len(actual_lines) == len(
+        expected_lines
+    ), f"Mismatched line counts: expected {len(expected_lines)}, got {len(actual_lines)}"
 
     for idx in range(len(expected_lines)):
         assert expected_lines[idx] == actual_lines[idx], (
@@ -45,7 +47,9 @@ def assert_equal_multiline_strings(actual: str, expected: str):
         )
 
 
-def assert_formatting(fixture_dir: Path, test_name: str, apply_function_style: int = None):
+def assert_formatting(
+    fixture_dir: Path, test_name: str, apply_function_style: Optional[int] = None
+):
     """Assert that beautifying a raw file produces the expected formatted output."""
     raw_file = fixture_dir / f"{test_name}_raw.sh"
     formatted_file = fixture_dir / f"{test_name}_formatted.sh"

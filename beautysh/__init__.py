@@ -5,7 +5,6 @@ import difflib
 import os
 import re
 import sys
-
 from importlib.metadata import PackageNotFoundError, version
 
 from colorama import Fore

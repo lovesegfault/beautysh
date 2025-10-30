@@ -54,6 +54,12 @@ multi_line_output = 3
 line_length = 99
 skip_glob = ["/nix/store/*", "result/*"]
 
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = false
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

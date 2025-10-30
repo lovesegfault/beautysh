@@ -9,6 +9,7 @@ program, I encountered this example:
 ```shell
 done=0;while (( $done <= 10 ));do echo done=$done;done=$((done+1));done
 ```
+
 Same name, but three distinct meanings (sigh). The Bash interpreter can sort out
 this perversity, but I decided not to try to recreate the Bash interpreter to
 beautify a script. This means there will be some border cases this Python
@@ -100,7 +101,7 @@ $ beautysh *.sh
 
 Beautysh handles Bash here-docs with care(and there are probably some
 border cases it doesn't handle). The basic idea is that the originator knew what
- format he wanted in the here-doc, and a beautifier shouldn't try to outguess
+format he wanted in the here-doc, and a beautifier shouldn't try to outguess
 him. So Beautysh does all it can to pass along the here-doc content
 unchanged:
 
@@ -137,6 +138,7 @@ command \
 # @formatter:on
 
 ```
+
 This takes inspiration from the Eclipse feature.
 
 ## Contributing
@@ -150,11 +152,12 @@ prevent regression. Adding a test case is easy, and involves the following:
    of your test case.
 1. Register your test case in `tests/test_integration.py`, It should look
    something like this:
-  ```python3
-  def test_my_test_name(self):
-      self.assert_formatting("my_test_name")
-  ```
 
-________________________________________________________________________________
+```python3
+def test_my_test_name(self):
+    self.assert_formatting("my_test_name")
+```
+
+______________________________________________________________________
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)

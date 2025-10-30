@@ -1,4 +1,5 @@
 """Integration tests for beautysh beautifier."""
+
 from pathlib import Path
 
 import pytest

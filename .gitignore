@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 
+.mypy_cache
+
 # C extensions
 *.so
 
@@ -62,3 +64,4 @@ target/
 result
 result-*
 *.drv
+.pre-commit-config.yaml
