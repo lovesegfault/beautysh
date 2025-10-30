@@ -14,20 +14,17 @@ jobs:
       name: pypi
       url: https://pypi.org/p/beautysh
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - name: Download release assets
+        uses: robinraju/release-downloader@v1
         with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
+          tag: ${{ github.ref_name }}
+          fileName: "*.whl"
+          out-file-path: dist
+      - name: Download release assets (tar.gz)
+        uses: robinraju/release-downloader@v1
         with:
-          name: beautysh
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build package
-        run: nix develop -c python -m build
+          tag: ${{ github.ref_name }}
+          fileName: "*.tar.gz"
+          out-file-path: dist
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
