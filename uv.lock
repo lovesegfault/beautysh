@@ -10,7 +10,7 @@ resolution-markers = [
 
 [[package]]
 name = "beautysh"
-version = "6.3.0"
+version = "6.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "colorama" },
