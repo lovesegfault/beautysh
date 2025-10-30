@@ -315,7 +315,7 @@ class Beautify:
 
                         choice_case = 0
                         if case_level:
-                            if re.search(r"\A[^(]*\)", test_record):
+                            if re.search(r"\A[^(]+\)", test_record):
                                 inc += 1
                                 choice_case = -1
 
