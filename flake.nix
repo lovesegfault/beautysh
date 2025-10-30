@@ -33,6 +33,11 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nix-github-actions = {
+      url = "github:nix-community/nix-github-actions";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -53,9 +58,13 @@
       systems = [
         "x86_64-linux"
         "aarch64-linux"
-        "x86_64-darwin"
         "aarch64-darwin"
       ];
+
+      # Generate GitHub Actions matrix from checks
+      flake.githubActions = inputs.nix-github-actions.lib.mkGithubMatrix {
+        inherit (inputs.self) checks;
+      };
 
       perSystem =
         {

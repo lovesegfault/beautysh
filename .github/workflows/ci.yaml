@@ -1,94 +1,43 @@
 name: CI
 on:
   push:
-    branches:
-      - master
+    branches: [master, main]
   pull_request:
+  workflow_dispatch:
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v16
-        with:
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            experimental-features = nix-command flakes recursive-nix
-      - uses: cachix/cachix-action@v10
-        with:
-          name: bernardo
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-      - name: lint
-        run: cachix watch-exec bernardo -- nix develop -c make lint
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v16
-        with:
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            experimental-features = nix-command flakes recursive-nix
-      - uses: cachix/cachix-action@v10
-        with:
-          name: bernardo
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-      - name: test
-        run: cachix watch-exec bernardo -- nix develop -c make test
-  get-pkgs:
+  nix-eval:
     runs-on: ubuntu-latest
     outputs:
-      pkgs: ${{ steps.get-pkgs.outputs.pkgs }}
+      matrix: ${{ steps.eval.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v16
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            experimental-features = nix-command flakes recursive-nix
-      - id: get-pkgs
-        run: echo "::set-output name=pkgs::$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')"
-  build:
-    name: build-${{ matrix.pkg }}
-    runs-on: ubuntu-latest
-    needs: get-pkgs
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Evaluate flake matrix
+        id: eval
+        run: |
+          echo "matrix=$(nix eval --json 'github:${{ github.repository }}/${{ github.sha }}#githubActions.matrix')" >> "$GITHUB_OUTPUT"
+  nix-matrix:
+    runs-on: ${{ matrix.os }}
+    needs: nix-eval
     strategy:
       fail-fast: false
-      matrix:
-        pkg: ${{ fromJson(needs.get-pkgs.outputs.pkgs) }}
+      matrix: ${{ fromJSON(needs.nix-eval.outputs.matrix) }}
     steps:
-      - uses: actions/checkout@v2
-      - uses: cachix/install-nix-action@v16
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            experimental-features = nix-command flakes recursive-nix
-      - uses: cachix/cachix-action@v10
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
         with:
-          name: bernardo
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-      - name: nix build
-        run: |
-          cachix watch-exec bernardo -- \
-          nix build -L .\#packages.x86_64-linux.${{ matrix.pkg }}
-  check:
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: always()
-    steps:
-      - name: check
-        run: |
-          status_uri="https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs"
-          user_str="admin:${{ secrets.PAT }}"
-          run="$(curl -X GET -s -u "${user_str}" "${status_uri}")"
-          jobs="$(jq '.jobs[]' <<< "${run}")"
-          statuses="$(jq '{job: .name, status: .conclusion}' <<< "${jobs}")"
-          builds="$(jq 'select(.job | contains("build"))' <<< "${statuses}")"
-          failed="$(jq 'select(.status | contains("success") | not)' <<< "${builds}")"
-
-          if [ -z "${failed}" ]; then
-            echo "OK"
-          else
-            echo "FAIL"
-            exit 1
-          fi
+          name: beautysh
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          skipPush: ${{ github.event_name == 'pull_request' }}
+      - name: Build ${{ matrix.name }} (${{ matrix.system }})
+        run: nix build -L 'github:${{ github.repository }}/${{ github.sha }}#${{ matrix.attr }}'
