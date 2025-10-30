@@ -1,74 +1,95 @@
+"""Integration tests for beautysh beautifier."""
 from pathlib import Path
 
 import pytest
 
 from beautysh import Beautify
 
-from . import BeautyshTest
+from . import assert_equal_multiline_strings, assert_formatting, read_file
 
 
-class IntegrationTest(BeautyshTest):
-    def __init__(self, method_name: str):
-        fixture_dir = Path(__file__).parent.absolute() / "fixtures"
-        BeautyshTest.__init__(self, method_name, fixture_dir)
+@pytest.fixture
+def fixture_dir():
+    """Return the path to test fixtures directory."""
+    return Path(__file__).parent.absolute() / "fixtures"
 
-    @pytest.mark.xfail(strict=True)
-    def test_sanity(self):
-        self.assert_formatting("sanity")
 
-    def test_basic(self):
-        self.assert_formatting("basic")
+@pytest.mark.xfail(strict=True)
+def test_sanity(fixture_dir):
+    assert_formatting(fixture_dir, "sanity")
 
-    def test_complex(self):
-        self.assert_formatting("complex")
 
-    def test_heredoc_basic(self):
-        self.assert_formatting("heredoc_basic")
+def test_basic(fixture_dir):
+    assert_formatting(fixture_dir, "basic")
 
-    def test_heredoc_complex(self):
-        self.assert_formatting("heredoc_complex")
 
-    def test_if_condition_basic(self):
-        self.assert_formatting("if_condition_basic")
+def test_complex(fixture_dir):
+    assert_formatting(fixture_dir, "complex")
 
-    def test_if_condition_for_loop(self):
-        self.assert_formatting("if_condition_for_loop")
 
-    def test_if_condition_function(self):
-        self.assert_formatting("if_condition_function")
+def test_heredoc_basic(fixture_dir):
+    assert_formatting(fixture_dir, "heredoc_basic")
 
-    def test_if_condition_multiline(self):
-        self.assert_formatting("if_condition_multiline")
 
-    def test_no_formatter_basic(self):
-        self.assert_formatting("no_formatter_basic")
+def test_heredoc_complex(fixture_dir):
+    assert_formatting(fixture_dir, "heredoc_complex")
 
-    def test_no_formatter_function(self):
-        self.assert_formatting("no_formatter_function")
 
-    def test_indent_basic(self):
-        self.assert_formatting("indent_basic")
+def test_if_condition_basic(fixture_dir):
+    assert_formatting(fixture_dir, "if_condition_basic")
 
-    def test_indent_string_with_brackets(self):
-        self.assert_formatting("indent_string_with_brackets")
 
-    def test_indent_quote_escapes(self):
-        self.assert_formatting("indent_quote_escapes")
+def test_if_condition_for_loop(fixture_dir):
+    assert_formatting(fixture_dir, "if_condition_for_loop")
 
-    def test_indent_mixed(self):
-        self.assert_formatting("indent_mixed")
 
-    def test_getopts(self):
-        self.assert_formatting("getopts")
+def test_if_condition_function(fixture_dir):
+    assert_formatting(fixture_dir, "if_condition_function")
 
-    def test_function_styles(self):
-        raw = self.read_file(self.fixture_dir / "function_styles_raw.sh")
-        for style in range(0, 3):
-            formatted = self.read_file(self.fixture_dir / "function_styles_{}.sh".format(style))
 
-            formatter = Beautify()
-            formatter.apply_function_style = style
+def test_if_condition_multiline(fixture_dir):
+    assert_formatting(fixture_dir, "if_condition_multiline")
 
-            test, error = formatter.beautify_string(raw)
-            self.assertFalse(error)
-            self.assert_equal_multiline_strings(test, formatted)
+
+def test_no_formatter_basic(fixture_dir):
+    assert_formatting(fixture_dir, "no_formatter_basic")
+
+
+def test_no_formatter_function(fixture_dir):
+    assert_formatting(fixture_dir, "no_formatter_function")
+
+
+def test_indent_basic(fixture_dir):
+    assert_formatting(fixture_dir, "indent_basic")
+
+
+def test_indent_string_with_brackets(fixture_dir):
+    assert_formatting(fixture_dir, "indent_string_with_brackets")
+
+
+def test_indent_quote_escapes(fixture_dir):
+    assert_formatting(fixture_dir, "indent_quote_escapes")
+
+
+def test_indent_mixed(fixture_dir):
+    assert_formatting(fixture_dir, "indent_mixed")
+
+
+def test_getopts(fixture_dir):
+    assert_formatting(fixture_dir, "getopts")
+
+
+def test_function_styles(fixture_dir):
+    """Test all three function style formatting options."""
+    raw = read_file(fixture_dir / "function_styles_raw.sh")
+
+    for style in range(3):
+        formatted = read_file(fixture_dir / f"function_styles_{style}.sh")
+
+        formatter = Beautify()
+        formatter.apply_function_style = style
+
+        actual, error = formatter.beautify_string(raw)
+
+        assert not error, f"Beautifier reported an error for function style {style}"
+        assert_equal_multiline_strings(actual, formatted)
