@@ -4,7 +4,11 @@ on:
 permissions:
   contents: write
 jobs:
+  ci:
+    name: Run CI checks
+    uses: ./.github/workflows/ci.yaml
   validate:
+    needs: [ci]
     name: Validate release
     runs-on: ubuntu-latest
     outputs:

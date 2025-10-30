@@ -4,6 +4,7 @@ on:
     branches: [master, main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 jobs:
   nix-eval:
     runs-on: ubuntu-latest
