@@ -48,9 +48,13 @@ class TestParserProperties:
         line = prefix + "\\"
         assert BashParser.is_line_continuation(line) is True
 
-    @given(st.text().filter(lambda x: not x.endswith("\\")))
+    @given(st.text().filter(lambda x: not x.endswith("\\") and "\\\n" not in x))
     def test_line_continuation_without_backslash(self, line):
-        """Lines not ending with backslash should not be continuation."""
+        """Lines not ending with backslash should not be continuation.
+
+        Note: Filters out \\n (backslash-newline) because that's a valid
+        line continuation even though the string doesn't technically end with backslash.
+        """
         assert BashParser.is_line_continuation(line) is False
 
     @given(st.integers(min_value=0, max_value=10))
