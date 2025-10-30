@@ -309,7 +309,7 @@ class Beautify:
                                 case_level -= 1
 
                         # special handling for bad syntax within case ... esac
-                        if re.search(r"\bcase\b", test_record):
+                        if re.search(r"(\s|\A|;)case\s", test_record):
                             inc += 1
                             case_level += 1
 
