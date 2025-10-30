@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
-from beautysh import Beautify
+from beautysh import BeautyshCLI
 
 
 @contextmanager
@@ -50,8 +50,8 @@ def beautysh_test_env(
             original_dir = os.getcwd()
             try:
                 os.chdir(tmppath)
-                beautifier = Beautify()
-                exit_code = beautifier.main(args or [str(test_file)])
+                cli = BeautyshCLI()
+                exit_code = cli.main(args or [str(test_file)])
                 assert exit_code == 0, f"beautysh exited with code {exit_code}"
             finally:
                 os.chdir(original_dir)

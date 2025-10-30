@@ -2,12 +2,13 @@
 
 import sys
 
-from beautysh import Beautify
+from beautysh.cli import BeautyshCLI
 
 
 def main():
     """Entry point for console script and module execution."""
-    sys.exit(Beautify().main(sys.argv[1:]))
+    cli = BeautyshCLI()
+    sys.exit(cli.main(sys.argv[1:]))
 
 
 if __name__ == "__main__":

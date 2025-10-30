@@ -162,8 +162,10 @@
           treefmt = {
             projectRootFile = "flake.nix";
             programs = {
-              black.enable = true;
-              isort.enable = true;
+              ruff = {
+                enable = true;
+                format = true;
+              };
               nixfmt = {
                 enable = true;
                 package = pkgs.nixfmt-rfc-style;
@@ -176,13 +178,13 @@
           pre-commit.settings = {
             hooks = {
               treefmt.enable = true;
+              ruff = {
+                enable = true;
+                entry = lib.mkForce "${devPythonSet.mkVirtualEnv "ruff-env" workspace.deps.all}/bin/ruff check";
+              };
               mypy = {
                 enable = true;
                 entry = lib.mkForce "${devPythonSet.mkVirtualEnv "mypy-env" workspace.deps.all}/bin/mypy";
-              };
-              flake8 = {
-                enable = true;
-                entry = lib.mkForce "${devPythonSet.mkVirtualEnv "flake8-env" workspace.deps.all}/bin/flake8";
               };
               pytest = {
                 enable = true;

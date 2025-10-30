@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Optional
 
-from beautysh import Beautify
+from beautysh import BashFormatter
 
 
 def read_file(file: Path) -> str:
@@ -35,9 +35,9 @@ def assert_equal_multiline_strings(actual: str, expected: str):
     actual_lines = actual.split("\n")
     expected_lines = expected.split("\n")
 
-    assert len(actual_lines) == len(
-        expected_lines
-    ), f"Mismatched line counts: expected {len(expected_lines)}, got {len(actual_lines)}"
+    assert len(actual_lines) == len(expected_lines), (
+        f"Mismatched line counts: expected {len(expected_lines)}, got {len(actual_lines)}"
+    )
 
     for idx in range(len(expected_lines)):
         assert expected_lines[idx] == actual_lines[idx], (
@@ -54,9 +54,9 @@ def assert_formatting(
 
     Args:
         fixture_dir: Directory containing test fixtures
-        test_name: Base name for the test (loads test_name_raw.sh and test_name_formatted.sh)
-        apply_function_style: Optional function style to apply (for backwards compatibility)
-        **options: Additional Beautify instance attributes to set (e.g., variable_style="braces")
+        test_name: Base name for test (loads test_name_raw.sh and test_name_formatted.sh)
+        apply_function_style: Optional function style to apply
+        **options: Additional BashFormatter attributes (e.g., variable_style="braces")
     """
     raw_file = fixture_dir / f"{test_name}_raw.sh"
     formatted_file = fixture_dir / f"{test_name}_formatted.sh"
@@ -64,13 +64,17 @@ def assert_formatting(
     raw = read_file(raw_file)
     expected = read_file(formatted_file)
 
-    formatter = Beautify()
-    if apply_function_style is not None:
-        formatter.apply_function_style = apply_function_style
+    # Extract formatter constructor parameters
+    indent_size = options.pop("tab_size", 4)
+    tab_str = options.pop("tab_str", " ")
+    variable_style = options.pop("variable_style", None)
 
-    # Apply any additional options
-    for key, value in options.items():
-        setattr(formatter, key, value)
+    formatter = BashFormatter(
+        indent_size=indent_size,
+        tab_str=tab_str,
+        apply_function_style=apply_function_style,
+        variable_style=variable_style,
+    )
 
     actual, error = formatter.beautify_string(raw)
 

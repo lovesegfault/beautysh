@@ -2,7 +2,7 @@
 
 import pytest
 
-from beautysh import Beautify
+from beautysh import BashFormatter
 
 from . import assert_equal_multiline_strings, assert_formatting, read_file
 
@@ -84,8 +84,7 @@ def test_function_styles(fixture_dir):
     for style in range(3):
         formatted = read_file(fixture_dir / f"function_styles_{style}.sh")
 
-        formatter = Beautify()
-        formatter.apply_function_style = style
+        formatter = BashFormatter(apply_function_style=style)
 
         actual, error = formatter.beautify_string(raw)
 
