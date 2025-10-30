@@ -30,8 +30,8 @@ jobs:
       - name: Get version from pyproject.toml
         id: get_version
         run: |
-          # Extract version from pyproject.toml
-          VERSION=$(nix develop -c python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+          # Extract version from pyproject.toml (redirect stderr to suppress pre-commit noise)
+          VERSION=$(nix develop -c python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])" 2>/dev/null)
           TAG="v${VERSION}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
