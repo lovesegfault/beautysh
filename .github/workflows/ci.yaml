@@ -23,13 +23,14 @@ jobs:
             experimental-features = nix-command flakes
             accept-flake-config = true
       - name: Cache Nix
-        uses: nix-community/cache-nix-action@v5
+        uses: actions/cache@v4
         with:
-          primary-key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
-          restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}-
-          paths: |
+          path: |
             ~/.cache/nix
             ~root/.cache/nix
+          key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
+          restore-keys: |
+            nix-${{ runner.os }}-${{ runner.arch }}-
       - name: Evaluate flake matrix
         id: eval
         run: |
@@ -54,13 +55,14 @@ jobs:
             experimental-features = nix-command flakes
             accept-flake-config = true
       - name: Cache Nix
-        uses: nix-community/cache-nix-action@v5
+        uses: actions/cache@v4
         with:
-          primary-key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
-          restore-prefixes-first-match: nix-${{ runner.os }}-${{ runner.arch }}-
-          paths: |
+          path: |
             ~/.cache/nix
             ~root/.cache/nix
+          key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
+          restore-keys: |
+            nix-${{ runner.os }}-${{ runner.arch }}-
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
