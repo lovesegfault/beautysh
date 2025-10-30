@@ -34,6 +34,16 @@ jobs:
             exit 1
           fi
           echo "Tag $TAG does not exist yet. Proceeding with release."
+      - name: Check if version exists on PyPI
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          # Check if version exists on PyPI
+          if curl -s "https://pypi.org/pypi/beautysh/$VERSION/json" | grep -q '"name": "beautysh"'; then
+            echo "Error: Version $VERSION already exists on PyPI!"
+            echo "Please update the version in pyproject.toml before releasing."
+            exit 1
+          fi
+          echo "Version $VERSION does not exist on PyPI yet. Proceeding with release."
   build:
     name: Build distribution
     needs: [validate]
