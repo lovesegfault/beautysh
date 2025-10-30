@@ -14,19 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
-        with:
-          name: beautysh
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Get version from pyproject.toml
         id: get_version
         run: |
@@ -99,17 +86,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
-        with:
-          name: beautysh
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Download distributions
         uses: actions/download-artifact@v4
         with:
