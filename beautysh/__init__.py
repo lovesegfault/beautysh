@@ -260,7 +260,12 @@ class Beautify:
                     # this line is not STARTING a multiline-quoted string
                     started_multiline_quoted_string = False
 
-                if (re.search(r"<<-?", test_record)) and not (re.search(r".*<<<", test_record)):
+                # Detect here-docs, but exclude here-strings (<<<) and arithmetic ($((<<)))
+                has_heredoc = re.search(r"<<-?", test_record)
+                is_herestring = re.search(r".*<<<", test_record)
+                is_arithmetic = re.search(r"\$\(\(.*<<.*\)\)", test_record)
+
+                if has_heredoc and not is_herestring and not is_arithmetic:
                     here_string = re.sub(
                         r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*', r"\1", stripped_record, 1
                     )
