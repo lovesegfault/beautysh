@@ -148,6 +148,19 @@ class Beautify:
         test_record = re.sub(r"(\A|\s)(#.*)", "", test_record, 1)
         return test_record
 
+    def detect_unclosed_quote(self, test_record):
+        """Detect if test_record has an unclosed quote after collapsing same-line quotes.
+
+        After get_test_record() has collapsed all properly closed quotes on the same line,
+        any remaining quotes indicate an unclosed multiline string.
+
+        Returns:
+            tuple: (has_unclosed_double_quote, has_unclosed_single_quote)
+        """
+        unclosed_double = test_record.count('"') % 2 == 1
+        unclosed_single = test_record.count("'") % 2 == 1
+        return (unclosed_double, unclosed_single)
+
     def beautify_string(self, data, path=""):
         """Beautify string (file part)."""
         tab = 0
@@ -158,9 +171,9 @@ class Beautify:
         ended_multiline_quoted_string = False
         open_brackets = 0
         in_here_doc = False
-        defer_ext_quote = False
-        in_ext_quote = False
-        ext_quote_string = ""
+        # New: track unclosed multiline strings (without backslash continuation)
+        in_multiline_string = False
+        multiline_string_quote_char = None
         here_string = ""
         output = []
         line = 1
@@ -179,6 +192,31 @@ class Beautify:
                 stripped_record = re.sub(r"(\S);;", r"\1 ;;", stripped_record)
 
             test_record = self.get_test_record(stripped_record)
+
+            # Handle multiline strings (without backslash continuation)
+            # Check if we're currently inside a multiline string
+            if in_multiline_string:
+                # Check if this line closes the string
+                if multiline_string_quote_char in stripped_record:
+                    # Count occurrences of the quote character
+                    quote_count = stripped_record.count(multiline_string_quote_char)
+                    if quote_count % 2 == 1:  # Odd number = closing quote
+                        in_multiline_string = False
+                        multiline_string_quote_char = None
+                # Pass through unchanged to preserve string content
+                output.append(record)
+                line += 1
+                continue
+
+            # Check if a new multiline string starts on this line
+            unclosed_double, unclosed_single = self.detect_unclosed_quote(test_record)
+            if unclosed_double or unclosed_single:
+                in_multiline_string = True
+                multiline_string_quote_char = '"' if unclosed_double else "'"
+                # Apply current indentation to the line that starts the string
+                output.append((self.tab_str * self.tab_size * tab) + stripped_record)
+                line += 1
+                continue
 
             # detect whether this line ends with line continuation character:
             prev_line_had_continue = continue_line
@@ -228,25 +266,14 @@ class Beautify:
                     )
                     in_here_doc = len(here_string) > 0
 
-                if in_ext_quote:
-                    if re.search(ext_quote_string, test_record):
-                        # provide line after quotes
-                        test_record = re.sub(r".*%s(.*)" % ext_quote_string, r"\1", test_record, 1)
-                        in_ext_quote = False
-                else:  # not in ext quote
-                    if re.search(r'(\A|\s)(\'|")', test_record):
-                        # apply only after this line has been processed
-                        defer_ext_quote = True
-                        ext_quote_string = re.sub(r'.*([\'"]).*', r"\1", test_record, 1)
-                        # provide line before quote
-                        test_record = re.sub(r"(.*)%s.*" % ext_quote_string, r"\1", test_record, 1)
-                if in_ext_quote or not formatter:
+                # Handle @formatter:off/on directives
+                if not formatter:
                     # pass on unchanged
                     output.append(record)
                     if re.search(r"#\s*@formatter:on", stripped_record):
                         formatter = True
                         continue
-                else:  # not in ext quote
+                else:
                     if re.search(r"#\s*@formatter:off", stripped_record):
                         formatter = False
                         output.append(record)
@@ -313,9 +340,6 @@ class Beautify:
                         extab = max(0, extab)
                         output.append((self.tab_str * self.tab_size * extab) + stripped_record)
                         tab += max(net, 0)
-                if defer_ext_quote:
-                    in_ext_quote = True
-                    defer_ext_quote = False
 
                 # count open brackets for line continuation
                 open_brackets += len(re.findall(r"\[", test_record))
