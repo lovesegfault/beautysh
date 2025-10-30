@@ -23,12 +23,12 @@ If you have `pip` set up you can do
 pip install beautysh
 ```
 
-or clone the repo and install:
+or clone the repo and install with uv:
 
 ```shell
 git clone https://github.com/lovesegfault/beautysh
 cd beautysh
-poetry install
+uv sync
 ```
 
 ## Usage

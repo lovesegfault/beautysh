@@ -1,12 +1,13 @@
-[tool.poetry]
+[project]
 name = "beautysh"
 version = "6.2.1"
 description = "A Bash beautifier for the masses."
-authors = ["Bernardo Meurer <bernardo@meurer.org>"]
-license = "MIT"
+authors = [
+    {name = "Bernardo Meurer", email = "bernardo@meurer.org"}
+]
+license = {text = "MIT"}
 readme = "README.md"
-homepage = "https://github.com/lovesegfault/beautysh"
-repository = "https://github.com/lovesegfault/beautysh"
+requires-python = ">=3.8"
 keywords = ["beautify", "bash", "shell", "beautifier", "script", "auto"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -20,23 +21,28 @@ classifiers = [
     "Topic :: Text Processing :: Filters",
     "Topic :: Utilities"
 ]
-include = ["LICENSE"]
+dependencies = [
+    "colorama>=0.4.4",
+    "setuptools",
+    "types-colorama>=0.4.3",
+    "types-setuptools>=57.4.0",
+]
 
-[tool.poetry.scripts]
+[project.urls]
+Homepage = "https://github.com/lovesegfault/beautysh"
+Repository = "https://github.com/lovesegfault/beautysh"
+
+[project.scripts]
 beautysh = "beautysh:main"
 
-[tool.poetry.dependencies]
-python = "^3.6.2"
-colorama = "^0.4.4"
-types-colorama = "^0.4.3"
-types-setuptools = "^57.4.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.0.0"
-black = "^22.1"
-isort = "^5.10.1"
-mypy = "^0.931"
-flake8 = "^4.0.1"
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.1",
+    "isort>=5.10.1",
+    "mypy>=0.931",
+    "flake8>=4.0.1",
+]
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"
@@ -51,5 +57,5 @@ line_length = 99
 skip_glob = ["/nix/store/*", "result/*"]
 
 [build-system]
-requires = ["poetry"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
