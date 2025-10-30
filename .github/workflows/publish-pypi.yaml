@@ -1,5 +1,6 @@
 name: Publish to PyPI
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
