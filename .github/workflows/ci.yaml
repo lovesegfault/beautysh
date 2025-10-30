@@ -11,12 +11,25 @@ jobs:
     outputs:
       matrix: ${{ steps.eval.outputs.matrix }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: flake.lock
+          sparse-checkout-cone-mode: false
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
+      - name: Cache Nix
+        uses: nix-community/cache-nix-action@v5
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          paths: |
+            ~/.cache/nix
+            ~root/.cache/nix
       - name: Evaluate flake matrix
         id: eval
         run: |
@@ -29,12 +42,25 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.nix-eval.outputs.matrix) }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          sparse-checkout: flake.lock
+          sparse-checkout-cone-mode: false
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
+      - name: Cache Nix
+        uses: nix-community/cache-nix-action@v5
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          paths: |
+            ~/.cache/nix
+            ~root/.cache/nix
       - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
