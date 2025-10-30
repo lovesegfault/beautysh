@@ -42,6 +42,7 @@ dev = [
     "mypy>=0.931",
     "flake8>=4.0.1",
     "types-colorama>=0.4.3",
+    "build>=1.0.0",
 ]
 
 [tool.pytest.ini_options]

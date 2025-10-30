@@ -1,0 +1,133 @@
+name: Release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  id-token: write # Required for PyPI OIDC
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      tag: ${{ steps.get_version.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: beautysh
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Get version from pyproject.toml
+        id: get_version
+        run: |
+          # Extract version from pyproject.toml
+          VERSION=$(nix develop -c python -c "import tomllib; f = open('pyproject.toml', 'rb'); data = tomllib.load(f); print(data['project']['version'])")
+          TAG="v${VERSION}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "Detected version: ${VERSION}"
+          echo "Tag will be: ${TAG}"
+      - name: Check if tag already exists
+        run: |
+          TAG="${{ steps.get_version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Error: Tag $TAG already exists!"
+            echo "Please update the version in pyproject.toml before releasing."
+            exit 1
+          fi
+          echo "Tag $TAG does not exist yet. Proceeding with release."
+  build:
+    name: Build distribution
+    needs: [validate]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: beautysh
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Build package
+        run: nix develop -c python -m build
+      - name: Upload distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+  publish-to-pypi:
+    name: Publish to PyPI
+    needs: [validate, build]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/beautysh
+    permissions:
+      id-token: write # IMPORTANT: mandatory for OIDC authentication
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+  github-release:
+    name: Create GitHub Release
+    needs: [validate, publish-to-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
+        with:
+          name: beautysh
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Download distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Create and push tag
+        run: |
+          TAG="${{ needs.validate.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.validate.outputs.tag }}
+          name: Release ${{ needs.validate.outputs.tag }}
+          generate_release_notes: true
+          files: dist/*
+          draft: false
+          prerelease: false
