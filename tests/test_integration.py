@@ -1,18 +1,10 @@
 """Integration tests for beautysh beautifier."""
 
-from pathlib import Path
-
 import pytest
 
 from beautysh import Beautify
 
 from . import assert_equal_multiline_strings, assert_formatting, read_file
-
-
-@pytest.fixture
-def fixture_dir():
-    """Return the path to test fixtures directory."""
-    return Path(__file__).parent.absolute() / "fixtures"
 
 
 @pytest.mark.xfail(strict=True)

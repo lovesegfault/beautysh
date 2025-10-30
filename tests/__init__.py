@@ -48,9 +48,16 @@ def assert_equal_multiline_strings(actual: str, expected: str):
 
 
 def assert_formatting(
-    fixture_dir: Path, test_name: str, apply_function_style: Optional[int] = None
+    fixture_dir: Path, test_name: str, apply_function_style: Optional[int] = None, **options
 ):
-    """Assert that beautifying a raw file produces the expected formatted output."""
+    """Assert that beautifying a raw file produces the expected formatted output.
+
+    Args:
+        fixture_dir: Directory containing test fixtures
+        test_name: Base name for the test (loads test_name_raw.sh and test_name_formatted.sh)
+        apply_function_style: Optional function style to apply (for backwards compatibility)
+        **options: Additional Beautify instance attributes to set (e.g., variable_style="braces")
+    """
     raw_file = fixture_dir / f"{test_name}_raw.sh"
     formatted_file = fixture_dir / f"{test_name}_formatted.sh"
 
@@ -60,6 +67,10 @@ def assert_formatting(
     formatter = Beautify()
     if apply_function_style is not None:
         formatter.apply_function_style = apply_function_style
+
+    # Apply any additional options
+    for key, value in options.items():
+        setattr(formatter, key, value)
 
     actual, error = formatter.beautify_string(raw)
 

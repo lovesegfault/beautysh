@@ -1,86 +1,28 @@
 """Tests for multiline string handling (issues #82, #65, #66)."""
 
-from beautysh import Beautify
+from . import assert_formatting
 
 
-def test_multiline_string_empty():
+def test_multiline_string_empty(fixture_dir):
     """Test that empty multiline strings don't cause indent errors."""
-    source = """#!/bin/bash
-if true; then
-    x="
-    "
-fi
-"""
-
-    result, error = Beautify().beautify_string(source)
-
-    # Should not report an error
-    assert not error, "Should not report indent/outdent mismatch"
+    assert_formatting(fixture_dir, "multiline_empty")
 
 
-def test_multiline_string_trailing_whitespace():
+def test_multiline_string_trailing_whitespace(fixture_dir):
     """Test that code after multiline strings with trailing whitespace is indented correctly."""
-    source = """#!/bin/bash
-VAR="
-text "
-
-if true; then
-echo should be indented
-fi
-"""
-
-    result, error = Beautify().beautify_string(source)
-
-    assert not error
-    # The echo line should be indented
-    assert "    echo should be indented" in result
+    assert_formatting(fixture_dir, "multiline_trailing_ws")
 
 
-def test_multiline_string_ending_newline():
+def test_multiline_string_ending_newline(fixture_dir):
     """Test that code after multiline strings ending with newline is indented correctly."""
-    source = """#!/bin/bash
-VAR="
-"
-
-if true; then
-echo should be indented
-fi
-"""
-
-    result, error = Beautify().beautify_string(source)
-
-    assert not error
-    # The echo line should be indented
-    assert "    echo should be indented" in result
+    assert_formatting(fixture_dir, "multiline_newline")
 
 
-def test_multiline_string_content_preserved():
+def test_multiline_string_content_preserved(fixture_dir):
     """Test that multiline string contents are not indented."""
-    source = """#!/bin/bash
-if true; then
-VAR="
-value"
-fi
-"""
-
-    result, error = Beautify().beautify_string(source)
-
-    assert not error
-    # The string content should NOT be indented - it should remain as "value" not "    value"
-    # The VAR line itself should be indented, but not the content of the string
-    assert 'VAR="\nvalue"' in result or 'VAR="\n    value"' not in result.replace(
-        " " * 4 + "VAR", "VAR"
-    )
+    assert_formatting(fixture_dir, "multiline_content")
 
 
-def test_multiline_string_in_array():
+def test_multiline_string_in_array(fixture_dir):
     """Test multiline strings inside array assignments."""
-    source = """#!/bin/bash
-here_launch=(--tab -e "sh -c 'sleep 4; roslaunch launch_scripts here.launch \\
-   run_minimal:=${run_minimal} --wait; $SHELL -i'")
-"""
-
-    result, error = Beautify().beautify_string(source)
-
-    # Should not report an error
-    assert not error, "Should not report indent/outdent mismatch"
+    assert_formatting(fixture_dir, "multiline_array")
