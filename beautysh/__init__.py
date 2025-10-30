@@ -162,8 +162,46 @@ class Beautify:
         unclosed_single = test_record.count("'") % 2 == 1
         return (unclosed_double, unclosed_single)
 
+    def normalize_do_case_lines(self, data):
+        """Split lines where 'do case' or 'then case' appear together.
+
+        This normalizes bash code like:
+            while x; do case $y in
+        Into:
+            while x; do
+            case $y in
+
+        This makes indentation handling more straightforward.
+        """
+        lines = []
+        for line in data.split("\n"):
+            # Check if line contains both 'do' and 'case' or 'then' and 'case'
+            test_line = self.get_test_record(line)
+
+            # Look for patterns like 'do case' or 'then case'
+            match = re.search(r"(\s|\A|;)(do|then)(\s+)(case\s)", test_line)
+            if match:
+                # Find the position in the original line
+                # We need to preserve any content before 'case'
+                case_match = re.search(r"(\s+)(case\s)", line)
+                if case_match:
+                    split_pos = case_match.start(2)  # Position of 'case'
+                    before = line[:split_pos].rstrip()
+                    after = line[split_pos:]
+                    lines.append(before)
+                    lines.append(after)
+                else:
+                    lines.append(line)
+            else:
+                lines.append(line)
+
+        return "\n".join(lines)
+
     def beautify_string(self, data, path=""):
         """Beautify string (file part)."""
+        # Preprocess: split 'do case' and 'then case' onto separate lines
+        data = self.normalize_do_case_lines(data)
+
         tab = 0
         case_level = 0
         prev_line_had_continue = False

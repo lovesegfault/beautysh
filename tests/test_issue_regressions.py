@@ -30,3 +30,8 @@ def test_issue101_multiline_subcommand_indentation(fixture_dir):
 def test_issue78_multiline_array_in_case(fixture_dir):
     """Test multiline array in case statement doesn't cause indent mismatch (issue #78)."""
     assert_formatting(fixture_dir, "issue78_multiline_array_case")
+
+
+def test_issue64_do_case_same_line(fixture_dir):
+    """Test that 'do case' on the same line doesn't cause indent/outdent mismatch (issue #64)."""
+    assert_formatting(fixture_dir, "issue64_do_case")
