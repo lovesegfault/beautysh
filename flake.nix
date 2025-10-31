@@ -191,6 +191,17 @@
                 entry = lib.mkForce "${devEnv}/bin/pytest";
                 pass_filenames = false;
               };
+              vermin =
+                let
+                  pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
+                  inherit (pyproject.project) requires-python;
+                  min-python = lib.trim (lib.removePrefix ">=" requires-python);
+                in
+                {
+                  enable = true;
+                  entry = "${devEnv}/bin/vermin --eval-annotations --backport argparse --backport dataclasses --backport enum --backport typing --target=${min-python} --violations -vv ./beautysh";
+                  pass_filenames = false;
+                };
             };
           };
         };
