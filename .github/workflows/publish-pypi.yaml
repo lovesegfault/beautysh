@@ -14,17 +14,9 @@ jobs:
       name: pypi
       url: https://pypi.org/p/beautysh
     steps:
-      - name: Download release assets
-        uses: robinraju/release-downloader@v1
+      - uses: robinraju/release-downloader@v1
         with:
           tag: ${{ github.ref_name }}
-          fileName: "*.whl"
+          fileName: "*.{whl,tar.gz}"
           out-file-path: dist
-      - name: Download release assets (tar.gz)
-        uses: robinraju/release-downloader@v1
-        with:
-          tag: ${{ github.ref_name }}
-          fileName: "*.tar.gz"
-          out-file-path: dist
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@release/v1
