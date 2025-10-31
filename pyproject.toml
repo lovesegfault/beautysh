@@ -1,6 +1,6 @@
 [project]
 name = "beautysh"
-version = "6.4.0"
+version = "6.4.1"
 description = "A Bash beautifier for the masses."
 authors = [
     {name = "Bernardo Meurer", email = "bernardo@meurer.org"}
