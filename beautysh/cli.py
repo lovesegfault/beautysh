@@ -149,10 +149,33 @@ class BeautyshCLI:
         )
         return parser
 
+def _extract_config_path(self, argv: List[str]) -> Optional[str]:
+        """Extract --config path from argv before full parsing.
+
+        Args:
+            argv: Command-line arguments
+
+        Returns:
+            Config file path if specified, None otherwise
+        """
+        for i, arg in enumerate(argv):
+            if arg == "--config":
+                if i + 1 < len(argv):
+                    return argv[i + 1]
+                break  # Found --config but no value
+            if arg.startswith("--config="):
+                return arg.split("=", 1)[1]
+        return None
+
     def load_configuration(self, argv: List[str]) -> Dict[str, Any]:
         """Load configuration from all sources.
 
-        Priority: EditorConfig < pyproject.toml < .beautyshrc < --config file < CLI args
+        Priority order (highest to lowest):
+        1. CLI arguments
+        2. Explicit config file (--config)
+        3. .beautyshrc
+        4. pyproject.toml [tool.beautysh]
+        5. EditorConfig
 
         Args:
             argv: Command-line arguments
@@ -163,15 +186,7 @@ class BeautyshCLI:
         editorconfig_settings: Dict[str, Any] = {}
         explicit_config_settings: Dict[str, Any] = {}
 
-        config_file_path = None
-        for i, arg in enumerate(argv):
-            if arg == "--config":
-                if i + 1 < len(argv):
-                    config_file_path = argv[i + 1]
-                break
-            if arg.startswith("--config="):
-                config_file_path = arg.split("=", 1)[1]
-                break
+        config_file_path = self._extract_config_path(argv)
 
         if config_file_path:
             self.config_file = config_file_path  # Store for later use
@@ -210,9 +225,6 @@ class BeautyshCLI:
         if args.tab:
             indent_size = 1
             tab_str = TAB_CHARACTER
-
-        if args.config:
-            self.config_file = args.config
 
         apply_function_style = None
         if args.force_function_style is not None:

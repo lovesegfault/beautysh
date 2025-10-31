@@ -23,6 +23,17 @@ indent_size = 2
         config = load_config_from_file(config_file)
         assert config["indent_size"] == 2
 
+    def test_loads_config_with_beautysh_section(self, tmp_path):
+        config_file = tmp_path / ".beautyshrc"
+        config_file.write_text(
+            """
+[beautysh]
+indent_size = 5
+"""
+        )
+        config = load_config_from_file(config_file)
+        assert config["indent_size"] == 5
+
     def test_loads_config_without_tool_section(self, tmp_path):
         config_file = tmp_path / ".beautyshrc"
         config_file.write_text(
