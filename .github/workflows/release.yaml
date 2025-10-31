@@ -1,4 +1,4 @@
-name: Create Release
+name: Release
 on:
   workflow_dispatch:
 permissions:
@@ -44,7 +44,7 @@ jobs:
             exit 1
           fi
           echo "Version $VERSION does not exist on PyPI yet. Proceeding with release."
-  build:
+  dist:
     needs: [ci, validate]
     runs-on: ubuntu-latest
     steps:
@@ -66,14 +66,14 @@ jobs:
         with:
           name: beautysh
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build package
-        run: nix develop -c uv build
+      - name: dist
+        run: nix build .#dist
       - uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
-          path: dist/
+          path: release/
   github-release:
-    needs: [build, validate]
+    needs: [dist, validate]
     runs-on: ubuntu-latest
     permissions:
       contents: write
