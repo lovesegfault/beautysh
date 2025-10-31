@@ -149,7 +149,7 @@ class BeautyshCLI:
         )
         return parser
 
-def _extract_config_path(self, argv: List[str]) -> Optional[str]:
+    def _extract_config_path(self, argv: List[str]) -> Optional[str]:
         """Extract --config path from argv before full parsing.
 
         Args:
