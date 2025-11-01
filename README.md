@@ -62,10 +62,10 @@ in which case it will beautify each one of the files.
 Beautysh supports multiple configuration sources with the following priority (highest to lowest):
 
 1. **Command-line arguments** (highest priority)
-2. **Explicit config file** (specified via `--config`)
-3. **.beautyshrc** (in current working directory)
-4. **pyproject.toml** - `[tool.beautysh]` section
-5. **EditorConfig** - `.editorconfig` files (lowest priority)
+1. **Explicit config file** (specified via `--config`)
+1. **.beautyshrc** (in current working directory)
+1. **pyproject.toml** - `[tool.beautysh]` section
+1. **EditorConfig** - `.editorconfig` files (lowest priority)
 
 #### .beautyshrc
 
@@ -74,9 +74,10 @@ The `.beautyshrc` file, located in the current working directory, is a configura
 Example `.beautyshrc` content:
 
 Note: Configuration is read with the following priority:
+
 1. `[tool.beautysh]` section
-2. `[beautysh]` section
-3. Root-level keys
+1. `[beautysh]` section
+1. Root-level keys
 
 ```toml
 [beautysh]
