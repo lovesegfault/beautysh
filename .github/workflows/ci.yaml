@@ -11,19 +11,13 @@ jobs:
     outputs:
       matrix: ${{ steps.eval.outputs.matrix }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          sparse-checkout: flake.lock
-          sparse-checkout-cone-mode: false
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
-      - name: Cache Nix
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/nix
@@ -34,7 +28,7 @@ jobs:
       - name: Evaluate flake matrix
         id: eval
         run: |
-          echo "matrix=$(nix eval --json 'github:${{ github.repository }}/${{ github.sha }}#githubActions.matrix')" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(nix eval --json '.#githubActions.matrix')" >> "$GITHUB_OUTPUT"
   nix-matrix:
     name: ${{ matrix.name }} (${{ matrix.system }})
     runs-on: ${{ matrix.os }}
@@ -43,19 +37,13 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.nix-eval.outputs.matrix) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-        with:
-          sparse-checkout: flake.lock
-          sparse-checkout-cone-mode: false
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
-      - name: Cache Nix
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/nix
@@ -63,11 +51,10 @@ jobs:
           key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
           restore-keys: |
             nix-${{ runner.os }}-${{ runner.arch }}-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
+      - uses: cachix/cachix-action@v16
         with:
           name: beautysh
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
-        run: nix build -L 'github:${{ github.repository }}/${{ github.sha }}#${{ matrix.attr }}'
+        run: nix build -L '.#${{ matrix.attr }}'

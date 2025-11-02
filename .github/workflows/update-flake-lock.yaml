@@ -1,4 +1,4 @@
-name: Update Flake Lock
+name: Update flake.lock
 on:
   workflow_dispatch:
   schedule:
@@ -12,12 +12,9 @@ jobs:
       id-token: write
       pull-requests: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v20
-      - name: Update flake.lock
-        uses: DeterminateSystems/update-flake-lock@main
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@v20
+      - uses: DeterminateSystems/update-flake-lock@main
         with:
           pr-title: "chore(flake): update lockfile"
           pr-labels: |

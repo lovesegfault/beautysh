@@ -42,11 +42,12 @@
 
   outputs =
     inputs@{
+      self,
       flake-parts,
       nixpkgs,
+      pyproject-build-systems,
       pyproject-nix,
       uv2nix,
-      pyproject-build-systems,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -61,81 +62,93 @@
         "aarch64-darwin"
       ];
 
-      # Generate GitHub Actions matrix from checks
       flake.githubActions = inputs.nix-github-actions.lib.mkGithubMatrix {
-        inherit (inputs.self) checks;
+        inherit (self) checks;
       };
 
       perSystem =
         {
+          self',
           config,
           pkgs,
           lib,
-          system,
           ...
         }:
         let
-          # Load workspace from pyproject.toml and uv.lock
           workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
-
-          # Create overlay for production builds (prefer wheels)
           overlay = workspace.mkPyprojectOverlay {
             sourcePreference = "wheel";
           };
-
-          # Create overlay for development with editable installs
-          editableOverlay = workspace.mkEditablePyprojectOverlay {
-            root = "$REPO_ROOT";
-          };
-
-          # Python interpreter
+          editableOverlay = lib.composeManyExtensions [
+            (workspace.mkEditablePyprojectOverlay { root = "$REPO_ROOT"; })
+            # Fix for hatchling needing editables when building editable packages
+            (final: prev: {
+              beautysh = prev.beautysh.overrideAttrs (old: {
+                nativeBuildInputs =
+                  (old.nativeBuildInputs or [ ])
+                  ++ final.resolveBuildSystem {
+                    editables = [ ];
+                  };
+              });
+            })
+          ];
           python = pkgs.python312;
-
-          # Build base Python package set
-          basePythonSet = pkgs.callPackage pyproject-nix.build.packages {
-            inherit python;
-          };
-
-          # Production Python set with locked dependencies
-          pythonSet = basePythonSet.overrideScope (
+          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
             lib.composeManyExtensions [
               pyproject-build-systems.overlays.wheel
               overlay
             ]
           );
+          devPythonSet = pythonSet.overrideScope editableOverlay;
 
-          # Development Python set with editable installs
-          devPythonSet = pythonSet.overrideScope (
-            lib.composeManyExtensions [
-              editableOverlay
-              # Fix for hatchling needing editables when building editable packages
-              (final: prev: {
-                beautysh = prev.beautysh.overrideAttrs (old: {
-                  nativeBuildInputs =
-                    (old.nativeBuildInputs or [ ])
-                    ++ final.resolveBuildSystem {
-                      editables = [ ];
-                    };
-                });
-              })
-            ]
-          );
+          inherit (pkgs.callPackage pyproject-nix.build.util { }) mkApplication;
 
-          devEnv = devPythonSet.mkVirtualEnv "beautysh-dev-env" workspace.deps.all;
+          venv = pythonSet.mkVirtualEnv "beautysh" workspace.deps.default;
+          devVenv = devPythonSet.mkVirtualEnv "beautysh-dev" workspace.deps.all;
         in
         {
-          # Packages exposed by the flake
-          packages = {
-            default = pythonSet.mkVirtualEnv "beautysh-env" workspace.deps.default;
-            beautysh = config.packages.default;
+          checks = {
+            inherit (self'.packages) beautysh dist;
           };
 
-          # Development shell
+          packages = {
+            default = self'.packages.beautysh;
+            beautysh = mkApplication {
+              inherit venv;
+              package = pythonSet.beautysh;
+            };
+            dist =
+              let
+                distFor =
+                  uvBuildType:
+                  (pythonSet.beautysh.overrideAttrs (old: {
+                    outputs = [
+                      "out"
+                      "dist"
+                    ];
+                    env = (old.env or { }) // {
+                      inherit uvBuildType;
+                    };
+                  })).dist;
+                wheel = distFor "wheel";
+                sdist = distFor "sdist";
+              in
+              pkgs.symlinkJoin {
+                name = "beautysh-dist";
+                paths = [
+                  wheel
+                  sdist
+                ];
+              };
+          };
+
           devShells.default = pkgs.mkShell {
             packages = [
-              devEnv
+              devVenv
               pkgs.uv
-            ];
+            ]
+            ++ (builtins.attrValues config.treefmt.build.programs)
+            ++ config.pre-commit.settings.enabledPackages;
 
             env = {
               # Prevent uv from managing the Python environment
@@ -146,19 +159,11 @@
 
             shellHook = ''
               unset PYTHONPATH
-              export REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")
-
-              # Install pre-commit hooks
+              export REPO_ROOT="$(git rev-parse --show-toplevel)"
               ${config.pre-commit.installationScript}
             '';
-
-            inputsFrom = [
-              config.treefmt.build.devShell
-              config.pre-commit.devShell
-            ];
           };
 
-          # Formatting configuration with treefmt-nix
           treefmt = {
             projectRootFile = "flake.nix";
             programs = {
@@ -180,17 +185,28 @@
               treefmt.enable = true;
               ruff = {
                 enable = true;
-                entry = lib.mkForce "${devEnv}/bin/ruff check";
+                entry = lib.mkForce "${devVenv}/bin/ruff check";
               };
               mypy = {
                 enable = true;
-                entry = lib.mkForce "${devEnv}/bin/mypy";
+                entry = lib.mkForce "${devVenv}/bin/mypy";
               };
               pytest = {
                 enable = true;
-                entry = lib.mkForce "${devEnv}/bin/pytest";
+                entry = lib.mkForce "${devVenv}/bin/pytest";
                 pass_filenames = false;
               };
+              vermin =
+                let
+                  pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
+                  inherit (pyproject.project) requires-python;
+                  min-python = lib.trim (lib.removePrefix ">=" requires-python);
+                in
+                {
+                  enable = true;
+                  entry = "${devVenv}/bin/vermin --eval-annotations --backport argparse --backport dataclasses --backport enum --backport typing --target=${min-python} --violations -vv ./beautysh";
+                  pass_filenames = false;
+                };
             };
           };
         };

@@ -1,32 +1,28 @@
-name: Create Release
+name: Release
 on:
   workflow_dispatch:
 permissions:
   contents: write
 jobs:
   ci:
-    name: Run CI checks
     uses: ./.github/workflows/ci.yaml
   validate:
-    needs: [ci]
-    name: Validate release
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
       tag: ${{ steps.get_version.outputs.tag }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-tags: true
       - name: Get version from pyproject.toml
         id: get_version
         run: |
           # Extract version from pyproject.toml using grep/sed (no nix needed)
-          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          VERSION="$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')"
           TAG="v${VERSION}"
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Detected version: ${VERSION}"
           echo "Tag will be: ${TAG}"
       - name: Check if tag already exists
@@ -48,21 +44,17 @@ jobs:
             exit 1
           fi
           echo "Version $VERSION does not exist on PyPI yet. Proceeding with release."
-  build:
-    name: Build distribution
-    needs: [validate]
+  dist:
+    needs: [ci, validate]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             experimental-features = nix-command flakes
             accept-flake-config = true
-      - name: Cache Nix
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: |
             ~/.cache/nix
@@ -70,37 +62,30 @@ jobs:
           key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
           restore-keys: |
             nix-${{ runner.os }}-${{ runner.arch }}-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v16
+      - uses: cachix/cachix-action@v16
         with:
           name: beautysh
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build package
-        run: nix develop -c python -m build
-      - name: Upload distributions
-        uses: actions/upload-artifact@v5
+      - name: dist
+        run: nix build .#dist
+      - uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
-          path: dist/
+          path: release/
   github-release:
-    name: Create GitHub Release
-    needs: [validate, build]
+    needs: [dist, validate]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
           token: ${{ secrets.PAT }}
-      - name: Download distributions
-        uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v5
         with:
           name: python-package-distributions
           path: dist/
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.validate.outputs.tag }}
           name: Release ${{ needs.validate.outputs.tag }}
