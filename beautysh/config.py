@@ -50,15 +50,16 @@ def load_config_from_file(config_path: Path) -> Dict[str, Any]:
         if not config:
             config = data
 
-        if config:
-            logger.debug(f"Loaded configuration from {config_path}: {config}")
-        return config
     except OSError as e:
         logger.warning(f"Could not read {config_path}: {e}")
         return {}
     except tomllib.TOMLDecodeError as e:
         logger.warning(f"Could not parse {config_path}: {e}")
         return {}
+    else:
+        if config:
+            logger.debug(f"Loaded configuration from {config_path}: {config}")
+        return config
 
 
 def load_config_from_pyproject() -> Dict[str, Any]:
