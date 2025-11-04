@@ -4,9 +4,13 @@ import difflib
 import logging
 from typing import Iterator
 
-from colorama import Fore
-
 logger = logging.getLogger(__name__)
+
+# ANSI color codes
+_FORE_GREEN = "\x1b[32m"
+_FORE_RED = "\x1b[31m"
+_FORE_BLUE = "\x1b[34m"
+_FORE_RESET = "\x1b[39m"  # Resets foreground color
 
 
 class DiffFormatter:
@@ -37,11 +41,11 @@ class DiffFormatter:
         """
         for line in diff:
             if line.startswith("+"):
-                yield Fore.GREEN + line + Fore.RESET
+                yield _FORE_GREEN + line + _FORE_RESET
             elif line.startswith("-"):
-                yield Fore.RED + line + Fore.RESET
+                yield _FORE_RED + line + _FORE_RESET
             elif line.startswith("^"):
-                yield Fore.BLUE + line + Fore.RESET
+                yield _FORE_BLUE + line + _FORE_RESET
             else:
                 yield line
 
