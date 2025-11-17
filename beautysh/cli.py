@@ -5,10 +5,13 @@ import logging
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .config import (
+    load_config_from_beautyshrc,
     load_config_from_editorconfig,
+    load_config_from_file,
     load_config_from_pyproject,
     merge_configs,
 )
@@ -29,6 +32,7 @@ class BeautyshCLI:
         self.diff_formatter: Optional[DiffFormatter] = None
         self.backup = False
         self.check_only = False
+        self.config_file: Optional[str] = None
 
     def get_version(self) -> str:
         """Get beautysh version.
@@ -73,6 +77,13 @@ class BeautyshCLI:
             description=f"A Bash beautifier for the masses, version {self.get_version()}",
             add_help=False,
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        )
+        parser.add_argument(
+            "--config",
+            type=str,
+            default=config.get("config"),
+            help="Path to a specific configuration file (e.g., .beautyshrc). "
+            "Overrides auto-discovered config files.",
         )
         parser.add_argument(
             "--indent-size",
@@ -138,10 +149,33 @@ class BeautyshCLI:
         )
         return parser
 
+    def _extract_config_path(self, argv: List[str]) -> Optional[str]:
+        """Extract --config path from argv before full parsing.
+
+        Args:
+            argv: Command-line arguments
+
+        Returns:
+            Config file path if specified, None otherwise
+        """
+        for i, arg in enumerate(argv):
+            if arg == "--config":
+                if i + 1 < len(argv):
+                    return argv[i + 1]
+                break  # Found --config but no value
+            if arg.startswith("--config="):
+                return arg.split("=", 1)[1]
+        return None
+
     def load_configuration(self, argv: List[str]) -> Dict[str, Any]:
         """Load configuration from all sources.
 
-        Priority: EditorConfig < pyproject.toml < CLI args
+        Priority order (highest to lowest):
+        1. CLI arguments
+        2. Explicit config file (--config)
+        3. .beautyshrc
+        4. pyproject.toml [tool.beautysh]
+        5. EditorConfig
 
         Args:
             argv: Command-line arguments
@@ -150,6 +184,13 @@ class BeautyshCLI:
             Merged configuration dictionary
         """
         editorconfig_settings: Dict[str, Any] = {}
+        explicit_config_settings: Dict[str, Any] = {}
+
+        config_file_path = self._extract_config_path(argv)
+
+        if config_file_path:
+            self.config_file = config_file_path  # Store for later use
+            explicit_config_settings = load_config_from_file(Path(config_file_path))
 
         # Load EditorConfig if processing a file
         if argv and argv[0] not in ["-h", "--help", "-v", "--version"]:
@@ -161,8 +202,16 @@ class BeautyshCLI:
         # Load pyproject.toml config
         pyproject_config = load_config_from_pyproject()
 
+        # Load .beautyshrc config
+        beautyshrc_config = load_config_from_beautyshrc()
+
         # Merge configs
-        return merge_configs(editorconfig_settings, pyproject_config)
+        return merge_configs(
+            editorconfig_settings,
+            pyproject_config,
+            beautyshrc_config,
+            explicit_config_settings,
+        )
 
     def configure_formatter(self, args: argparse.Namespace) -> None:
         """Configure formatter based on parsed arguments.

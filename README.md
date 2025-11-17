@@ -62,8 +62,32 @@ in which case it will beautify each one of the files.
 Beautysh supports multiple configuration sources with the following priority (highest to lowest):
 
 1. **Command-line arguments** (highest priority)
+1. **Explicit config file** (specified via `--config`)
+1. **.beautyshrc** (in current working directory)
 1. **pyproject.toml** - `[tool.beautysh]` section
 1. **EditorConfig** - `.editorconfig` files (lowest priority)
+
+#### .beautyshrc
+
+The `.beautyshrc` file, located in the current working directory, is a configuration file read in TOML format. It can contain configuration options at the root level, or under the `[tool.beautysh]` or `[beautysh]` sections.
+
+Example `.beautyshrc` content:
+
+Note: Configuration is read with the following priority:
+
+1. `[tool.beautysh]` section
+1. `[beautysh]` section
+1. Root-level keys
+
+```toml
+[beautysh]
+indent_size = 2
+tab = true
+backup = true
+check = true
+force_function_style = "paronly"  # Options: fnpar, fnonly, paronly
+variable_style = "braces"  # Options: braces
+```
 
 #### pyproject.toml
 
@@ -97,6 +121,8 @@ Supported EditorConfig properties:
 Available flags are:
 
 ```
+  --config CONFIG       Path to a specific configuration file (e.g., .beautyshrc).
+                        Overrides auto-discovered config files.
   --indent-size INDENT_SIZE, -i INDENT_SIZE
                         Sets the number of spaces to be used in indentation.
   --backup, -b          Beautysh will create a backup file in the same path as
@@ -260,7 +286,7 @@ Beautysh has a modular architecture for maintainability:
 - **`beautysh/parser.py`** - Bash syntax parsing and analysis
 - **`beautysh/formatter.py`** - Core formatting logic with indentation calculation
 - **`beautysh/transformers.py`** - Style transformations (function/variable styles)
-- **`beautysh/config.py`** - Configuration loading (pyproject.toml, EditorConfig)
+- **`beautysh/config.py`** - Configuration loading (pyproject.toml, EditorConfig, .beautyshrc)
 - **`beautysh/cli.py`** - Command-line interface
 - **`beautysh/diff.py`** - Diff output for check mode
 - **`beautysh/types.py`** - Type definitions and dataclasses
