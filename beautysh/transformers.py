@@ -77,6 +77,9 @@ class StyleTransformer:
         Currently supports:
         - 'braces': Transform $VAR to ${VAR}
 
+        Variables inside single-quoted strings are skipped since bash doesn't
+        expand them (issue #268).
+
         Args:
             line: The line to transform
             style: Variable style to apply ('braces' or None)
@@ -91,15 +94,43 @@ class StyleTransformer:
             'echo ${VAR}'
             >>> StyleTransformer.apply_variable_style('echo $1', 'braces')
             'echo ${1}'
+            >>> StyleTransformer.apply_variable_style("foo='$bar'", 'braces')
+            "foo='$bar'"
         """
         if style != VARIABLE_STYLE_BRACES:
             return line
 
-        # Transform $VAR to ${VAR}, but only for simple variables
+        # Find all single-quoted string regions (variables inside are not expanded in bash)
+        single_quote_regions = []
+        for match in re.finditer(r"'[^']*'", line):
+            single_quote_regions.append((match.start(), match.end()))
+
+        # Helper function to check if a position is inside single quotes
+        def is_in_single_quotes(pos: int) -> bool:
+            return any(start <= pos < end for start, end in single_quote_regions)
+
+        # Transform $VAR to ${VAR}, but only for variables outside single quotes
         # Pattern: $ followed by alphanumeric/underscore, but not already in braces
-        # Negative lookbehind (?<!{) ensures we don't match ${VAR}
-        # \b word boundary ensures we get complete variable names
-        transformed = SIMPLE_VARIABLE.sub(r"${\1}", line)
+        result = []
+        last_end = 0
+
+        for match in SIMPLE_VARIABLE.finditer(line):
+            # Add text before this match
+            result.append(line[last_end : match.start()])
+
+            # Check if this variable is inside single quotes
+            if is_in_single_quotes(match.start()):
+                # Keep the original variable (don't transform)
+                result.append(match.group(0))
+            else:
+                # Transform the variable
+                result.append(f"${{{match.group(1)}}}")
+
+            last_end = match.end()
+
+        # Add remaining text after last match
+        result.append(line[last_end:])
+        transformed = "".join(result)
 
         if transformed != line:
             logger.debug(f"Applied variable braces style: {line} -> {transformed}")
