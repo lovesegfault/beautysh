@@ -35,3 +35,13 @@ def test_issue78_multiline_array_in_case(fixture_dir):
 def test_issue64_do_case_same_line(fixture_dir):
     """Test that 'do case' on the same line doesn't cause indent/outdent mismatch (issue #64)."""
     assert_formatting(fixture_dir, "issue64_do_case")
+
+
+def test_issue265_heredoc_in_function(fixture_dir):
+    """Test heredoc terminators at column 0 inside functions (issue #265)."""
+    assert_formatting(fixture_dir, "issue265_heredoc_function")
+
+
+def test_issue265_quoted_empty_case_patterns(fixture_dir):
+    """Test empty quoted case patterns like "" or '' (issue #265)."""
+    assert_formatting(fixture_dir, "issue265_quoted_case")

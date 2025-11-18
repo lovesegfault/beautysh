@@ -18,6 +18,7 @@ from .constants import (
     MULTILINE_STRING_END,
     MULTILINE_STRING_START,
     OPENING_BRACKETS,
+    QUOTED_CASE_PATTERN,
     SQUARE_BRACKET_CLOSE,
     SQUARE_BRACKET_OPEN,
 )
@@ -140,16 +141,10 @@ class BashFormatter:
 
         test_record = self.parser.get_test_record(stripped_record)
 
-        # Handle multiline strings (without backslash continuation)
-        if state.in_multiline_string:
-            return self._handle_multiline_string_content(record, stripped_record, state)
-
-        # Check if a new multiline string starts
-        if self._check_multiline_string_start(test_record, state):
-            return self._indent_line(state.tab, stripped_record)
-
         # Handle line continuation
         self._update_continuation_state(stripped_record, state)
+        # Handle continued lines and multiline strings with backslash
+        self._handle_line_continuation(stripped_record, test_record, state)
 
         inside_multiline_quoted = (
             state.prev_line_had_continue
@@ -169,22 +164,33 @@ class BashFormatter:
             state.ended_multiline_quoted_string = False
 
         # Pass through here-docs and multiline quoted strings unchanged
+        # NOTE: This check must come BEFORE multiline string checks to handle
+        # heredoc content that might contain quotes/apostrophes (issue #265)
         if state.in_here_doc or inside_multiline_quoted or state.ended_multiline_quoted_string:
             # Test for here-doc termination
             if state.here_string is not None:
-                if state.here_string in test_record and "<<" not in test_record:
+                # Stricter terminator check: must be on its own line (issue #265)
+                # Use rstrip() to allow leading whitespace for <<- heredocs with tab indentation
+                if stripped_record.rstrip() == state.here_string and "<<" not in test_record:
                     state.in_here_doc = False
                     logger.debug(f"Here-doc terminated at line {line_num}")
             return record
-
-        # Handle continued lines and multiline strings with backslash
-        self._handle_line_continuation(stripped_record, test_record, state)
 
         # Detect here-docs
         is_heredoc, here_string = self.parser.detect_heredoc(test_record, stripped_record)
         if is_heredoc:
             state.in_here_doc = True
             state.here_string = here_string
+
+        # Handle multiline strings (without backslash continuation)
+        # NOTE: This check comes AFTER heredoc checks so heredoc content
+        # with quotes/apostrophes is handled correctly (issue #265)
+        if state.in_multiline_string:
+            return self._handle_multiline_string_content(record, stripped_record, state)
+
+        # Check if a new multiline string starts
+        if self._check_multiline_string_start(test_record, state):
+            return self._indent_line(state.tab, stripped_record)
 
         # Handle @formatter:off/on directives
         if not state.formatter_enabled:
@@ -288,6 +294,29 @@ class BashFormatter:
         else:
             state.started_multiline_quoted_string = False
 
+    def _is_case_pattern(self, test_record: str, stripped_record: str) -> bool:
+        """Detect case patterns including quoted strings.
+
+        This handles both:
+        - Quoted patterns (including empty): "" or '' or " " (issue #265)
+        - Prevents false positives from standalone ) (issue #78)
+
+        Args:
+            test_record: Simplified test record (after quote removal)
+            stripped_record: Original stripped line (before quote removal)
+
+        Returns:
+            True if this line is a case pattern, False otherwise
+        """
+        # Check original line for quoted patterns before quote removal
+        # This handles cases where the pattern content disappears after quote removal
+        if QUOTED_CASE_PATTERN.search(stripped_record):
+            return True
+
+        # Check for patterns with content: foo) or bar)
+        # The + quantifier prevents standalone ) from matching (preserves issue #78 fix)
+        return bool(CASE_CHOICE_PATTERN.search(test_record))
+
     def _format_line(
         self,
         stripped_record: str,
@@ -332,7 +361,7 @@ class BashFormatter:
         # Handle case choices
         choice_case = 0
         if state.case_level:
-            if CASE_CHOICE_PATTERN.search(test_record):
+            if self._is_case_pattern(test_record, stripped_record):
                 inc += 1
                 choice_case = -1
 

@@ -51,6 +51,9 @@ HEREDOC_TERMINATOR = re.compile(r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*')
 CASE_KEYWORD_PATTERN = re.compile(r"(\s|\A|;)case\s")
 ESAC_KEYWORD_PATTERN = re.compile(r"\besac\b")
 CASE_CHOICE_PATTERN = re.compile(r"\A[^(]+\)")
+# Pattern to detect quoted case patterns (including empty quotes) before quote removal
+# Matches patterns like: "") or '') or " ") or "foo")
+QUOTED_CASE_PATTERN = re.compile(r'^\s*["\'].*?["\'].*?\)')
 
 # Other patterns
 ELSE_ELIF_PATTERN = re.compile(r"^(else|elif\s.*?;\s+?then)")
