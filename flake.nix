@@ -145,7 +145,6 @@
           devShells.default = pkgs.mkShell {
             packages = [
               devVenv
-              pkgs.uv
             ]
             ++ (builtins.attrValues config.treefmt.build.programs)
             ++ config.pre-commit.settings.enabledPackages;
@@ -198,7 +197,7 @@
               };
               uv-lock = {
                 enable = true;
-                entry = "${pkgs.uv}/bin/uv lock --check";
+                entry = "${devVenv}/bin/uv lock --check --offline --python '${devPythonSet.python.interpreter}' --no-python-downloads";
                 pass_filenames = false;
               };
               vermin =

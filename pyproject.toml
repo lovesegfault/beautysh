@@ -45,6 +45,7 @@ dev = [
     "types-colorama>=0.4.3",
     "types-PyYAML>=6.0.0",
     "vermin >= 1.7.0",
+    "uv >= 0.9",
 ]
 
 [tool.pytest.ini_options]
