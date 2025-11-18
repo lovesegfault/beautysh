@@ -24,6 +24,7 @@ class FormatterState:
         in_multiline_string: Whether we're inside a multiline string (no backslash)
         multiline_string_quote_char: The quote character for current multiline string
         here_string: The termination string for current here-doc
+        heredoc_quoted: Whether current heredoc has quoted terminator (no expansion)
         formatter_enabled: Whether formatter is enabled (@formatter:off/on)
     """
 
@@ -38,6 +39,7 @@ class FormatterState:
     in_multiline_string: bool = False
     multiline_string_quote_char: Optional[str] = None
     here_string: str = ""
+    heredoc_quoted: bool = False
     formatter_enabled: bool = True
 
 

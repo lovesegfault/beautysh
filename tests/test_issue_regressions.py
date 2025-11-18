@@ -55,3 +55,8 @@ def test_issue267_formatter_off_with_variable_style(fixture_dir):
 def test_issue268_variable_style_single_quotes(fixture_dir):
     """Test that variables inside single quotes are not transformed (issue #268)."""
     assert_formatting(fixture_dir, "issue268_single_quotes", variable_style="braces")
+
+
+def test_issue268_variable_style_heredoc_quotes(fixture_dir):
+    """Test that variables in heredocs with quoted terminators are not transformed (issue #268)."""
+    assert_formatting(fixture_dir, "issue268_heredoc_quotes", variable_style="braces")

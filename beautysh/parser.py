@@ -231,6 +231,40 @@ class BashParser:
         return (False, "")
 
     @staticmethod
+    def is_heredoc_quoted(heredoc_line: str) -> bool:
+        r"""Detect if heredoc terminator is quoted (suppresses expansion).
+
+        In bash, heredoc terminators can be quoted in three ways:
+        - Single quotes: <<'EOF'
+        - Double quotes: <<"EOF"
+        - Backslash escape: <<\EOF (or <<E\OF - any escaping)
+
+        All quoted forms suppress variable expansion inside the heredoc.
+
+        Args:
+            heredoc_line: The line containing the heredoc declaration
+
+        Returns:
+            True if terminator has any quoting (expansion disabled)
+            False if terminator is unquoted (expansion enabled)
+
+        Example:
+            >>> BashParser.is_heredoc_quoted("cat <<'EOF'")
+            True
+            >>> BashParser.is_heredoc_quoted('cat <<"END"')
+            True
+            >>> BashParser.is_heredoc_quoted(r'cat <<\MARKER')
+            True
+            >>> BashParser.is_heredoc_quoted("cat <<EOF")
+            False
+        """
+        # Pattern: Check for any quote character or backslash after <<
+        # Handles: <<'...'  <<"..."  <<\...  <<-'...'  <<-"..."  <<-\...
+        # Also handles partial escaping like <<E\OF (backslash anywhere means quoted)
+        quoted_pattern = re.compile(r'<<-?\s*([\'"]|[^\s]*\\)')
+        return bool(quoted_pattern.search(heredoc_line))
+
+    @staticmethod
     def is_line_continuation(line: str) -> bool:
         """Check if line ends with backslash continuation.
 

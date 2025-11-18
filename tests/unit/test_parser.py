@@ -194,3 +194,49 @@ class TestIsLineContinuation:
     def test_backslash_in_middle(self):
         # Backslash in middle doesn't count
         assert not BashParser.is_line_continuation('echo "test\\nmore"')
+
+
+class TestIsHeredocQuoted:
+    """Tests for BashParser.is_heredoc_quoted()"""
+
+    def test_single_quoted_terminator(self):
+        assert BashParser.is_heredoc_quoted("cat <<'EOF'")
+
+    def test_double_quoted_terminator(self):
+        assert BashParser.is_heredoc_quoted('cat <<"EOF"')
+
+    def test_backslash_escaped_terminator(self):
+        assert BashParser.is_heredoc_quoted(r"cat <<\EOF")
+
+    def test_unquoted_terminator(self):
+        assert not BashParser.is_heredoc_quoted("cat <<EOF")
+
+    def test_dash_heredoc_single_quoted(self):
+        assert BashParser.is_heredoc_quoted("cat <<-'END'")
+
+    def test_dash_heredoc_double_quoted(self):
+        assert BashParser.is_heredoc_quoted('cat <<-"END"')
+
+    def test_dash_heredoc_backslash(self):
+        assert BashParser.is_heredoc_quoted(r"cat <<-\END")
+
+    def test_dash_heredoc_unquoted(self):
+        assert not BashParser.is_heredoc_quoted("cat <<-EOF")
+
+    def test_with_spaces_before_quotes(self):
+        assert BashParser.is_heredoc_quoted("cat << 'EOF'")
+
+    def test_with_redirect(self):
+        assert BashParser.is_heredoc_quoted("cat <<'EOF' > file")
+
+    def test_quotes_in_command_not_heredoc(self):
+        # Command has quotes, but terminator doesn't
+        assert not BashParser.is_heredoc_quoted('echo "test" <<EOF')
+
+    def test_partial_backslash_escape(self):
+        # Any backslash after << means quoted
+        assert BashParser.is_heredoc_quoted(r"cat <<E\OF")
+
+    def test_not_a_heredoc(self):
+        # Should handle gracefully
+        assert not BashParser.is_heredoc_quoted("echo hello")

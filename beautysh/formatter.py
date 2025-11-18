@@ -167,14 +167,27 @@ class BashFormatter:
                 # Use rstrip() to allow leading whitespace for <<- heredocs with tab indentation
                 if stripped_record.rstrip() == state.here_string and "<<" not in test_record:
                     state.in_here_doc = False
+                    state.heredoc_quoted = False  # Reset quote tracking
                     logger.debug(f"Here-doc terminated at line {line_num}")
-            return record
+
+            # Apply variable transformation to unquoted heredoc content
+            result = record
+            if state.in_here_doc and not state.heredoc_quoted and self.variable_style is not None:
+                result = self.transformer.apply_variable_style(result, self.variable_style)
+
+            return result
 
         # Detect here-docs
         is_heredoc, here_string = self.parser.detect_heredoc(test_record, stripped_record)
         if is_heredoc:
             state.in_here_doc = True
             state.here_string = here_string
+            # Check if terminator is quoted (suppresses variable expansion)
+            state.heredoc_quoted = self.parser.is_heredoc_quoted(stripped_record)
+            logger.debug(
+                f"Heredoc started: terminator={here_string}, "
+                f"quoted={state.heredoc_quoted}, line={line_num}"
+            )
 
         # Handle multiline strings (without backslash continuation)
         # NOTE: This check comes AFTER heredoc checks so heredoc content
@@ -387,7 +400,8 @@ class BashFormatter:
         state.tab += max(net, 0)
 
         # Apply variable style transformation if requested
-        if self.variable_style is not None:
+        # Skip transformation in quoted heredocs (no expansion in bash)
+        if self.variable_style is not None and not state.heredoc_quoted:
             formatted = self.transformer.apply_variable_style(formatted, self.variable_style)
 
         return formatted
