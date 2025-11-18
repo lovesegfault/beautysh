@@ -67,11 +67,14 @@ jobs:
           name: beautysh
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: dist
-        run: nix build .#dist
+        run: |
+          nix build .#dist
+          mkdir -p dist
+          cp -vL build/* dist/.
       - uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
-          path: release/
+          path: dist/
   github-release:
     needs: [dist, validate]
     runs-on: ubuntu-latest
