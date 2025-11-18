@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 from .config import (
     load_config_from_editorconfig,
@@ -60,7 +60,7 @@ class BeautyshCLI:
         sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
         sys.stdout.write("\n")
 
-    def create_parser(self, config: Dict[str, Any]) -> argparse.ArgumentParser:
+    def create_parser(self, config: dict[str, Any]) -> argparse.ArgumentParser:
         """Create argument parser with defaults from config.
 
         Args:
@@ -138,7 +138,7 @@ class BeautyshCLI:
         )
         return parser
 
-    def load_configuration(self, argv: List[str]) -> Dict[str, Any]:
+    def load_configuration(self, argv: list[str]) -> dict[str, Any]:
         """Load configuration from all sources.
 
         Priority: EditorConfig < pyproject.toml < CLI args
@@ -149,7 +149,7 @@ class BeautyshCLI:
         Returns:
             Merged configuration dictionary
         """
-        editorconfig_settings: Dict[str, Any] = {}
+        editorconfig_settings: dict[str, Any] = {}
 
         # Load EditorConfig if processing a file
         if argv and argv[0] not in ["-h", "--help", "-v", "--version"]:
@@ -267,7 +267,7 @@ class BeautyshCLI:
 
         return error
 
-    def main(self, argv: List[str]) -> int:
+    def main(self, argv: list[str]) -> int:
         """Main entry point for CLI.
 
         Args:

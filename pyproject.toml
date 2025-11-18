@@ -52,7 +52,6 @@ addopts = "-v -Wdefault"
 
 [tool.ruff]
 line-length = 99
-target-version = "py38"
 
 [tool.ruff.lint]
 select = [

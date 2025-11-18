@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 try:
     import tomllib  # novermin
@@ -16,7 +16,7 @@ from .constants import TAB_CHARACTER
 logger = logging.getLogger(__name__)
 
 
-def load_config_from_pyproject() -> Dict[str, Any]:
+def load_config_from_pyproject() -> dict[str, Any]:
     """Load beautysh configuration from pyproject.toml if it exists.
 
     Looks for configuration in the [tool.beautysh] section of pyproject.toml
@@ -42,7 +42,7 @@ def load_config_from_pyproject() -> Dict[str, Any]:
     try:
         with open(pyproject_path, "rb") as f:
             data = tomllib.load(f)
-        config: Dict[str, Any] = data.get("tool", {}).get("beautysh", {})
+        config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
         if config:
             logger.debug(f"Loaded configuration from pyproject.toml: {config}")
         return config
@@ -54,7 +54,7 @@ def load_config_from_pyproject() -> Dict[str, Any]:
         return {}
 
 
-def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
+def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
     """Load configuration from .editorconfig for the given file.
 
     Maps EditorConfig properties to beautysh configuration:
@@ -75,7 +75,7 @@ def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
     """
     try:
         props = get_properties(str(filepath))
-        config: Dict[str, Any] = {}
+        config: dict[str, Any] = {}
 
         # Map EditorConfig indent_style to beautysh tab setting
         if "indent_style" in props:
@@ -102,10 +102,10 @@ def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
 
 
 def merge_configs(
-    editorconfig: Dict[str, Any],
-    pyproject: Dict[str, Any],
-    cli_args: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    editorconfig: dict[str, Any],
+    pyproject: dict[str, Any],
+    cli_args: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     """Merge configuration from multiple sources with proper priority.
 
     Priority order (highest to lowest):
@@ -139,7 +139,7 @@ def merge_configs(
     return merged
 
 
-def apply_config_to_instance(instance: Any, config: Dict[str, Any]) -> None:
+def apply_config_to_instance(instance: Any, config: dict[str, Any]) -> None:
     """Apply configuration dictionary to a Beautify instance.
 
     Maps configuration keys to instance attributes with appropriate

@@ -3,7 +3,7 @@
 import logging
 import sys
 from io import StringIO
-from typing import Optional, Tuple
+from typing import Optional
 
 from .constants import (
     CASE_CHOICE_PATTERN,
@@ -58,7 +58,7 @@ class BashFormatter:
         self.parser = BashParser()
         self.transformer = StyleTransformer()
 
-    def beautify_string(self, data: str, path: str = "") -> Tuple[str, bool]:
+    def beautify_string(self, data: str, path: str = "") -> tuple[str, bool]:
         """Beautify a Bash script string.
 
         This is the main entry point for formatting. It processes the script

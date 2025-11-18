@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Optional, Tuple
+from typing import Optional
 
 from .constants import FUNCTION_STYLE_PATTERNS
 
@@ -73,7 +73,7 @@ class BashParser:
         return test_record
 
     @staticmethod
-    def detect_unclosed_quote(test_record: str) -> Tuple[bool, bool]:
+    def detect_unclosed_quote(test_record: str) -> tuple[bool, bool]:
         """Detect if test_record has an unclosed quote.
 
         After get_test_record() has collapsed all properly closed quotes on
@@ -186,7 +186,7 @@ class BashParser:
         return "\n".join(lines)
 
     @staticmethod
-    def detect_heredoc(test_record: str, stripped_record: str) -> Tuple[bool, str]:
+    def detect_heredoc(test_record: str, stripped_record: str) -> tuple[bool, str]:
         """Detect here-document and extract termination string.
 
         Detects here-docs (<<EOF or <<-EOF) while avoiding false positives
