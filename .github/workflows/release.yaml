@@ -70,7 +70,7 @@ jobs:
         run: |
           nix build .#dist
           mkdir -p dist
-          cp -vL build/* dist/.
+          cp -vL result/* dist/.
       - uses: actions/upload-artifact@v5
         with:
           name: python-package-distributions
