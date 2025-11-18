@@ -196,6 +196,11 @@
                 entry = lib.mkForce "${devVenv}/bin/pytest";
                 pass_filenames = false;
               };
+              uv-lock = {
+                enable = true;
+                entry = "${pkgs.uv}/bin/uv lock --check";
+                pass_filenames = false;
+              };
               vermin =
                 let
                   pyproject = builtins.fromTOML (builtins.readFile ./pyproject.toml);
