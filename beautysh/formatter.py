@@ -91,12 +91,6 @@ class BashFormatter:
         for record in data.split("\n"):
             formatted_line = self._process_line(record, state, path, line_num)
             if formatted_line is not None:
-                # Apply variable style transformation if requested
-                if self.variable_style is not None:
-                    formatted_line = self.transformer.apply_variable_style(
-                        formatted_line, self.variable_style
-                    )
-
                 # Write line with newline separator (except before first line)
                 if not first_line:
                     output.write("\n")
@@ -391,6 +385,10 @@ class BashFormatter:
 
         formatted = self._indent_line(extab, stripped_record)
         state.tab += max(net, 0)
+
+        # Apply variable style transformation if requested
+        if self.variable_style is not None:
+            formatted = self.transformer.apply_variable_style(formatted, self.variable_style)
 
         return formatted
 

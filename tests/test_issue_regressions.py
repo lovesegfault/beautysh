@@ -45,3 +45,8 @@ def test_issue265_heredoc_in_function(fixture_dir):
 def test_issue265_quoted_empty_case_patterns(fixture_dir):
     """Test empty quoted case patterns like "" or '' (issue #265)."""
     assert_formatting(fixture_dir, "issue265_quoted_case")
+
+
+def test_issue267_formatter_off_with_variable_style(fixture_dir):
+    """Test that @formatter:off/on directives respect variable style option (issue #267)."""
+    assert_formatting(fixture_dir, "issue267_formatter_variable", variable_style="braces")
