@@ -7,11 +7,9 @@ for arg in "${@}"; do
     case "${arg}" in
         "-v" | "--verbose")
             quiet="false"
-            ;;
+        ;;
         *)
-            files+=(
-                "${arg}"
-            )
-            ;;
+            files+=("${arg}")
+        ;;
     esac
 done

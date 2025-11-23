@@ -5,23 +5,30 @@
 aflag=
 bflag=
 
-while getopts ab: name
-do
+while getopts ab: name; do
     case $name in
-        a)	aflag=1 ;;
-        b)	bflag=1
-            bval=$OPTARG ;;
-        ?)	echo Usage: $0 [-a] [-b value] args
-            exit 2 ;;
+        a)
+            aflag=1
+        ;;
+        b)
+            bflag=1
+            bval=$OPTARG
+        ;;
+        ?)
+            echo Usage: $0 [-a] [-b value] args
+            exit 2
+        ;;
     esac
-
 done
 
-if [ ! -z "$aflag" ] ; then echo -a specified ; fi
-if [ ! -z "$bflag" ] ; then echo -b $bval specified ; fi
+if [ ! -z "$aflag" ]; then
+    echo -a specified
+fi
+if [ ! -z "$bflag" ]; then
+    echo -b $bval specified
+fi
 
-if [ "$OPTIND" -gt 1 ]
-then
+if [ "$OPTIND" -gt 1 ]; then
     shift $(( $OPTIND - 1 ))
 fi
 

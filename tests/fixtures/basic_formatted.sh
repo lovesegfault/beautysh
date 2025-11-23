@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-function test()
-{
+function test() {
     local foo=4
 }

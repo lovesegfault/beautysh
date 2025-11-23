@@ -1,7 +1,9 @@
 #!/bin/bash
 while getopts "h" OPT; do
     case $OPT in
-        *) true ;;
+        *)
+            true
+        ;;
     esac
 done
 

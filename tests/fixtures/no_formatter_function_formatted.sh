@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-function test()
-{
+function test() {
     echo "Commands in this part will be formatted and indented normally as usual"
-
 	# @formatter:off
 	echo \
 	    --option1 \

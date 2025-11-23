@@ -2,7 +2,7 @@
 """A beautifier for Bash shell scripts written in Python.
 
 This package provides tools for automatically formatting Bash scripts with
-proper indentation, consistent function styles, and variable transformations.
+proper indentation using a PEG-based parser.
 
 Example:
     >>> from beautysh import BashFormatter
@@ -26,10 +26,8 @@ from .config import (
 )
 from .diff import DiffFormatter
 from .formatter import BashFormatter
-from .function_styles import FunctionStyle
-from .parser import BashParser
-from .transformers import FunctionStyleParser, StyleTransformer
-from .types import BeautyshConfig, FormatterState
+from .transformers import FunctionStyleParser
+from .types import BeautyshConfig, FunctionStyle, VariableStyle
 
 # Configure default logging
 logging.basicConfig(
@@ -43,16 +41,13 @@ __all__ = [
     # Main classes
     "BashFormatter",
     "BeautyshCLI",
-    "BashParser",
-    "StyleTransformer",
     "DiffFormatter",
     "FunctionStyleParser",
-    "FunctionStyle",
     # Configuration
     "BeautyshConfig",
+    "FunctionStyle",
+    "VariableStyle",
     "load_config_from_pyproject",
     "load_config_from_editorconfig",
     "merge_configs",
-    # Types
-    "FormatterState",
 ]

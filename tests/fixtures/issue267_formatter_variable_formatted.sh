@@ -7,7 +7,7 @@ echo "$bar"
 # @formatter:on
 echo "${baz}"
 
-if true;then
+if true; then
 # @formatter:off
 echo "$disabled"
 # @formatter:on

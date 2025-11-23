@@ -3,18 +3,15 @@
 # this small snippet is to test beautysh function-style detector
 # NOTE: using the string "function" in the function name itself we do a deeper test
 
-function_style1a()
-{
+function_style1a() {
     echo "test"
 }
 
-function_style1b()
-{
+function_style1b() {
     echo "test"
 }
 
-function_style1c()
-{
+function_style1c() {
     echo "test"
 }
 
@@ -22,8 +19,7 @@ function_style1d() {
     echo "test"
 }
 
-function_style2a()
-{
+function_style2a() {
     echo "test"
 }
 
@@ -31,18 +27,15 @@ function_style2b() {
     echo "test"
 }
 
-function_style3a()
-{
+function_style3a() {
     echo "test"
 }
 
-function_style3b()
-{
+function_style3b() {
     echo "test"
 }
 
-function_style3c()
-{
+function_style3c() {
     echo "test"
 }
 

@@ -16,6 +16,7 @@ from .constants import DEFAULT_TAB_SIZE, TAB_CHARACTER
 from .diff import DiffFormatter
 from .formatter import BashFormatter
 from .transformers import FunctionStyleParser
+from .types import VariableStyle
 
 logger = logging.getLogger(__name__)
 
@@ -177,20 +178,24 @@ class BeautyshCLI:
             indent_size = 1
             tab_str = TAB_CHARACTER
 
-        apply_function_style = None
+        function_style = None
         if args.force_function_style is not None:
-            apply_function_style = FunctionStyleParser.parse_function_style(
+            function_style = FunctionStyleParser.parse_function_style(
                 args.force_function_style
             )
-            if apply_function_style is None:
+            if function_style is None:
                 sys.stdout.write("Invalid value for the function style. See --help for details.\n")
                 sys.exit(1)
+
+        variable_style = None
+        if args.variable_style == "braces":
+            variable_style = VariableStyle.BRACES
 
         self.formatter = BashFormatter(
             indent_size=indent_size,
             tab_str=tab_str,
-            apply_function_style=apply_function_style,
-            variable_style=args.variable_style,
+            function_style=function_style,
+            variable_style=variable_style,
         )
 
         use_color = "NO_COLOR" not in os.environ
@@ -200,7 +205,7 @@ class BeautyshCLI:
 
         logger.debug(
             f"Configured formatter: indent_size={indent_size}, "
-            f"tab_str={repr(tab_str)}, function_style={apply_function_style}"
+            f"tab_str={repr(tab_str)}, function_style={function_style}"
         )
 
     def read_file(self, filepath: str) -> str:

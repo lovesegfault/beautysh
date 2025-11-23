@@ -2,11 +2,9 @@
 
 foo() {
     thing=${1}
-    if [[ ${thing} == "bob" ]]
-    then
+    if [[ ${thing} == "bob" ]]; then
         echo "Yar!"
-    elif [[ ${thing} == "jack" ]]
-    then
+    elif [[ ${thing} == "jack" ]]; then
         echo "Yip!"
     else
         echo "Nar"

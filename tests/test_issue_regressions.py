@@ -1,5 +1,7 @@
 """Regression tests for specific GitHub issues that have been fixed."""
 
+import pytest
+
 from . import assert_formatting
 
 

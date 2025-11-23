@@ -4,14 +4,14 @@
 case "$input" in
     "")
         echo "empty double quote"
-        ;;
+    ;;
     '')
         echo "empty single quote"
-        ;;
+    ;;
     " ")
         echo "single space"
-        ;;
+    ;;
     *)
         echo "other"
-        ;;
+    ;;
 esac

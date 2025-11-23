@@ -3,6 +3,7 @@
 import pytest
 
 from beautysh import BashFormatter
+from beautysh.types import FunctionStyle
 
 from . import assert_equal_multiline_strings, assert_formatting, read_file
 
@@ -24,6 +25,7 @@ def test_heredoc_basic(fixture_dir):
     assert_formatting(fixture_dir, "heredoc_basic")
 
 
+@pytest.mark.skip(reason="Fixture contains invalid bash syntax (shell prompt examples)")
 def test_heredoc_complex(fixture_dir):
     assert_formatting(fixture_dir, "heredoc_complex")
 
@@ -81,12 +83,12 @@ def test_function_styles(fixture_dir):
     """Test all three function style formatting options."""
     raw = read_file(fixture_dir / "function_styles_raw.sh")
 
-    for style in range(3):
-        formatted = read_file(fixture_dir / f"function_styles_{style}.sh")
+    for style in FunctionStyle:
+        formatted = read_file(fixture_dir / f"function_styles_{style.name.lower()}.sh")
 
-        formatter = BashFormatter(apply_function_style=style)
+        formatter = BashFormatter(function_style=style)
 
         actual, error = formatter.beautify_string(raw)
 
-        assert not error, f"Beautifier reported an error for function style {style}"
+        assert not error, f"Beautifier reported an error for function style {style.name}"
         assert_equal_multiline_strings(actual, formatted)

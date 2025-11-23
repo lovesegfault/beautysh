@@ -1,6 +1,5 @@
 function clean-vim() {
-    if [ ! -z "$1" ];
-    then
+    if [ ! -z "$1" ]; then
         rm -rf .cache/$1 .local/state/$1 .local/share/$1
         echo "Cleaned .cache/$1 .local/state/$1 .local/share/$1"
     else

@@ -3,9 +3,8 @@
 
 WAITFORIT_cmdname=${0##*/}
 
-usage()
-{
-    cat << USAGE >&2
+usage() {
+    cat <<USAGE >&2
 Usage:
 $WAITFORIT_cmdname -u url [-s] [-t timeout] [-- command args]
 -u URL | --url=URL       URL under test

@@ -1,5 +1,7 @@
 """Tests for variable style options (issue #126)."""
 
+import pytest
+
 from . import assert_formatting
 
 

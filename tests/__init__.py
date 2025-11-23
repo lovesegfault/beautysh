@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from beautysh import BashFormatter
+from beautysh.types import FunctionStyle, VariableStyle
 
 
 def read_file(file: Path) -> str:
@@ -48,15 +49,15 @@ def assert_equal_multiline_strings(actual: str, expected: str):
 
 
 def assert_formatting(
-    fixture_dir: Path, test_name: str, apply_function_style: Optional[int] = None, **options
+    fixture_dir: Path, test_name: str, function_style: Optional[FunctionStyle] = None, **options
 ):
     """Assert that beautifying a raw file produces the expected formatted output.
 
     Args:
         fixture_dir: Directory containing test fixtures
         test_name: Base name for test (loads test_name_raw.sh and test_name_formatted.sh)
-        apply_function_style: Optional function style to apply
-        **options: Additional BashFormatter attributes (e.g., variable_style="braces")
+        function_style: Optional function style to apply
+        **options: Additional BashFormatter attributes (e.g., variable_style=VariableStyle.BRACES)
     """
     raw_file = fixture_dir / f"{test_name}_raw.sh"
     formatted_file = fixture_dir / f"{test_name}_formatted.sh"
@@ -67,12 +68,19 @@ def assert_formatting(
     # Extract formatter constructor parameters
     indent_size = options.pop("tab_size", 4)
     tab_str = options.pop("tab_str", " ")
-    variable_style = options.pop("variable_style", None)
+    variable_style_arg = options.pop("variable_style", None)
+
+    # Convert string to enum if needed
+    variable_style = None
+    if variable_style_arg == "braces":
+        variable_style = VariableStyle.BRACES
+    elif isinstance(variable_style_arg, VariableStyle):
+        variable_style = variable_style_arg
 
     formatter = BashFormatter(
         indent_size=indent_size,
         tab_str=tab_str,
-        apply_function_style=apply_function_style,
+        function_style=function_style,
         variable_style=variable_style,
     )
 
