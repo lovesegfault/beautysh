@@ -107,7 +107,7 @@ def load_config_from_beautyshrc() -> dict[str, Any]:
     """Load beautysh configuration from .beautyshrc if it exists.
 
     Looks for configuration in .beautyshrc in the current working directory.
-    Assumes TOML format, checking for [tool.beautysh] or root-level keys.
+    Assumes TOML format, checking for [tool.beautysh] or [beautysh] sections.
 
     Returns:
         Dictionary with configuration values, or empty dict.
