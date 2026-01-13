@@ -35,3 +35,28 @@ def test_issue78_multiline_array_in_case(fixture_dir):
 def test_issue64_do_case_same_line(fixture_dir):
     """Test that 'do case' on the same line doesn't cause indent/outdent mismatch (issue #64)."""
     assert_formatting(fixture_dir, "issue64_do_case")
+
+
+def test_issue265_heredoc_in_function(fixture_dir):
+    """Test heredoc terminators at column 0 inside functions (issue #265)."""
+    assert_formatting(fixture_dir, "issue265_heredoc_function")
+
+
+def test_issue265_quoted_empty_case_patterns(fixture_dir):
+    """Test empty quoted case patterns like "" or '' (issue #265)."""
+    assert_formatting(fixture_dir, "issue265_quoted_case")
+
+
+def test_issue267_formatter_off_with_variable_style(fixture_dir):
+    """Test that @formatter:off/on directives respect variable style option (issue #267)."""
+    assert_formatting(fixture_dir, "issue267_formatter_variable", variable_style="braces")
+
+
+def test_issue268_variable_style_single_quotes(fixture_dir):
+    """Test that variables inside single quotes are not transformed (issue #268)."""
+    assert_formatting(fixture_dir, "issue268_single_quotes", variable_style="braces")
+
+
+def test_issue268_variable_style_heredoc_quotes(fixture_dir):
+    """Test that variables in heredocs with quoted terminators are not transformed (issue #268)."""
+    assert_formatting(fixture_dir, "issue268_heredoc_quotes", variable_style="braces")

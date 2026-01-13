@@ -1,6 +1,6 @@
 [project]
 name = "beautysh"
-version = "6.4.1"
+version = "6.4.2"
 description = "A Bash beautifier for the masses."
 authors = [
     {name = "Bernardo Meurer", email = "bernardo@meurer.org"}
@@ -45,6 +45,7 @@ dev = [
     "types-colorama>=0.4.3",
     "types-PyYAML>=6.0.0",
     "vermin >= 1.7.0",
+    "uv >= 0.9",
 ]
 
 [tool.pytest.ini_options]
@@ -52,7 +53,6 @@ addopts = "-v -Wdefault"
 
 [tool.ruff]
 line-length = 99
-target-version = "py38"
 
 [tool.ruff.lint]
 select = [

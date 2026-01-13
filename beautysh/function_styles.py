@@ -2,7 +2,7 @@
 
 import re
 from enum import Enum
-from typing import Pattern
+from re import Pattern
 
 
 class FunctionStyle(Enum):

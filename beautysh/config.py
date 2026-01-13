@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 try:
     import tomllib  # novermin
@@ -135,7 +135,7 @@ def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
     """
     try:
         props = get_properties(str(filepath))
-        config: Dict[str, Any] = {}
+        config: dict[str, Any] = {}
 
         # Map EditorConfig indent_style to beautysh tab setting
         if "indent_style" in props:
@@ -209,7 +209,7 @@ def merge_configs(
     return merged
 
 
-def apply_config_to_instance(instance: Any, config: Dict[str, Any]) -> None:
+def apply_config_to_instance(instance: Any, config: dict[str, Any]) -> None:
     """Apply configuration dictionary to a Beautify instance.
 
     Maps configuration keys to instance attributes with appropriate

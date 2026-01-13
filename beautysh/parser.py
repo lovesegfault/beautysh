@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Optional, Tuple
+from typing import Optional
 
 from .constants import FUNCTION_STYLE_PATTERNS
 
@@ -73,7 +73,7 @@ class BashParser:
         return test_record
 
     @staticmethod
-    def detect_unclosed_quote(test_record: str) -> Tuple[bool, bool]:
+    def detect_unclosed_quote(test_record: str) -> tuple[bool, bool]:
         """Detect if test_record has an unclosed quote.
 
         After get_test_record() has collapsed all properly closed quotes on
@@ -186,7 +186,7 @@ class BashParser:
         return "\n".join(lines)
 
     @staticmethod
-    def detect_heredoc(test_record: str, stripped_record: str) -> Tuple[bool, str]:
+    def detect_heredoc(test_record: str, stripped_record: str) -> tuple[bool, str]:
         """Detect here-document and extract termination string.
 
         Detects here-docs (<<EOF or <<-EOF) while avoiding false positives
@@ -229,6 +229,40 @@ class BashParser:
             return (is_heredoc, here_string)
 
         return (False, "")
+
+    @staticmethod
+    def is_heredoc_quoted(heredoc_line: str) -> bool:
+        r"""Detect if heredoc terminator is quoted (suppresses expansion).
+
+        In bash, heredoc terminators can be quoted in three ways:
+        - Single quotes: <<'EOF'
+        - Double quotes: <<"EOF"
+        - Backslash escape: <<\EOF (or <<E\OF - any escaping)
+
+        All quoted forms suppress variable expansion inside the heredoc.
+
+        Args:
+            heredoc_line: The line containing the heredoc declaration
+
+        Returns:
+            True if terminator has any quoting (expansion disabled)
+            False if terminator is unquoted (expansion enabled)
+
+        Example:
+            >>> BashParser.is_heredoc_quoted("cat <<'EOF'")
+            True
+            >>> BashParser.is_heredoc_quoted('cat <<"END"')
+            True
+            >>> BashParser.is_heredoc_quoted(r'cat <<\MARKER')
+            True
+            >>> BashParser.is_heredoc_quoted("cat <<EOF")
+            False
+        """
+        # Pattern: Check for any quote character or backslash after <<
+        # Handles: <<'...'  <<"..."  <<\...  <<-'...'  <<-"..."  <<-\...
+        # Also handles partial escaping like <<E\OF (backslash anywhere means quoted)
+        quoted_pattern = re.compile(r'<<-?\s*([\'"]|[^\s]*\\)')
+        return bool(quoted_pattern.search(heredoc_line))
 
     @staticmethod
     def is_line_continuation(line: str) -> bool:

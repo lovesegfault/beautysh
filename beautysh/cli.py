@@ -64,7 +64,7 @@ class BeautyshCLI:
         sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
         sys.stdout.write("\n")
 
-    def create_parser(self, config: Dict[str, Any]) -> argparse.ArgumentParser:
+    def create_parser(self, config: dict[str, Any]) -> argparse.ArgumentParser:
         """Create argument parser with defaults from config.
 
         Args:
@@ -316,7 +316,7 @@ class BeautyshCLI:
 
         return error
 
-    def main(self, argv: List[str]) -> int:
+    def main(self, argv: list[str]) -> int:
         """Main entry point for CLI.
 
         Args:
