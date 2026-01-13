@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, dict
 
 try:
     import tomllib  # novermin
@@ -16,7 +16,7 @@ from .constants import TAB_CHARACTER
 logger = logging.getLogger(__name__)
 
 
-def load_config_from_file(config_path: Path) -> Dict[str, Any]:
+def load_config_from_file(config_path: Path) -> dict[str, Any]:
     """Load beautysh configuration from a specific TOML file.
 
     Looks for configuration in the [tool.beautysh] section first,
@@ -40,7 +40,7 @@ def load_config_from_file(config_path: Path) -> Dict[str, Any]:
         data = tomllib.loads(file_content)
 
         # Check for [tool.beautysh] section first
-        config: Dict[str, Any] = data.get("tool", {}).get("beautysh", {})
+        config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
 
         # If not found, check for [beautysh] section
         if not config:
@@ -62,7 +62,7 @@ def load_config_from_file(config_path: Path) -> Dict[str, Any]:
         return config
 
 
-def load_config_from_pyproject() -> Dict[str, Any]:
+def load_config_from_pyproject() -> dict[str, Any]:
     """Load beautysh configuration from pyproject.toml if it exists.
 
     Looks for configuration in the [tool.beautysh] section of pyproject.toml
@@ -81,7 +81,7 @@ def load_config_from_pyproject() -> Dict[str, Any]:
     """
     pyproject_path = Path.cwd() / "pyproject.toml"
 
-    if not pyproject_path.exists():
+    if not pyproject_path.is_file():
         logger.debug("No pyproject.toml found in current directory")
         return {}
 
@@ -89,7 +89,7 @@ def load_config_from_pyproject() -> Dict[str, Any]:
         file_content = pyproject_path.read_text(encoding="utf-8")
         data = tomllib.loads(file_content)
 
-        config: Dict[str, Any] = data.get("tool", {}).get("beautysh", {})
+        config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
         if config:
             logger.debug(f"Loaded configuration from pyproject.toml: {config}")
         return config
@@ -101,7 +101,7 @@ def load_config_from_pyproject() -> Dict[str, Any]:
         return {}
 
 
-def load_config_from_beautyshrc() -> Dict[str, Any]:
+def load_config_from_beautyshrc() -> dict[str, Any]:
     """Load beautysh configuration from .beautyshrc if it exists.
 
     Looks for configuration in .beautyshrc in the current working directory.
@@ -114,7 +114,7 @@ def load_config_from_beautyshrc() -> Dict[str, Any]:
     return load_config_from_file(beautyshrc_path)
 
 
-def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
+def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
     """Load configuration from .editorconfig for the given file.
 
     Maps EditorConfig properties to beautysh configuration:
@@ -162,12 +162,12 @@ def load_config_from_editorconfig(filepath: str) -> Dict[str, Any]:
 
 
 def merge_configs(
-    editorconfig: Dict[str, Any],
-    pyproject: Dict[str, Any],
-    beautyshrc: Dict[str, Any],
-    explicit_config: Dict[str, Any],
-    cli_args: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    editorconfig: dict[str, Any],
+    pyproject: dict[str, Any],
+    beautyshrc: dict[str, Any],
+    explicit_config: dict[str, Any],
+    cli_args: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     """Merge configuration from multiple sources with proper priority.
 
     Priority order (highest to lowest):

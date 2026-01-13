@@ -6,7 +6,7 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional, dict, list
 
 from .config import (
     load_config_from_beautyshrc,
@@ -149,7 +149,7 @@ class BeautyshCLI:
         )
         return parser
 
-    def _extract_config_path(self, argv: List[str]) -> Optional[str]:
+    def _extract_config_path(self, argv: list[str]) -> Optional[str]:
         """Extract --config path from argv before full parsing.
 
         Args:
@@ -167,7 +167,7 @@ class BeautyshCLI:
                 return arg.split("=", 1)[1]
         return None
 
-    def load_configuration(self, argv: List[str]) -> Dict[str, Any]:
+    def load_configuration(self, argv: list[str]) -> dict[str, Any]:
         """Load configuration from all sources.
 
         Priority order (highest to lowest):
@@ -183,8 +183,8 @@ class BeautyshCLI:
         Returns:
             Merged configuration dictionary
         """
-        editorconfig_settings: Dict[str, Any] = {}
-        explicit_config_settings: Dict[str, Any] = {}
+        editorconfig_settings: dict[str, Any] = {}
+        explicit_config_settings: dict[str, Any] = {}
 
         config_file_path = self._extract_config_path(argv)
 
