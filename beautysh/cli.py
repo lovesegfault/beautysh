@@ -162,9 +162,14 @@ class BeautyshCLI:
             if arg == "--config":
                 if i + 1 < len(argv):
                     return argv[i + 1]
-                break  # Found --config but no value
+                sys.stderr.write("Error: --config requires a path argument\n")
+                sys.exit(1)
             if arg.startswith("--config="):
-                return arg.split("=", 1)[1]
+                value = arg.split("=", 1)[1]
+                if not value:
+                    sys.stderr.write("Error: --config requires a path argument\n")
+                    sys.exit(1)
+                return value
         return None
 
     def load_configuration(self, argv: list[str]) -> dict[str, Any]:
@@ -283,8 +288,7 @@ class BeautyshCLI:
                 return f.read()
         except UnicodeDecodeError as e:
             raise ValueError(
-                f"File '{filepath}' is not valid UTF-8. "
-                f"Please convert it to UTF-8 encoding: {e}"
+                f"File '{filepath}' is not valid UTF-8. Please convert it to UTF-8 encoding: {e}"
             ) from e
 
     def write_file(self, filepath: str, content: str) -> None:
