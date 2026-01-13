@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Any, Optional, dict
+from typing import Any, Optional
 
 try:
     import tomllib  # novermin

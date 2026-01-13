@@ -6,7 +6,7 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, Optional, dict, list
+from typing import Any, Optional
 
 from .config import (
     load_config_from_beautyshrc,
