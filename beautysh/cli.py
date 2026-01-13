@@ -81,7 +81,7 @@ class BeautyshCLI:
         parser.add_argument(
             "--config",
             type=str,
-            default=config.get("config"),
+            default=None,
             help="Path to a specific configuration file (e.g., .beautyshrc). "
             "Overrides auto-discovered config files.",
         )
@@ -190,7 +190,23 @@ class BeautyshCLI:
 
         if config_file_path:
             self.config_file = config_file_path  # Store for later use
-            explicit_config_settings = load_config_from_file(Path(config_file_path))
+            path_obj = Path(config_file_path)
+
+            # Explicit Check 1: File Existence
+            if not path_obj.is_file():
+                sys.stderr.write(f"Error: Config file '{config_file_path}' not found.\n")
+                sys.exit(1)
+
+            explicit_config_settings = load_config_from_file(path_obj)
+
+            # Explicit Check 2: Valid Content
+            # If the file exists but we got empty config, it means no valid section was found
+            if not explicit_config_settings:
+                sys.stderr.write(
+                    "Error: No [beautysh] or [tool.beautysh] section found in "
+                    f"'{config_file_path}'.\n"
+                )
+                sys.exit(1)
 
         # Load EditorConfig if processing a file
         if argv and argv[0] not in ["-h", "--help", "-v", "--version"]:

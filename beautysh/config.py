@@ -20,7 +20,7 @@ def load_config_from_file(config_path: Path) -> dict[str, Any]:
     """Load beautysh configuration from a specific TOML file.
 
     Looks for configuration in the [tool.beautysh] section first,
-    then [beautysh], then falls back to root-level keys.
+    then [beautysh].
 
     Args:
         config_path: Path to the configuration file.
@@ -45,10 +45,6 @@ def load_config_from_file(config_path: Path) -> dict[str, Any]:
         # If not found, check for [beautysh] section
         if not config:
             config = data.get("beautysh", {})
-
-        # If still not found, assume root-level keys
-        if not config:
-            config = data
 
     except OSError as e:
         logger.warning(f"Could not read {config_path}: {e}")
@@ -194,7 +190,7 @@ def merge_configs(
         >>> explicit_config = {"indent_size": 6}
         >>> cli = {"indent_size": 8}
         >>> merge_configs(editorconfig, pyproject, beautyshrc, explicit_config, cli)
-        {'indent_size': 8, 'tab': False}
+        {'indent_size': 8}
     """
     merged = {}
     merged.update(editorconfig)
