@@ -278,8 +278,14 @@ class BeautyshCLI:
             File content as string
         """
         # Enforce UTF-8 to ensure consistency across platforms
-        with open(filepath, encoding="utf-8") as f:
-            return f.read()
+        try:
+            with open(filepath, encoding="utf-8") as f:
+                return f.read()
+        except UnicodeDecodeError as e:
+            raise ValueError(
+                f"File '{filepath}' is not valid UTF-8. "
+                f"Please convert it to UTF-8 encoding: {e}"
+            ) from e
 
     def write_file(self, filepath: str, content: str) -> None:
         """Write content to file.
