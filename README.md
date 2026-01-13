@@ -69,7 +69,7 @@ Beautysh supports multiple configuration sources with the following priority (hi
 
 #### .beautyshrc
 
-The `.beautyshrc` file, located in the current working directory, is a configuration file read in TOML format. It can contain configuration options at the root level, or under the `[tool.beautysh]` or `[beautysh]` sections.
+The `.beautyshrc` file, located in the current working directory, is a configuration file read in TOML format. It can contain configuration options under the `[tool.beautysh]` or `[beautysh]` sections.
 
 Example `.beautyshrc` content:
 
@@ -77,7 +77,6 @@ Note: Configuration is read with the following priority:
 
 1. `[tool.beautysh]` section
 1. `[beautysh]` section
-1. Root-level keys
 
 ```toml
 [beautysh]
@@ -352,6 +351,6 @@ This will run:
 - ruff (linting and formatting)
 - treefmt (Nix, YAML, Markdown formatting)
 
-______________________________________________________________________
+---
 
 Originally written by [Paul Lutus](http://arachnoid.com/python/beautify_bash_program.html)
