@@ -16,6 +16,54 @@ from .constants import TAB_CHARACTER
 logger = logging.getLogger(__name__)
 
 
+def load_config_from_file(config_path: Path, strict: bool = False) -> dict[str, Any]:
+    """Load beautysh configuration from a specific TOML file.
+
+    Looks for configuration in the [tool.beautysh] section first,
+    then [beautysh].
+
+    Args:
+        config_path: Path to the configuration file.
+        strict: If True, raise ValueError/OSError on failure instead of warning.
+
+    Returns:
+        Dictionary with configuration values.
+    """
+    if not config_path.is_file():
+        if strict:
+            raise OSError(f"File not found: {config_path}")
+        logger.debug(f"Configuration file not found: {config_path}")
+        return {}
+
+    try:
+        # Read file as text first
+        file_content = config_path.read_text(encoding="utf-8")
+        # Use .loads() which works for both tomllib and tomli
+        data = tomllib.loads(file_content)
+
+        # Check for [tool.beautysh] section first
+        config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
+
+        # If not found, check for [beautysh] section
+        if not config:
+            config = data.get("beautysh", {})
+
+    except OSError as e:
+        if strict:
+            raise
+        logger.warning(f"Could not read {config_path}: {e}")
+        return {}
+    except tomllib.TOMLDecodeError as e:
+        if strict:
+            raise ValueError(f"Invalid TOML syntax in {config_path}: {e}") from e
+        logger.warning(f"Could not parse {config_path}: {e}")
+        return {}
+    else:
+        if config:
+            logger.debug(f"Loaded configuration from {config_path}: {config}")
+        return config
+
+
 def load_config_from_pyproject() -> dict[str, Any]:
     """Load beautysh configuration from pyproject.toml if it exists.
 
@@ -35,13 +83,14 @@ def load_config_from_pyproject() -> dict[str, Any]:
     """
     pyproject_path = Path.cwd() / "pyproject.toml"
 
-    if not pyproject_path.exists():
+    if not pyproject_path.is_file():
         logger.debug("No pyproject.toml found in current directory")
         return {}
 
     try:
-        with open(pyproject_path, "rb") as f:
-            data = tomllib.load(f)
+        file_content = pyproject_path.read_text(encoding="utf-8")
+        data = tomllib.loads(file_content)
+
         config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
         if config:
             logger.debug(f"Loaded configuration from pyproject.toml: {config}")
@@ -52,6 +101,19 @@ def load_config_from_pyproject() -> dict[str, Any]:
     except tomllib.TOMLDecodeError as e:
         logger.warning(f"Could not parse pyproject.toml: {e}")
         return {}
+
+
+def load_config_from_beautyshrc() -> dict[str, Any]:
+    """Load beautysh configuration from .beautyshrc if it exists.
+
+    Looks for configuration in .beautyshrc in the current working directory.
+    Assumes TOML format, checking for [tool.beautysh] or [beautysh] sections.
+
+    Returns:
+        Dictionary with configuration values, or empty dict.
+    """
+    beautyshrc_path = Path.cwd() / ".beautyshrc"
+    return load_config_from_file(beautyshrc_path)
 
 
 def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
@@ -104,18 +166,24 @@ def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
 def merge_configs(
     editorconfig: dict[str, Any],
     pyproject: dict[str, Any],
+    beautyshrc: dict[str, Any],
+    explicit_config: dict[str, Any],
     cli_args: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Merge configuration from multiple sources with proper priority.
 
     Priority order (highest to lowest):
     1. CLI arguments
-    2. pyproject.toml [tool.beautysh]
-    3. EditorConfig
+    2. Explicit config file
+    3. .beautyshrc
+    4. pyproject.toml [tool.beautysh]
+    5. EditorConfig
 
     Args:
         editorconfig: Configuration from .editorconfig
         pyproject: Configuration from pyproject.toml
+        beautyshrc: Configuration from .beautyshrc
+        explicit_config: Configuration from --config file
         cli_args: Configuration from CLI arguments (optional)
 
     Returns:
@@ -123,14 +191,18 @@ def merge_configs(
 
     Example:
         >>> editorconfig = {"indent_size": 2}
-        >>> pyproject = {"indent_size": 4, "tab": False}
+        >>> pyproject = {"indent_size": 4}
+        >>> beautyshrc = {"indent_size": 3}
+        >>> explicit_config = {"indent_size": 6}
         >>> cli = {"indent_size": 8}
-        >>> merge_configs(editorconfig, pyproject, cli)
-        {'indent_size': 8, 'tab': False}
+        >>> merge_configs(editorconfig, pyproject, beautyshrc, explicit_config, cli)
+        {'indent_size': 8}
     """
     merged = {}
     merged.update(editorconfig)
     merged.update(pyproject)
+    merged.update(beautyshrc)
+    merged.update(explicit_config)
     if cli_args:
         # Filter out None values from CLI args
         merged.update({k: v for k, v in cli_args.items() if v is not None})
