@@ -192,15 +192,15 @@ class BeautyshCLI:
             self.config_file = config_file_path  # Store for later use
             path_obj = Path(config_file_path)
 
-            # Explicit Check 1: File Existence
-            if not path_obj.is_file():
-                sys.stderr.write(f"Error: Config file '{config_file_path}' not found.\n")
+            try:
+                # Load strictly: any file IO or parsing error will raise exception
+                explicit_config_settings = load_config_from_file(path_obj, strict=True)
+            except (OSError, ValueError) as e:
+                # Catch strict errors and exit nicely
+                sys.stderr.write(f"Error loading config '{config_file_path}': {e}\n")
                 sys.exit(1)
 
-            explicit_config_settings = load_config_from_file(path_obj)
-
-            # Explicit Check 2: Valid Content
-            # If the file exists but we got empty config, it means no valid section was found
+            # Check if the file was valid TOML but lacked the required section
             if not explicit_config_settings:
                 sys.stderr.write(
                     "Error: No [beautysh] or [tool.beautysh] section found in "

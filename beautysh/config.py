@@ -16,7 +16,7 @@ from .constants import TAB_CHARACTER
 logger = logging.getLogger(__name__)
 
 
-def load_config_from_file(config_path: Path) -> dict[str, Any]:
+def load_config_from_file(config_path: Path, strict: bool = False) -> dict[str, Any]:
     """Load beautysh configuration from a specific TOML file.
 
     Looks for configuration in the [tool.beautysh] section first,
@@ -24,12 +24,14 @@ def load_config_from_file(config_path: Path) -> dict[str, Any]:
 
     Args:
         config_path: Path to the configuration file.
+        strict: If True, raise ValueError/OSError on failure instead of warning.
 
     Returns:
-        Dictionary with configuration values, or empty dict if file not found
-        or cannot be parsed.
+        Dictionary with configuration values.
     """
     if not config_path.is_file():
+        if strict:
+            raise OSError(f"File not found: {config_path}")
         logger.debug(f"Configuration file not found: {config_path}")
         return {}
 
@@ -47,9 +49,13 @@ def load_config_from_file(config_path: Path) -> dict[str, Any]:
             config = data.get("beautysh", {})
 
     except OSError as e:
+        if strict:
+            raise
         logger.warning(f"Could not read {config_path}: {e}")
         return {}
     except tomllib.TOMLDecodeError as e:
+        if strict:
+            raise ValueError(f"Invalid TOML syntax in {config_path}: {e}") from e
         logger.warning(f"Could not parse {config_path}: {e}")
         return {}
     else:

@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
+import pytest
+
 from beautysh import BeautyshCLI
 
 
@@ -208,3 +210,47 @@ indent_size = 3
         # Should use 3 spaces from EditorConfig for .bash files
         assert "   if true; then" in formatted
         assert "      echo" in formatted
+
+
+def test_config_flag_loads_settings(tmp_path: Path):
+    """Verify --config loads settings from [tool.beautysh]."""
+    cfg_file = tmp_path / "custom.toml"
+    cfg_file.write_text("[tool.beautysh]\nindent_size = 9\n", encoding="utf-8")
+
+    cli = BeautyshCLI()
+    # Mock argv: we pass the file but don't actually run beautify (prevent exit)
+    config = cli.load_configuration(["--config", str(cfg_file)])
+
+    assert config["indent_size"] == 9
+
+
+def test_config_flag_no_leak(tmp_path: Path):
+    """Verify --config ignores unrelated TOML keys (no root fallback)."""
+    cfg_file = tmp_path / "leaky.toml"
+    # A file with root keys but no [beautysh] section
+    cfg_file.write_text('indent_size = 9\n[other_tool]\nfoo = "bar"', encoding="utf-8")
+
+    cli = BeautyshCLI()
+
+    # This should fail because no [beautysh] section is present
+    # logic: strict=True in cli raises ValueError or checks emptiness -> sys.exit(1)
+    with pytest.raises(SystemExit) as exc:
+        cli.load_configuration(["--config", str(cfg_file)])
+
+    assert exc.value.code == 1
+
+
+def test_config_flag_syntax_error(tmp_path: Path, capsys):
+    """Verify broken TOML files cause a hard exit."""
+    cfg_file = tmp_path / "broken.toml"
+    cfg_file.write_text("INVALID TOML [ [", encoding="utf-8")
+
+    cli = BeautyshCLI()
+
+    with pytest.raises(SystemExit) as exc:
+        cli.load_configuration(["--config", str(cfg_file)])
+
+    assert exc.value.code == 1
+    # Check that we printed a useful error
+    captured = capsys.readouterr()
+    assert "Invalid TOML syntax" in captured.err
