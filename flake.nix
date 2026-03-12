@@ -159,6 +159,8 @@
 
             shellHook = ''
               unset PYTHONPATH
+              # pytestCheckHook leaks this via setupHook; it blocks pytest-cov etc from loading
+              unset PYTEST_DISABLE_PLUGIN_AUTOLOAD
               export REPO_ROOT="$(git rev-parse --show-toplevel)"
               ${config.pre-commit.installationScript}
             '';

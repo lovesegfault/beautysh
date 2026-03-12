@@ -46,6 +46,7 @@ dev = [
     "types-PyYAML>=6.0.0",
     "vermin >= 1.7.0",
     "uv >= 0.9",
+    "pytest-cov>=7.0.0",
 ]
 
 [tool.pytest.ini_options]
