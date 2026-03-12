@@ -106,10 +106,25 @@
 
           venv = pythonSet.mkVirtualEnv "beautysh" workspace.deps.default;
           devVenv = devPythonSet.mkVirtualEnv "beautysh-dev" workspace.deps.all;
+          # Non-editable venv with dev deps for sandboxed checks (devVenv's
+          # editable overlay points at $REPO_ROOT which doesn't exist here).
+          testVenv = pythonSet.mkVirtualEnv "beautysh-test" workspace.deps.all;
         in
         {
           checks = {
             inherit (self'.packages) beautysh dist;
+            coverage =
+              pkgs.runCommand "beautysh-coverage"
+                {
+                  nativeBuildInputs = [ testVenv ];
+                }
+                ''
+                  cp -r ${self} src
+                  chmod -R u+w src
+                  cd src
+                  mkdir $out
+                  pytest --cov --cov-report=xml:$out/coverage.xml --cov-report=term
+                '';
           };
 
           packages = {

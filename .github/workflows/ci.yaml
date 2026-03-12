@@ -58,13 +58,35 @@ jobs:
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
         run: nix build -L '.#${{ matrix.attr }}'
+  coverage-upload:
+    needs: nix-matrix
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            accept-flake-config = true
+      - uses: cachix/cachix-action@v16
+        with:
+          name: beautysh
+          skipPush: true
+      - run: nix build -L '.#checks.x86_64-linux.coverage'
+      - uses: codecov/codecov-action@v5
+        with:
+          files: result/coverage.xml
+          use_oidc: true
+          fail_ci_if_error: true
   ci-gate:
     if: always()
     # nix-eval is covered transitively: nix-matrix needs it, so if nix-eval
     # fails nix-matrix skips, and alls-green treats skip as failure.
     # Including nix-eval directly breaks alls-green because its matrix output
     # contains escaped quotes that get mangled through the action's heredoc.
-    needs: [nix-matrix]
+    needs: [nix-matrix, coverage-upload]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1

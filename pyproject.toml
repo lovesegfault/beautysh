@@ -52,6 +52,15 @@ dev = [
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault"
 
+[tool.coverage.run]
+source = ["beautysh"]
+relative_files = true
+
+[tool.coverage.report]
+exclude_also = [
+    "if __name__ == .__main__.:",
+]
+
 [tool.ruff]
 line-length = 99
 

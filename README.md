@@ -1,4 +1,4 @@
-# beautysh [![CI](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml/badge.svg)](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml)
+# beautysh [![CI](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml/badge.svg)](https://github.com/lovesegfault/beautysh/actions/workflows/ci.yaml) [![codecov](https://codecov.io/gh/lovesegfault/beautysh/graph/badge.svg)](https://codecov.io/gh/lovesegfault/beautysh)
 
 This program takes upon itself the hard task of beautifying Bash scripts
 (yeesh). Processing Bash scripts is not trivial, they aren't like C or Java
