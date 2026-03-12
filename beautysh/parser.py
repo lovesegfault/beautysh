@@ -158,11 +158,10 @@ class BashParser:
         from .constants import CASE_SPLIT_PATTERN, DO_CASE_PATTERN
 
         lines = []
-        parser = BashParser()
 
         for line in data.split("\n"):
             # Check if line contains both 'do' and 'case' or 'then' and 'case'
-            test_line = parser.get_test_record(line)
+            test_line = BashParser.get_test_record(line)
 
             # Look for patterns like 'do case' or 'then case'
             match = DO_CASE_PATTERN.search(test_line)

@@ -55,8 +55,6 @@ class BashFormatter:
         self.tab_str = tab_str
         self.apply_function_style = apply_function_style
         self.variable_style = variable_style
-        self.parser = BashParser()
-        self.transformer = StyleTransformer()
 
     def beautify_string(self, data: str, path: str = "") -> tuple[str, bool]:
         """Beautify a Bash script string.
@@ -81,7 +79,7 @@ class BashFormatter:
             fi
         """
         # Preprocess: split 'do case' and 'then case' onto separate lines
-        data = self.parser.normalize_do_case_lines(data)
+        data = BashParser.normalize_do_case_lines(data)
 
         state = FormatterState()
         output = StringIO()
@@ -129,11 +127,11 @@ class BashFormatter:
 
         # Ensure space before ;; in case statements
         if state.case_level:
-            stripped_record = self.transformer.ensure_space_before_double_semicolon(
+            stripped_record = StyleTransformer.ensure_space_before_double_semicolon(
                 stripped_record
             )
 
-        test_record = self.parser.get_test_record(stripped_record)
+        test_record = BashParser.get_test_record(stripped_record)
 
         # Handle line continuation
         self._update_continuation_state(stripped_record, state)
@@ -180,17 +178,17 @@ class BashFormatter:
             # Apply variable transformation to unquoted heredoc content
             result = record
             if state.in_here_doc and not state.heredoc_quoted and self.variable_style is not None:
-                result = self.transformer.apply_variable_style(result, self.variable_style)
+                result = StyleTransformer.apply_variable_style(result, self.variable_style)
 
             return result
 
         # Detect here-docs
-        is_heredoc, here_string = self.parser.detect_heredoc(test_record, stripped_record)
+        is_heredoc, here_string = BashParser.detect_heredoc(test_record, stripped_record)
         if is_heredoc:
             state.in_here_doc = True
             state.here_string = here_string
             # Check if terminator is quoted (suppresses variable expansion)
-            state.heredoc_quoted = self.parser.is_heredoc_quoted(stripped_record)
+            state.heredoc_quoted = BashParser.is_heredoc_quoted(stripped_record)
             logger.debug(
                 f"Heredoc started: terminator={here_string}, "
                 f"quoted={state.heredoc_quoted}, line={line_num}"
@@ -275,7 +273,7 @@ class BashFormatter:
         Returns:
             True if multiline string starts
         """
-        unclosed_double, unclosed_single = self.parser.detect_unclosed_quote(test_record)
+        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
         if unclosed_double or unclosed_single:
             state.in_multiline_string = True
             state.multiline_string_quote_char = '"' if unclosed_double else "'"
@@ -293,7 +291,7 @@ class BashFormatter:
             state: Current formatter state
         """
         state.prev_line_had_continue = state.continue_line
-        state.continue_line = self.parser.is_line_continuation(stripped_record)
+        state.continue_line = BashParser.is_line_continuation(stripped_record)
 
     def _handle_line_continuation(self, test_record: str, state: FormatterState) -> str:
         """Handle multiline strings with backslash continuation.
@@ -413,9 +411,9 @@ class BashFormatter:
                 choice_case = -1
 
         # Detect and transform function styles
-        func_decl_style = self.parser.detect_function_style(test_record)
+        func_decl_style = BashParser.detect_function_style(test_record)
         if func_decl_style is not None:
-            stripped_record = self.transformer.change_function_style(
+            stripped_record = StyleTransformer.change_function_style(
                 stripped_record, func_decl_style, self.apply_function_style
             )
 
@@ -442,7 +440,7 @@ class BashFormatter:
         # Apply variable style transformation if requested
         # Skip transformation in quoted heredocs (no expansion in bash)
         if self.variable_style is not None and not state.heredoc_quoted:
-            formatted = self.transformer.apply_variable_style(formatted, self.variable_style)
+            formatted = StyleTransformer.apply_variable_style(formatted, self.variable_style)
 
         return formatted
 
