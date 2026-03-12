@@ -93,13 +93,17 @@
               });
             })
           ];
+          mkPythonSet =
+            python:
+            (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
+              lib.composeManyExtensions [
+                pyproject-build-systems.overlays.wheel
+                overlay
+              ]
+            );
+
           python = pkgs.python312;
-          pythonSet = (pkgs.callPackage pyproject-nix.build.packages { inherit python; }).overrideScope (
-            lib.composeManyExtensions [
-              pyproject-build-systems.overlays.wheel
-              overlay
-            ]
-          );
+          pythonSet = mkPythonSet python;
           devPythonSet = pythonSet.overrideScope editableOverlay;
 
           inherit (pkgs.callPackage pyproject-nix.build.util { }) mkApplication;
@@ -109,6 +113,27 @@
           # Non-editable venv with dev deps for sandboxed checks (devVenv's
           # editable overlay points at $REPO_ROOT which doesn't exist here).
           testVenv = pythonSet.mkVirtualEnv "beautysh-test" workspace.deps.all;
+
+          # Run the test suite against a given interpreter. Used for the
+          # Python version matrix — vermin catches syntax incompatibilities,
+          # but not stdlib/regex behaviour differences across versions.
+          mkTestCheck =
+            python:
+            let
+              ps = mkPythonSet python;
+              venv = ps.mkVirtualEnv "beautysh-test-${python.pythonVersion}" workspace.deps.all;
+            in
+            pkgs.runCommand "beautysh-tests-${python.pythonVersion}"
+              {
+                nativeBuildInputs = [ venv ];
+              }
+              ''
+                cp -r ${self} src
+                chmod -R u+w src
+                cd src
+                pytest
+                touch $out
+              '';
         in
         {
           checks = {
@@ -125,6 +150,9 @@
                   mkdir $out
                   pytest --cov --cov-report=xml:$out/coverage.xml --cov-report=term
                 '';
+            tests-py39 = mkTestCheck pkgs.python39;
+            tests-py311 = mkTestCheck pkgs.python311;
+            tests-py313 = mkTestCheck pkgs.python313;
           };
 
           packages = {
@@ -213,7 +241,8 @@
               };
               mypy = {
                 enable = true;
-                entry = lib.mkForce "${devVenv}/bin/mypy";
+                entry = lib.mkForce "${devVenv}/bin/mypy beautysh/";
+                pass_filenames = false;
               };
               pytest = {
                 enable = true;
