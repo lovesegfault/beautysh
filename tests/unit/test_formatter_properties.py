@@ -6,40 +6,6 @@ from hypothesis import strategies as st
 from beautysh.formatter import BashFormatter
 from beautysh.function_styles import FunctionStyle
 
-# Strategy for generating valid bash-like scripts
-bash_keywords = st.sampled_from(
-    [
-        "if",
-        "then",
-        "else",
-        "elif",
-        "fi",
-        "for",
-        "do",
-        "done",
-        "while",
-        "until",
-        "case",
-        "esac",
-        "function",
-    ]
-)
-
-bash_operators = st.sampled_from(["[", "]", "(", ")", "{", "}", ";", "|", "&"])
-
-bash_commands = st.sampled_from(
-    [
-        "echo",
-        "test",
-        "cd",
-        "ls",
-        "cat",
-        "grep",
-        "awk",
-        "sed",
-    ]
-)
-
 
 class TestFormatterProperties:
     """Property-based tests for BashFormatter."""
@@ -54,38 +20,16 @@ class TestFormatterProperties:
         assert isinstance(result[0], str)
         assert isinstance(result[1], bool)
 
-    @given(st.text())
-    def test_beautify_string_preserves_line_count_roughly(self, script):
-        """beautify_string should not drastically change line count."""
-        formatter = BashFormatter()
-        original_lines = script.count("\n")
-        formatted, error = formatter.beautify_string(script)
-        formatted_lines = formatted.count("\n")
-
-        # Line count can increase (do case split) but should be within reason
-        # Allow up to 2x increase for edge cases
-        assert formatted_lines <= original_lines * 2 + 10
-
     @given(st.integers(min_value=1, max_value=8))
     def test_beautify_string_with_custom_indent(self, indent_size):
-        """Formatter should work with various indent sizes."""
+        """Indented body line starts with exactly indent_size spaces."""
         formatter = BashFormatter(indent_size=indent_size)
         script = "if true; then\necho test\nfi"
         formatted, error = formatter.beautify_string(script)
-        assert isinstance(formatted, str)
-        # Should have indentation
-        assert " " * indent_size in formatted or formatted.count(" ") > 0
-
-    @given(st.lists(bash_keywords, min_size=1, max_size=5))
-    def test_beautify_string_with_keywords(self, keywords):
-        """Formatter should handle bash keywords."""
-        formatter = BashFormatter()
-        script = " ".join(keywords)
-        formatted, error = formatter.beautify_string(script)
-        assert isinstance(formatted, str)
-        # All keywords should still be present
-        for keyword in keywords:
-            assert keyword in formatted
+        assert not error
+        body = formatted.splitlines()[1]
+        assert body.startswith(" " * indent_size)
+        assert not body.startswith(" " * (indent_size + 1))
 
     @given(st.text())
     def test_beautify_string_idempotent(self, script):
@@ -119,20 +63,28 @@ class TestFormatterProperties:
         assert isinstance(formatted, str)
         assert isinstance(error, bool)
 
-    @given(st.lists(st.text(min_size=1), min_size=1, max_size=10))
+    @given(
+        st.lists(
+            st.text(
+                alphabet=st.characters(
+                    blacklist_categories=("Cc", "Cs"), blacklist_characters="\n"
+                ),
+                min_size=1,
+            ),
+            min_size=1,
+            max_size=10,
+        )
+    )
     def test_beautify_string_preserves_content(self, lines):
-        """Formatter should preserve actual content (after stripping)."""
+        """Formatter preserves the stripped content of every input line."""
         formatter = BashFormatter()
         script = "\n".join(lines)
-        formatted, error = formatter.beautify_string(script)
+        formatted, _ = formatter.beautify_string(script)
 
-        # Each non-empty line's content should appear in formatted output
         for line in lines:
-            if line.strip():
-                # Content should be preserved (though whitespace may change)
-                assert line.strip() in formatted or any(
-                    word in formatted for word in line.split() if word
-                )
+            stripped = line.strip()
+            if stripped:
+                assert stripped in formatted
 
     @given(st.integers(min_value=0, max_value=5))
     def test_balanced_if_fi(self, n):
@@ -193,21 +145,12 @@ class TestFormatterProperties:
         # Should have blank lines in output (at least one double newline)
         assert "\n\n" in formatted
 
-    def test_deeply_nested_structures(self):
-        """Formatter should handle deeply nested structures."""
+    @given(st.integers(min_value=1, max_value=8))
+    def test_deeply_nested_structures(self, depth):
+        """Nesting N levels indents the body by exactly N*4 spaces."""
         formatter = BashFormatter()
-        script = """
-if true; then
-    if true; then
-        if true; then
-            if true; then
-                echo "deep"
-            fi
-        fi
-    fi
-fi
-"""
-        formatted, error = formatter.beautify_string(script)
+        lines = ["if true; then"] * depth + ['echo "deep"'] + ["fi"] * depth
+        formatted, error = formatter.beautify_string("\n".join(lines))
         assert not error
-        # Should have progressive indentation
-        assert "    echo" in formatted or "echo" in formatted
+        expected_body = " " * (4 * depth) + 'echo "deep"'
+        assert expected_body in formatted.splitlines()

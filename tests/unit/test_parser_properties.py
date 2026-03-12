@@ -154,9 +154,8 @@ class TestParserProperties:
         assert "'" not in result
 
     @given(st.text())
-    def test_get_test_record_idempotent(self, line):
-        """Running get_test_record twice should give same result."""
+    def test_get_test_record_monotone_shrink(self, line):
+        """A second pass never grows the output (it strips, never adds)."""
         first = BashParser.get_test_record(line)
         second = BashParser.get_test_record(first)
-        # Second pass shouldn't change anything (since quotes/comments already removed)
         assert len(second) <= len(first)
