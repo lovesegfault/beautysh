@@ -62,6 +62,17 @@ def test_issue268_variable_style_heredoc_quotes(fixture_dir):
     assert_formatting(fixture_dir, "issue268_heredoc_quotes", variable_style="braces")
 
 
+def test_issue270_escaped_case_patterns(fixture_dir):
+    r"""Test case patterns that begin with escaped chars like \?) (issue #270).
+
+    ESCAPED_CHAR stripping reduces `\?)` to `)`, which the CASE_CHOICE_PATTERN
+    (which requires content before the paren to avoid issue #78 false positives)
+    cannot match. Detect this by noting that the original line had content
+    before the `)` that get_test_record removed.
+    """
+    assert_formatting(fixture_dir, "issue270_escaped_case")
+
+
 def test_issue272_backslash_continuation_in_quoted_string(fixture_dir):
     """Test backslash continuation inside a quoted string in an if condition (issue #272).
 
