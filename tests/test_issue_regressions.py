@@ -81,3 +81,12 @@ def test_issue272_backslash_continuation_in_quoted_string(fixture_dir):
     must still be counted for indentation tracking.
     """
     assert_formatting(fixture_dir, "issue272_split_lines")
+
+
+def test_keyword_as_command_argument(fixture_dir):
+    """Keywords used as command arguments (echo done, printf then) must not affect indent.
+
+    Previously 'echo done' matched INDENT_DECREASE_KEYWORDS because the regex
+    prefix (\\s|\\A|;) matched the single space between 'echo' and 'done'.
+    """
+    assert_formatting(fixture_dir, "keyword_as_argument")

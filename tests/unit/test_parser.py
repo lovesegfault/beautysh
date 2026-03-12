@@ -150,6 +150,12 @@ class TestNormalizeDocaseLines:
         result = BashParser.normalize_do_case_lines(script)
         assert result == script
 
+    def test_does_not_split_echo_do_case(self):
+        # 'do' and 'case' here are command arguments, not keywords.
+        script = "echo do case stuff"
+        result = BashParser.normalize_do_case_lines(script)
+        assert result == script
+
 
 class TestDetectHeredoc:
     """Tests for BashParser.detect_heredoc()"""

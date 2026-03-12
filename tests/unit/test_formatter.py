@@ -1,6 +1,45 @@
 """Unit tests for beautysh.formatter module."""
 
+import pytest
+
 from beautysh.formatter import BashFormatter
+
+
+class TestKeywordAsArgument:
+    """Keywords used as command arguments must not affect indentation."""
+
+    @pytest.mark.parametrize("arg", ["done", "fi", "elif", "esac"])
+    def test_decrease_keyword_as_echo_arg(self, arg):
+        f = BashFormatter()
+        r, e = f.beautify_string(f"if [ 1 ]; then\necho {arg}\necho ok\nfi\n")
+        assert not e
+        assert r == f"if [ 1 ]; then\n    echo {arg}\n    echo ok\nfi\n"
+
+    @pytest.mark.parametrize("arg", ["then", "do", "case"])
+    def test_increase_keyword_as_echo_arg(self, arg):
+        f = BashFormatter()
+        r, e = f.beautify_string(f"if [ 1 ]; then\necho {arg} foo\necho ok\nfi\n")
+        assert not e
+        assert r == f"if [ 1 ]; then\n    echo {arg} foo\n    echo ok\nfi\n"
+
+    def test_keyword_still_works_at_command_position(self):
+        f = BashFormatter()
+        r, e = f.beautify_string("while true; do\necho x\ndone\n")
+        assert not e
+        assert r == "while true; do\n    echo x\ndone\n"
+
+    def test_keyword_after_semicolon_still_works(self):
+        f = BashFormatter()
+        r, e = f.beautify_string("if [ 1 ]; then echo x; fi\n")
+        assert not e
+        assert r == "if [ 1 ]; then echo x; fi\n"
+
+    def test_nested_done_on_one_line(self):
+        # done; done must both be counted
+        f = BashFormatter()
+        r, e = f.beautify_string("while a; do while b; do\necho x\ndone; done\n")
+        assert not e
+        assert "    echo x" in r
 
 
 class TestBashFormatter:
