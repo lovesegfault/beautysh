@@ -93,19 +93,15 @@ class TestEnsureSpaceBeforeDoubleSemicolon:
     """Tests for StyleTransformer.ensure_space_before_double_semicolon()"""
 
     def test_adds_space_when_needed(self):
-        result = StyleTransformer.ensure_space_before_double_semicolon("foo;;", True)
+        result = StyleTransformer.ensure_space_before_double_semicolon("foo;;")
         assert result == "foo ;;"
 
     def test_preserves_existing_space(self):
-        result = StyleTransformer.ensure_space_before_double_semicolon("foo ;;", True)
+        result = StyleTransformer.ensure_space_before_double_semicolon("foo ;;")
         assert result == "foo ;;"
 
-    def test_no_change_when_not_in_case(self):
-        result = StyleTransformer.ensure_space_before_double_semicolon("foo;;", False)
-        assert result == "foo;;"
-
     def test_handles_multiple_semicolons(self):
-        result = StyleTransformer.ensure_space_before_double_semicolon("foo;;bar;;", True)
+        result = StyleTransformer.ensure_space_before_double_semicolon("foo;;bar;;")
         assert result == "foo ;;bar ;;"
 
 

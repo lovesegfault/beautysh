@@ -130,7 +130,7 @@ class BashFormatter:
         # Ensure space before ;; in case statements
         if state.case_level:
             stripped_record = self.transformer.ensure_space_before_double_semicolon(
-                stripped_record, True
+                stripped_record
             )
 
         test_record = self.parser.get_test_record(stripped_record)

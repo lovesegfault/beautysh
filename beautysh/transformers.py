@@ -140,25 +140,21 @@ class StyleTransformer:
         return transformed
 
     @staticmethod
-    def ensure_space_before_double_semicolon(line: str, in_case: bool) -> str:
+    def ensure_space_before_double_semicolon(line: str) -> str:
         """Ensure space before ;; terminators in case statements.
 
         Args:
             line: Line to process
-            in_case: Whether we're currently in a case statement
 
         Returns:
             Line with space added before ;; if needed
 
         Example:
-            >>> StyleTransformer.ensure_space_before_double_semicolon('foo;;', True)
+            >>> StyleTransformer.ensure_space_before_double_semicolon('foo;;')
             'foo ;;'
-            >>> StyleTransformer.ensure_space_before_double_semicolon('foo ;;', True)
+            >>> StyleTransformer.ensure_space_before_double_semicolon('foo ;;')
             'foo ;;'
         """
-        if not in_case:
-            return line
-
         return SPACE_BEFORE_DOUBLE_SEMICOLON.sub(r"\1 ;;", line)
 
 
