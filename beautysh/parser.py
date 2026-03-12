@@ -215,11 +215,14 @@ class BashParser:
             HEREDOC_PATTERN,
             HEREDOC_TERMINATOR,
             HERESTRING_PATTERN,
+            LET_SHIFT_PATTERN,
         )
 
         has_heredoc = HEREDOC_PATTERN.search(test_record)
         is_herestring = HERESTRING_PATTERN.search(test_record)
-        is_arithmetic = ARITHMETIC_PATTERN.search(test_record)
+        is_arithmetic = ARITHMETIC_PATTERN.search(test_record) or LET_SHIFT_PATTERN.search(
+            test_record
+        )
 
         if has_heredoc and not is_herestring and not is_arithmetic:
             match = HEREDOC_TERMINATOR.search(stripped_record)

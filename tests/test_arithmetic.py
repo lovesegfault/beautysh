@@ -21,3 +21,8 @@ def test_arithmetic_multiple_shifts(fixture_dir):
 def test_arithmetic_vs_heredoc(fixture_dir):
     """Test that we can distinguish arithmetic << from here-docs."""
     assert_formatting(fixture_dir, "arithmetic_vs_heredoc")
+
+
+def test_arithmetic_command_shift(fixture_dir):
+    """Test that ((...<<...)) without $ and let with << don't trigger heredoc detection."""
+    assert_formatting(fixture_dir, "arithmetic_command_shift")

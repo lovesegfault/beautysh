@@ -194,6 +194,21 @@ class TestDetectHeredoc:
         assert not is_heredoc
         assert terminator == ""
 
+    def test_arithmetic_command_not_heredoc(self):
+        # (( )) without $ is a bash arithmetic command; << is bit-shift.
+        # Previously only $((...)) was excluded, so this entered heredoc mode
+        # with terminator '2' and corrupted the rest of the file.
+        line = "((x = 1 << 2))"
+        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
+        assert not is_heredoc
+        assert terminator == ""
+
+    def test_let_shift_not_heredoc(self):
+        line = "let x=1<<2"
+        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
+        assert not is_heredoc
+        assert terminator == ""
+
     def test_heredoc_with_pipeline(self):
         # cat <<EOF|grep is valid bash: EOF is the terminator, |grep is a pipeline.
         # Previously the regex had | as a literal inside [_|\w] and matched 'EOF|grep'.

@@ -44,7 +44,8 @@ SQUARE_BRACKET_CLOSE = re.compile(r"\]")
 # Here-doc patterns
 HEREDOC_PATTERN = re.compile(r"<<-?")
 HERESTRING_PATTERN = re.compile(r".*<<<")
-ARITHMETIC_PATTERN = re.compile(r"\$\(\(.*<<.*\)\)")
+ARITHMETIC_PATTERN = re.compile(r"\(\(.*<<.*\)\)")
+LET_SHIFT_PATTERN = re.compile(r"\blet\b.*<<")
 HEREDOC_TERMINATOR = re.compile(r'.*<<-?\s*[\'"]?(\w+)[\'"]?.*')
 
 # Case statement patterns
