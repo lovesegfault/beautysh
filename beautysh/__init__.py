@@ -15,8 +15,6 @@ Example:
     fi
 """
 
-import logging
-
 # Public API exports
 from .cli import BeautyshCLI
 from .config import (
@@ -30,12 +28,6 @@ from .function_styles import FunctionStyle
 from .parser import BashParser
 from .transformers import FunctionStyleParser, StyleTransformer
 from .types import BeautyshConfig, FormatterState
-
-# Configure default logging
-logging.basicConfig(
-    level=logging.WARNING,
-    format="%(name)s - %(levelname)s: %(message)s",
-)
 
 __version__ = "6.3.3"
 
