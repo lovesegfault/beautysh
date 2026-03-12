@@ -167,14 +167,17 @@ class BashFormatter:
         # may contain keywords after the closing quote (e.g., `hej)"; then`)
         # and must reach _format_line so indentation is tracked correctly.
         if state.in_here_doc or inside_multiline_quoted:
-            # Test for here-doc termination
-            if state.in_here_doc:
-                # Stricter terminator check: must be on its own line (issue #265).
-                # stripped_record is already .strip()'d above, which handles <<- tab indentation.
-                if stripped_record == state.here_string and "<<" not in test_record:
-                    state.in_here_doc = False
-                    state.heredoc_quoted = False  # Reset quote tracking
-                    logger.debug(f"Here-doc terminated at line {line_num}")
+            # Test for here-doc termination.
+            # Stricter terminator check: must be on its own line (issue #265).
+            # stripped_record is already .strip()'d above, which handles <<- tab indentation.
+            if (
+                state.in_here_doc
+                and stripped_record == state.here_string
+                and "<<" not in test_record
+            ):
+                state.in_here_doc = False
+                state.heredoc_quoted = False  # Reset quote tracking
+                logger.debug(f"Here-doc terminated at line {line_num}")
 
             # Apply variable transformation to unquoted heredoc content
             result = record
@@ -253,13 +256,15 @@ class BashFormatter:
             Line to output (preserved without indentation)
         """
         # Check if this line closes the string
-        if state.multiline_string_quote_char is not None:
-            if state.multiline_string_quote_char in stripped_record:
-                quote_count = stripped_record.count(state.multiline_string_quote_char)
-                if quote_count % 2 == 1:  # Odd number = closing quote
-                    state.in_multiline_string = False
-                    state.multiline_string_quote_char = None
-                    logger.debug("Multiline string closed")
+        if (
+            state.multiline_string_quote_char is not None
+            and state.multiline_string_quote_char in stripped_record
+        ):
+            quote_count = stripped_record.count(state.multiline_string_quote_char)
+            if quote_count % 2 == 1:  # Odd number = closing quote
+                state.in_multiline_string = False
+                state.multiline_string_quote_char = None
+                logger.debug("Multiline string closed")
 
         # Pass through unchanged to preserve string content
         return record
@@ -358,10 +363,7 @@ class BashFormatter:
         # stripping. Distinguish from a standalone ) closing a multiline array
         # (issue #78) by checking whether the original line had content before
         # the ) that get_test_record removed.
-        if test_record.lstrip().startswith(")") and not stripped_record.startswith(")"):
-            return True
-
-        return False
+        return test_record.lstrip().startswith(")") and not stripped_record.startswith(")")
 
     def _format_line(
         self,
@@ -406,10 +408,9 @@ class BashFormatter:
 
         # Handle case choices
         choice_case = 0
-        if state.case_level:
-            if self._is_case_pattern(test_record, stripped_record):
-                inc += 1
-                choice_case = -1
+        if state.case_level and self._is_case_pattern(test_record, stripped_record):
+            inc += 1
+            choice_case = -1
 
         # Detect and transform function styles
         func_decl_style = BashParser.detect_function_style(test_record)

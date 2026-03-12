@@ -6,7 +6,7 @@ import sys
 from beautysh.cli import BeautyshCLI
 
 
-def main():
+def main() -> None:
     """Entry point for console script and module execution."""
     logging.basicConfig(
         level=logging.WARNING,

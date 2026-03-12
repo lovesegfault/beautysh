@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class BeautyshCLI:
     """Command-line interface handler for beautysh."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize CLI handler."""
         self.formatter: Optional[BashFormatter] = None
         self.diff_formatter: Optional[DiffFormatter] = None
@@ -207,7 +207,7 @@ class BeautyshCLI:
 
         logger.debug(
             f"Configured formatter: indent_size={indent_size}, "
-            f"tab_str={repr(tab_str)}, function_style={apply_function_style}"
+            f"tab_str={tab_str!r}, function_style={apply_function_style}"
         )
 
     def read_file(self, filepath: str) -> str:

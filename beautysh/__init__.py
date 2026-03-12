@@ -37,17 +37,14 @@ except Exception:  # pragma: no cover
     __version__ = "unknown"
 
 __all__ = [
-    # Main classes
     "BashFormatter",
-    "BeautyshCLI",
     "BashParser",
-    "StyleTransformer",
+    "BeautyshCLI",
     "DiffFormatter",
-    "FunctionStyle",
-    # Configuration
-    "load_config_from_pyproject",
-    "load_config_from_editorconfig",
-    "merge_configs",
-    # Types
     "FormatterState",
+    "FunctionStyle",
+    "StyleTransformer",
+    "load_config_from_editorconfig",
+    "load_config_from_pyproject",
+    "merge_configs",
 ]

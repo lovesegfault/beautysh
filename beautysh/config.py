@@ -1,13 +1,14 @@
 """Configuration management for beautysh."""
 
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Optional
 
-try:
-    import tomllib  # novermin
-except ModuleNotFoundError:  # pragma: no cover
-    import tomli as tomllib  # type: ignore[import-not-found,no-redef]
+if sys.version_info >= (3, 11):  # novermin
+    import tomllib
+else:  # pragma: no cover
+    import tomli as tomllib  # type: ignore[import-not-found]
 
 from editorconfig import EditorConfigError, get_properties
 

@@ -36,7 +36,7 @@ class FunctionStyle(Enum):
     def __init__(
         self,
         style_name: str,
-        pattern: Pattern,
+        pattern: Pattern[str],
         replacement: str,
     ):
         """Initialize function style.

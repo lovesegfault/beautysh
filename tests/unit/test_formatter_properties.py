@@ -115,12 +115,9 @@ class TestFormatterProperties:
     def test_beautify_string_no_crashes(self, script):
         """Formatter should not crash on any simple text input."""
         formatter = BashFormatter()
-        try:
-            formatted, error = formatter.beautify_string(script)
-            assert isinstance(formatted, str)
-            assert isinstance(error, bool)
-        except Exception as e:
-            assert False, f"Formatter crashed: {e}"
+        formatted, error = formatter.beautify_string(script)
+        assert isinstance(formatted, str)
+        assert isinstance(error, bool)
 
     @given(st.lists(st.text(min_size=1), min_size=1, max_size=10))
     def test_beautify_string_preserves_content(self, lines):
