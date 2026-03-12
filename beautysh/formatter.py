@@ -137,8 +137,10 @@ class BashFormatter:
 
         # Handle line continuation
         self._update_continuation_state(stripped_record, state)
-        # Handle continued lines and multiline strings with backslash
-        self._handle_line_continuation(stripped_record, test_record, state)
+        # Handle continued lines and multiline strings with backslash.
+        # May strip quoted-string content from test_record so brackets/keywords
+        # inside the string are not counted for indentation (issue #272).
+        test_record = self._handle_line_continuation(test_record, state)
 
         inside_multiline_quoted = (
             state.prev_line_had_continue
@@ -154,13 +156,18 @@ class BashFormatter:
             # Remove contents of strings ending on this line
             [test_record, num_subs] = MULTILINE_STRING_END.subn("", test_record)
             state.ended_multiline_quoted_string = num_subs > 0
+            # Continuation sequence has ended - reset the tracking flag
+            state.started_multiline_quoted_string = False
         else:
             state.ended_multiline_quoted_string = False
 
         # Pass through here-docs and multiline quoted strings unchanged
         # NOTE: This check must come BEFORE multiline string checks to handle
         # heredoc content that might contain quotes/apostrophes (issue #265)
-        if state.in_here_doc or inside_multiline_quoted or state.ended_multiline_quoted_string:
+        # NOTE: ended_multiline_quoted_string is NOT checked here - that line
+        # may contain keywords after the closing quote (e.g., `hej)"; then`)
+        # and must reach _format_line so indentation is tracked correctly.
+        if state.in_here_doc or inside_multiline_quoted:
             # Test for here-doc termination
             if state.here_string is not None:
                 # Stricter terminator check: must be on its own line (issue #265)
@@ -223,6 +230,14 @@ class BashFormatter:
         state.open_brackets += len(SQUARE_BRACKET_OPEN.findall(test_record))
         state.open_brackets -= len(SQUARE_BRACKET_CLOSE.findall(test_record))
 
+        # When a backslash-continued quoted string ends on this line, we needed
+        # _format_line above for its side effect (updating state.tab from any
+        # keywords like `then` that follow the closing quote), but we must
+        # preserve the original line since its leading whitespace is part of
+        # the string content.
+        if state.ended_multiline_quoted_string:
+            return record
+
         return formatted
 
     def _handle_multiline_string_content(
@@ -280,26 +295,40 @@ class BashFormatter:
         state.prev_line_had_continue = state.continue_line
         state.continue_line = self.parser.is_line_continuation(stripped_record)
 
-    def _handle_line_continuation(
-        self, stripped_record: str, test_record: str, state: FormatterState
-    ) -> None:
+    def _handle_line_continuation(self, test_record: str, state: FormatterState) -> str:
         """Handle multiline strings with backslash continuation.
 
+        Detects when a backslash continuation begins inside an unclosed
+        quoted string, and strips the string content from the test_record
+        so that brackets and keywords inside the string are not counted
+        for indentation.
+
+        The started_multiline_quoted_string flag is only set at the START
+        of a continuation sequence and deliberately preserved across middle
+        and end lines so the caller can detect the string closing.
+
         Args:
-            stripped_record: Stripped line
             test_record: Test record
             state: Current formatter state
+
+        Returns:
+            Test record, with string content stripped if a multiline
+            quoted string was detected on this line
         """
-        if state.continue_line:
-            if state.prev_line_had_continue:
-                # Not starting a multiline-quoted string
-                state.started_multiline_quoted_string = False
-            else:
-                # Remove contents of strings that continue on next line
-                [_, num_subs] = MULTILINE_STRING_START.subn("", test_record)
-                state.started_multiline_quoted_string = num_subs > 0
-        else:
+        if state.continue_line and not state.prev_line_had_continue:
+            # First line of a continuation: detect if we're entering a
+            # quoted string and strip its content from the test record
+            new_test_record, num_subs = MULTILINE_STRING_START.subn("", test_record)
+            state.started_multiline_quoted_string = num_subs > 0
+            if num_subs > 0:
+                return new_test_record
+        elif not state.continue_line and not state.prev_line_had_continue:
+            # Outside any continuation sequence
             state.started_multiline_quoted_string = False
+        # Middle lines (continue=True, prev=True) and end lines
+        # (continue=False, prev=True): preserve state so the caller can
+        # detect the end of the quoted string via MULTILINE_STRING_END.
+        return test_record
 
     def _is_case_pattern(self, test_record: str, stripped_record: str) -> bool:
         """Detect case patterns including quoted strings.
