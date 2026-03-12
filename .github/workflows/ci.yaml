@@ -72,7 +72,7 @@ jobs:
     # fails nix-matrix skips, and alls-green treats skip as failure.
     # Including nix-eval directly breaks alls-green because its matrix output
     # contains escaped quotes that get mangled through the action's heredoc.
-    needs: [nix-matrix, coverage-upload]
+    needs: [nix-matrix]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1

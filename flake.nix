@@ -196,6 +196,7 @@
 
           pre-commit.settings = {
             hooks = {
+              actionlint.enable = true;
               treefmt.enable = true;
               convco.enable = true;
               ripsecrets.enable = true;
