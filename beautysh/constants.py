@@ -1,29 +1,13 @@
 """Constants used throughout beautysh with pre-compiled regex patterns for performance."""
 
 import re
-from enum import IntEnum
 
 # Default formatting settings
 DEFAULT_TAB_SIZE = 4
-DEFAULT_TAB_STRING = " "
 TAB_CHARACTER = "\t"
-
-# Function style names
-FUNCTION_STYLE_FNPAR = "fnpar"
-FUNCTION_STYLE_FNONLY = "fnonly"
-FUNCTION_STYLE_PARONLY = "paronly"
 
 # Variable style options
 VARIABLE_STYLE_BRACES = "braces"
-
-
-# Indentation changes
-class IndentChange(IntEnum):
-    """Enum for indentation level changes."""
-
-    DECREASE = -1
-    NONE = 0
-    INCREASE = 1
 
 
 # Pre-compiled regex patterns for performance
