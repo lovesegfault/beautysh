@@ -60,3 +60,13 @@ def test_issue268_variable_style_single_quotes(fixture_dir):
 def test_issue268_variable_style_heredoc_quotes(fixture_dir):
     """Test that variables in heredocs with quoted terminators are not transformed (issue #268)."""
     assert_formatting(fixture_dir, "issue268_heredoc_quotes", variable_style="braces")
+
+
+def test_issue272_backslash_continuation_in_quoted_string(fixture_dir):
+    """Test backslash continuation inside a quoted string in an if condition (issue #272).
+
+    When a line like `if foo="$(echo \\` continues onto the next line, keywords
+    appearing after the closing quote on the continuation line (like `then`)
+    must still be counted for indentation tracking.
+    """
+    assert_formatting(fixture_dir, "issue272_split_lines")
