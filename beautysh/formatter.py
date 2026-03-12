@@ -1,10 +1,10 @@
 """Core formatting logic for Bash scripts."""
 
 import logging
-import sys
 from io import StringIO
 from typing import Optional
 
+from . import parser
 from .constants import (
     CASE_CHOICE_PATTERN,
     CASE_KEYWORD_PATTERN,
@@ -23,9 +23,12 @@ from .constants import (
     SQUARE_BRACKET_OPEN,
 )
 from .function_styles import FunctionStyle
-from .parser import BashParser
-from .transformers import StyleTransformer
-from .types import FormatterState
+from .transformers import (
+    apply_variable_style,
+    change_function_style,
+    ensure_space_before_double_semicolon,
+)
+from .types import FormatResult, FormatterState, VariableStyle
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +45,7 @@ class BashFormatter:
         indent_size: int = 4,
         tab_str: str = " ",
         apply_function_style: Optional[FunctionStyle] = None,
-        variable_style: Optional[str] = None,
+        variable_style: Optional[VariableStyle] = None,
     ):
         """Initialize formatter with configuration.
 
@@ -55,9 +58,9 @@ class BashFormatter:
         self.indent_size = indent_size
         self.tab_str = tab_str
         self.apply_function_style = apply_function_style
-        self.variable_style = variable_style
+        self.variable_style: Optional[VariableStyle] = variable_style
 
-    def beautify_string(self, data: str, path: str = "") -> tuple[str, bool]:
+    def beautify_string(self, data: str) -> FormatResult:
         """Beautify a Bash script string.
 
         This is the main entry point for formatting. It processes the script
@@ -65,22 +68,25 @@ class BashFormatter:
 
         Args:
             data: Complete Bash script as string
-            path: File path (for error messages)
 
         Returns:
-            Tuple of (formatted_script, has_error)
+            FormatResult with best-effort output and an error message if
+            indentation did not balance. No I/O is performed; callers are
+            responsible for printing the error.
 
         Example:
             >>> formatter = BashFormatter()
             >>> script = 'if true;then\\necho "test"\\nfi'
-            >>> formatted, error = formatter.beautify_string(script)
-            >>> print(formatted)
+            >>> result = formatter.beautify_string(script)
+            >>> print(result.output)
             if true; then
                 echo "test"
             fi
+            >>> result.error is None
+            True
         """
         # Preprocess: split 'do case' and 'then case' onto separate lines
-        data = BashParser.normalize_do_case_lines(data)
+        data = parser.normalize_do_case_lines(data)
 
         state = FormatterState()
         output = StringIO()
@@ -88,36 +94,26 @@ class BashFormatter:
         first_line = True
 
         for record in data.split("\n"):
-            formatted_line = self._process_line(record, state, path, line_num)
-            if formatted_line is not None:
-                # Write line with newline separator (except before first line)
-                if not first_line:
-                    output.write("\n")
-                output.write(formatted_line)
-                first_line = False
+            formatted_line = self._process_line(record, state, line_num)
+            if not first_line:
+                output.write("\n")
+            output.write(formatted_line)
+            first_line = False
             line_num += 1
 
-        error = self._check_final_state(state, path)
+        error = state.error_message or self._check_final_state(state)
+        return FormatResult(output=output.getvalue(), error=error)
 
-        return output.getvalue(), error
-
-    def _process_line(
-        self,
-        record: str,
-        state: FormatterState,
-        path: str,
-        line_num: int,
-    ) -> Optional[str]:
+    def _process_line(self, record: str, state: FormatterState, line_num: int) -> str:
         """Process a single line of the Bash script.
 
         Args:
             record: The line to process
             state: Current formatter state
-            path: File path (for error messages)
             line_num: Current line number
 
         Returns:
-            Formatted line, or None to skip adding to output
+            Formatted line
         """
         record = record.rstrip()
         stripped_record = record.strip()
@@ -128,11 +124,9 @@ class BashFormatter:
 
         # Ensure space before ;; in case statements
         if state.case_level:
-            stripped_record = StyleTransformer.ensure_space_before_double_semicolon(
-                stripped_record
-            )
+            stripped_record = ensure_space_before_double_semicolon(stripped_record)
 
-        test_record = BashParser.get_test_record(stripped_record)
+        test_record = parser.get_test_record(stripped_record)
 
         # Handle line continuation
         self._update_continuation_state(stripped_record, state)
@@ -167,9 +161,9 @@ class BashFormatter:
         # may contain keywords after the closing quote (e.g., `hej)"; then`)
         # and must reach _format_line so indentation is tracked correctly.
         if state.in_here_doc or inside_multiline_quoted:
-            # Test for here-doc termination.
-            # Stricter terminator check: must be on its own line (issue #265).
-            # stripped_record is already .strip()'d above, which handles <<- tab indentation.
+            # Test for here-doc termination. Stricter terminator check: must be
+            # on its own line (issue #265). stripped_record is already .strip()'d
+            # above, which handles <<- tab indentation.
             if (
                 state.in_here_doc
                 and stripped_record == state.here_string
@@ -182,17 +176,17 @@ class BashFormatter:
             # Apply variable transformation to unquoted heredoc content
             result = record
             if state.in_here_doc and not state.heredoc_quoted and self.variable_style is not None:
-                result = StyleTransformer.apply_variable_style(result, self.variable_style)
+                result = apply_variable_style(result, self.variable_style)
 
             return result
 
         # Detect here-docs
-        is_heredoc, here_string = BashParser.detect_heredoc(test_record, stripped_record)
-        if is_heredoc:
+        here_string = parser.detect_heredoc(test_record, stripped_record)
+        if here_string is not None:
             state.in_here_doc = True
             state.here_string = here_string
             # Check if terminator is quoted (suppresses variable expansion)
-            state.heredoc_quoted = BashParser.is_heredoc_quoted(stripped_record)
+            state.heredoc_quoted = parser.is_heredoc_quoted(stripped_record)
             logger.debug(
                 f"Heredoc started: terminator={here_string}, "
                 f"quoted={state.heredoc_quoted}, line={line_num}"
@@ -201,7 +195,7 @@ class BashFormatter:
         # Handle multiline strings (without backslash continuation)
         # NOTE: This check comes AFTER heredoc checks so heredoc content
         # with quotes/apostrophes is handled correctly (issue #265)
-        if state.in_multiline_string:
+        if state.multiline_string_quote_char is not None:
             return self._handle_multiline_string_content(record, stripped_record, state)
 
         # Check if a new multiline string starts
@@ -225,7 +219,7 @@ class BashFormatter:
             return record
 
         # Calculate indentation changes and format the line
-        formatted = self._format_line(stripped_record, test_record, state, path, line_num)
+        formatted = self._format_line(stripped_record, test_record, state, line_num)
 
         # Count open square brackets for line continuation tracking
         # Only [ ] brackets are counted, not { } or ( )
@@ -256,13 +250,10 @@ class BashFormatter:
             Line to output (preserved without indentation)
         """
         # Check if this line closes the string
-        if (
-            state.multiline_string_quote_char is not None
-            and state.multiline_string_quote_char in stripped_record
-        ):
-            quote_count = stripped_record.count(state.multiline_string_quote_char)
+        quote = state.multiline_string_quote_char
+        if quote is not None and quote in stripped_record:
+            quote_count = stripped_record.count(quote)
             if quote_count % 2 == 1:  # Odd number = closing quote
-                state.in_multiline_string = False
                 state.multiline_string_quote_char = None
                 logger.debug("Multiline string closed")
 
@@ -279,13 +270,10 @@ class BashFormatter:
         Returns:
             True if multiline string starts
         """
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        if unclosed_double or unclosed_single:
-            state.in_multiline_string = True
-            state.multiline_string_quote_char = '"' if unclosed_double else "'"
-            logger.debug(
-                f"Multiline string started with quote: {state.multiline_string_quote_char}"
-            )
+        unclosed = parser.detect_unclosed_quote(test_record)
+        if unclosed is not None:
+            state.multiline_string_quote_char = unclosed
+            logger.debug(f"Multiline string started with quote: {unclosed}")
             return True
         return False
 
@@ -297,7 +285,7 @@ class BashFormatter:
             state: Current formatter state
         """
         state.prev_line_had_continue = state.continue_line
-        state.continue_line = BashParser.is_line_continuation(stripped_record)
+        state.continue_line = parser.is_line_continuation(stripped_record)
 
     def _handle_line_continuation(self, test_record: str, state: FormatterState) -> str:
         """Handle multiline strings with backslash continuation.
@@ -370,7 +358,6 @@ class BashFormatter:
         stripped_record: str,
         test_record: str,
         state: FormatterState,
-        path: str,
         line_num: int,
     ) -> str:
         """Format a line with proper indentation.
@@ -379,7 +366,6 @@ class BashFormatter:
             stripped_record: Stripped original line
             test_record: Simplified test record
             state: Current formatter state
-            path: File path for error messages
             line_num: Current line number
 
         Returns:
@@ -396,7 +382,8 @@ class BashFormatter:
         # Handle esac
         if ESAC_KEYWORD_PATTERN.search(test_record):
             if state.case_level == 0:
-                sys.stderr.write(f'File {path}: error: "esac" before "case" in line {line_num}.\n')
+                if state.error_message is None:
+                    state.error_message = f'"esac" before "case" in line {line_num}'
             else:
                 outc += 1
                 state.case_level -= 1
@@ -413,9 +400,9 @@ class BashFormatter:
             choice_case = -1
 
         # Detect and transform function styles
-        func_decl_style = BashParser.detect_function_style(test_record)
+        func_decl_style = FunctionStyle.detect(test_record)
         if func_decl_style is not None:
-            stripped_record = StyleTransformer.change_function_style(
+            stripped_record = change_function_style(
                 stripped_record, func_decl_style, self.apply_function_style
             )
 
@@ -442,7 +429,7 @@ class BashFormatter:
         # Apply variable style transformation if requested
         # Skip transformation in quoted heredocs (no expansion in bash)
         if self.variable_style is not None and not state.heredoc_quoted:
-            formatted = StyleTransformer.apply_variable_style(formatted, self.variable_style)
+            formatted = apply_variable_style(formatted, self.variable_style)
 
         return formatted
 
@@ -458,18 +445,16 @@ class BashFormatter:
         """
         return (self.tab_str * self.indent_size * level) + line
 
-    def _check_final_state(self, state: FormatterState, path: str) -> bool:
+    def _check_final_state(self, state: FormatterState) -> Optional[str]:
         """Check if formatting ended in a valid state.
 
         Args:
             state: Final formatter state
-            path: File path for error messages
 
         Returns:
-            True if there was an error (indent/outdent mismatch)
+            Error message if indentation didn't balance, None otherwise.
         """
-        error = state.tab != 0
-        if error:
-            sys.stderr.write(f"File {path}: error: indent/outdent mismatch: {state.tab}.\n")
+        if state.tab != 0:
             logger.error(f"Indent/outdent mismatch: final tab level = {state.tab}")
-        return error
+            return f"indent/outdent mismatch: {state.tab}"
+        return None

@@ -94,12 +94,13 @@ class TestCLIMain:
         assert bak.read_text() == UNFORMATTED
         assert unformatted_file.read_text() == FORMATTED
 
-    def test_invalid_function_style_exits_1(self, unformatted_file, capsys):
-        with pytest.raises(SystemExit) as exc_info:
-            BeautyshCLI().main(["-s", "bogus", str(unformatted_file)])
-        assert exc_info.value.code == 1
+    def test_invalid_function_style_returns_1(self, unformatted_file, capsys):
+        exit_code = BeautyshCLI().main(["-s", "bogus", str(unformatted_file)])
+        assert exit_code == 1
         captured = capsys.readouterr()
-        assert "Invalid value" in captured.err
+        assert "Invalid value 'bogus'" in captured.err
+        # File should not have been touched
+        assert unformatted_file.read_text() == UNFORMATTED
 
     def test_valid_function_style(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)

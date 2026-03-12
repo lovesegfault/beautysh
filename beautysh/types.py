@@ -1,7 +1,26 @@
 """Type definitions for beautysh."""
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Literal, NamedTuple, Optional
+
+#: The only variable style currently supported. Promote to an Enum (mirroring
+#: FunctionStyle) when a second style is added.
+VariableStyle = Literal["braces"]
+
+#: Quote character that opens a multiline string.
+QuoteChar = Literal['"', "'"]
+
+
+class FormatResult(NamedTuple):
+    """Result of beautify_string.
+
+    Attributes:
+        output: Formatted script (best-effort even on error).
+        error: None on success, otherwise a human-readable error message.
+    """
+
+    output: str
+    error: Optional[str]
 
 
 @dataclass
@@ -21,11 +40,12 @@ class FormatterState:
         ended_multiline_quoted_string: Whether a multiline quoted string ended
         open_brackets: Count of unclosed brackets for multiline conditions
         in_here_doc: Whether we're currently inside a here-document
-        in_multiline_string: Whether we're inside a multiline string (no backslash)
-        multiline_string_quote_char: The quote character for current multiline string
+        multiline_string_quote_char: The quote char for the current multiline
+            string, or None if we're not inside one
         here_string: The termination string for current here-doc
         heredoc_quoted: Whether current heredoc has quoted terminator (no expansion)
         formatter_enabled: Whether formatter is enabled (@formatter:off/on)
+        error_message: First error encountered during formatting, if any
     """
 
     tab: int = 0
@@ -36,8 +56,8 @@ class FormatterState:
     ended_multiline_quoted_string: bool = False
     open_brackets: int = 0
     in_here_doc: bool = False
-    in_multiline_string: bool = False
-    multiline_string_quote_char: Optional[str] = None
+    multiline_string_quote_char: Optional[QuoteChar] = None
     here_string: str = ""
     heredoc_quoted: bool = False
     formatter_enabled: bool = True
+    error_message: Optional[str] = None

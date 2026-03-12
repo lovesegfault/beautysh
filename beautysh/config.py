@@ -2,8 +2,9 @@
 
 import logging
 import sys
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, TypedDict
 
 if sys.version_info >= (3, 11):  # novermin
     import tomllib
@@ -19,14 +20,66 @@ class ConfigError(Exception):
     """Raised when a configuration source is present but malformed."""
 
 
-def load_config_from_pyproject() -> dict[str, Any]:
+class BeautyshConfig(TypedDict, total=False):
+    """Schema for [tool.beautysh] and editorconfig-derived settings.
+
+    total=False: every key is optional.
+    """
+
+    indent_size: int
+    tab: bool
+    force_function_style: str
+    variable_style: str
+    backup: bool
+    check: bool
+    force: bool
+
+
+_EXPECTED_TYPES: dict[str, type] = {
+    "indent_size": int,
+    "tab": bool,
+    "force_function_style": str,
+    "variable_style": str,
+    "backup": bool,
+    "check": bool,
+    "force": bool,
+}
+
+
+def _validate_pyproject_config(raw: dict[str, Any]) -> BeautyshConfig:
+    """Drop unknown keys and wrongly-typed values from a pyproject config.
+
+    bool is rejected where int is expected (since bool is a subclass of int,
+    a bare `indent_size = true` would otherwise silently mean indent=1).
+    """
+    validated: BeautyshConfig = {}
+    for key, value in raw.items():
+        expected = _EXPECTED_TYPES.get(key)
+        if expected is None:
+            logger.warning(f"Unknown [tool.beautysh] key {key!r}, ignoring")
+            continue
+        if expected is int and isinstance(value, bool):
+            logger.warning(f"[tool.beautysh] {key} expects int, got bool; ignoring")
+            continue
+        if not isinstance(value, expected):
+            logger.warning(
+                f"[tool.beautysh] {key} expects {expected.__name__}, "
+                f"got {type(value).__name__}; ignoring"
+            )
+            continue
+        validated[key] = value  # type: ignore[literal-required]
+    return validated
+
+
+def load_config_from_pyproject() -> BeautyshConfig:
     """Load beautysh configuration from pyproject.toml if it exists.
 
     Looks for configuration in the [tool.beautysh] section of pyproject.toml
-    in the current working directory.
+    in the current working directory. Unknown keys and wrongly-typed values
+    are logged and dropped.
 
     Returns:
-        Dictionary with configuration values, or empty dict if file not found.
+        Validated configuration. Empty if no file or no [tool.beautysh] section.
 
     Raises:
         ConfigError: if the file exists but can't be read or parsed.
@@ -47,10 +100,10 @@ def load_config_from_pyproject() -> dict[str, Any]:
     try:
         with open(pyproject_path, "rb") as f:
             data = tomllib.load(f)
-        config: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
-        if config:
-            logger.debug(f"Loaded configuration from pyproject.toml: {config}")
-        return config
+        raw: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
+        if raw:
+            logger.debug(f"Loaded configuration from pyproject.toml: {raw}")
+        return _validate_pyproject_config(raw)
     except OSError as e:
         raise ConfigError(f"Could not read pyproject.toml: {e}") from e
     except tomllib.TOMLDecodeError as e:
@@ -107,9 +160,9 @@ def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
 
 
 def merge_configs(
-    editorconfig: dict[str, Any],
-    pyproject: dict[str, Any],
-    cli_args: Optional[dict[str, Any]] = None,
+    editorconfig: Mapping[str, Any],
+    pyproject: Mapping[str, Any],
+    cli_args: Optional[Mapping[str, Any]] = None,
 ) -> dict[str, Any]:
     """Merge configuration from multiple sources with proper priority.
 
@@ -133,7 +186,7 @@ def merge_configs(
         >>> merge_configs(editorconfig, pyproject, cli)
         {'indent_size': 8, 'tab': False}
     """
-    merged = {}
+    merged: dict[str, Any] = {}
     merged.update(editorconfig)
     merged.update(pyproject)
     if cli_args:

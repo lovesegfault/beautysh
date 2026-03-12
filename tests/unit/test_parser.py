@@ -1,45 +1,45 @@
 """Unit tests for beautysh.parser module."""
 
+from beautysh import parser
 from beautysh.function_styles import FunctionStyle
-from beautysh.parser import BashParser
 
 
 class TestGetTestRecord:
-    """Tests for BashParser.get_test_record()"""
+    """Tests for parser.get_test_record()"""
 
     def test_removes_single_quoted_strings(self):
-        result = BashParser.get_test_record("echo 'hello world'")
+        result = parser.get_test_record("echo 'hello world'")
         assert result == "echo "
 
     def test_removes_double_quoted_strings(self):
-        result = BashParser.get_test_record('echo "hello world"')
+        result = parser.get_test_record('echo "hello world"')
         assert result == "echo "
 
     def test_removes_backtick_strings(self):
-        result = BashParser.get_test_record("echo `date`")
+        result = parser.get_test_record("echo `date`")
         assert result == "echo "
 
     def test_removes_comments(self):
-        result = BashParser.get_test_record('echo "test"  # this is a comment')
+        result = parser.get_test_record('echo "test"  # this is a comment')
         assert result == "echo  "  # Two spaces before comment location
 
     def test_removes_escaped_quotes(self):
-        result = BashParser.get_test_record(r"echo \"test\"")
+        result = parser.get_test_record(r"echo \"test\"")
         assert '"' not in result
 
     def test_preserves_keywords(self):
-        result = BashParser.get_test_record('if [ "$x" = "y" ]; then')
+        result = parser.get_test_record('if [ "$x" = "y" ]; then')
         assert "if" in result
         assert "then" in result
 
     def test_preserves_brackets(self):
-        result = BashParser.get_test_record('if [ "$x" = "y" ]; then')
+        result = parser.get_test_record('if [ "$x" = "y" ]; then')
         assert "[" in result
         assert "]" in result
 
     def test_complex_line(self):
         line = 'if [ "$HOME" = "/root" ]; then  # check home'
-        result = BashParser.get_test_record(line)
+        result = parser.get_test_record(line)
         assert "if" in result
         assert "then" in result
         assert "/root" not in result
@@ -47,76 +47,59 @@ class TestGetTestRecord:
 
 
 class TestDetectUnclosedQuote:
-    """Tests for BashParser.detect_unclosed_quote()"""
+    """Tests for parser.detect_unclosed_quote()"""
 
     def test_no_unclosed_quotes(self):
-        test_record = "echo test"
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        assert not unclosed_double
-        assert not unclosed_single
+        assert parser.detect_unclosed_quote("echo test") is None
 
     def test_unclosed_double_quote(self):
-        test_record = 'echo "'
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        assert unclosed_double
-        assert not unclosed_single
+        assert parser.detect_unclosed_quote('echo "') == '"'
 
     def test_unclosed_single_quote(self):
-        test_record = "echo '"
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        assert not unclosed_double
-        assert unclosed_single
+        assert parser.detect_unclosed_quote("echo '") == "'"
 
     def test_multiple_unclosed_double_quotes_odd(self):
-        test_record = 'echo " test " more "'
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        assert unclosed_double
+        assert parser.detect_unclosed_quote('echo " test " more "') == '"'
 
     def test_multiple_quotes_even(self):
-        test_record = 'echo " test " more " end "'
-        unclosed_double, unclosed_single = BashParser.detect_unclosed_quote(test_record)
-        assert not unclosed_double
+        assert parser.detect_unclosed_quote('echo " test " more " end "') is None
+
+    def test_double_takes_precedence_over_single(self):
+        # Matches the old tuple order: double was checked first.
+        assert parser.detect_unclosed_quote("echo \" '") == '"'
 
 
-class TestDetectFunctionStyle:
-    """Tests for BashParser.detect_function_style()"""
+class TestFunctionStyleDetect:
+    """Tests for FunctionStyle.detect() (formerly parser.detect_function_style)."""
 
     def test_fnpar_style(self):
-        result = BashParser.detect_function_style("function foo() {")
-        assert result is FunctionStyle.FNPAR
+        assert FunctionStyle.detect("function foo() {") is FunctionStyle.FNPAR
 
     def test_fnonly_style(self):
-        result = BashParser.detect_function_style("function bar {")
-        assert result is FunctionStyle.FNONLY
+        assert FunctionStyle.detect("function bar {") is FunctionStyle.FNONLY
 
     def test_paronly_style(self):
-        result = BashParser.detect_function_style("baz() {")
-        assert result is FunctionStyle.PARONLY
+        assert FunctionStyle.detect("baz() {") is FunctionStyle.PARONLY
 
     def test_no_function(self):
-        # foo() is actually a valid function declaration, so use a different example
-        result = BashParser.detect_function_style('echo "hello world"')
-        assert result is None
+        assert FunctionStyle.detect('echo "hello world"') is None
 
     def test_function_with_hyphens(self):
-        result = BashParser.detect_function_style("function test-func() {")
-        assert result is FunctionStyle.FNPAR
+        assert FunctionStyle.detect("function test-func() {") is FunctionStyle.FNPAR
 
     def test_function_with_colons(self):
-        result = BashParser.detect_function_style("function namespace:func() {")
-        assert result is FunctionStyle.FNPAR
+        assert FunctionStyle.detect("function namespace:func() {") is FunctionStyle.FNPAR
 
     def test_function_with_at_sign(self):
-        result = BashParser.detect_function_style("function @special() {")
-        assert result is FunctionStyle.FNPAR
+        assert FunctionStyle.detect("function @special() {") is FunctionStyle.FNPAR
 
 
 class TestNormalizeDocaseLines:
-    """Tests for BashParser.normalize_do_case_lines()"""
+    """Tests for parser.normalize_do_case_lines()"""
 
     def test_splits_do_case(self):
         script = "while true; do case $x in"
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         lines = result.split("\n")
         assert len(lines) == 2
         assert "do" in lines[0]
@@ -124,7 +107,7 @@ class TestNormalizeDocaseLines:
 
     def test_splits_then_case(self):
         script = "if true; then case $x in"
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         lines = result.split("\n")
         assert len(lines) == 2
         assert "then" in lines[0]
@@ -132,13 +115,13 @@ class TestNormalizeDocaseLines:
 
     def test_preserves_normal_lines(self):
         script = "if true; then\n    case $x in"
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         lines = result.split("\n")
         assert len(lines) == 2
 
     def test_handles_multiline(self):
         script = 'echo "test"\nwhile true; do case $x in\necho "more"'
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         lines = result.split("\n")
         assert len(lines) == 4
 
@@ -147,150 +130,122 @@ class TestNormalizeDocaseLines:
         # original there is no whitespace before 'case' (it's ""case).
         # CASE_SPLIT_PATTERN can't match, so the line must be preserved as-is.
         script = 'do ""case x in'
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         assert result == script
 
     def test_does_not_split_echo_do_case(self):
         # 'do' and 'case' here are command arguments, not keywords.
         script = "echo do case stuff"
-        result = BashParser.normalize_do_case_lines(script)
+        result = parser.normalize_do_case_lines(script)
         assert result == script
 
 
 class TestDetectHeredoc:
-    """Tests for BashParser.detect_heredoc()"""
+    """Tests for parser.detect_heredoc()"""
 
     def test_basic_heredoc(self):
-        test_record = "cat <<EOF"
-        stripped = "cat <<EOF"
-        is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
-        assert is_heredoc
-        assert terminator == "EOF"
+        assert parser.detect_heredoc("cat <<EOF", "cat <<EOF") == "EOF"
 
     def test_heredoc_with_dash(self):
-        test_record = "cat <<-END"
-        stripped = "cat <<-END"
-        is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
-        assert is_heredoc
-        assert terminator == "END"
+        assert parser.detect_heredoc("cat <<-END", "cat <<-END") == "END"
 
     def test_heredoc_with_quotes(self):
-        test_record = 'cat <<"EOF"'
-        stripped = 'cat <<"EOF"'
-        is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
-        assert is_heredoc
-        assert terminator == "EOF"
+        assert parser.detect_heredoc('cat <<"EOF"', 'cat <<"EOF"') == "EOF"
 
     def test_not_herestring(self):
-        test_record = "cat <<<$var"
-        stripped = "cat <<<$var"
-        is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
-        assert not is_heredoc
+        assert parser.detect_heredoc("cat <<<$var", "cat <<<$var") is None
 
     def test_not_arithmetic_shift(self):
-        test_record = "$(( x << 2 ))"
-        stripped = "$(( x << 2 ))"
-        is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
-        assert not is_heredoc
+        assert parser.detect_heredoc("$(( x << 2 ))", "$(( x << 2 ))") is None
 
     def test_unmatched_delimiter_not_heredoc(self):
         # Dot is not a word character, so HEREDOC_TERMINATOR won't match.
         # Previously re.sub() returned the input unchanged, setting the
         # entire line as the terminator and breaking the rest of the file.
-        is_heredoc, terminator = BashParser.detect_heredoc("cat << .", "cat << .")
-        assert not is_heredoc
-        assert terminator == ""
+        assert parser.detect_heredoc("cat << .", "cat << .") is None
 
     def test_arithmetic_command_not_heredoc(self):
         # (( )) without $ is a bash arithmetic command; << is bit-shift.
         # Previously only $((...)) was excluded, so this entered heredoc mode
         # with terminator '2' and corrupted the rest of the file.
         line = "((x = 1 << 2))"
-        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
-        assert not is_heredoc
-        assert terminator == ""
+        assert parser.detect_heredoc(line, line) is None
 
     def test_let_shift_not_heredoc(self):
         line = "let x=1<<2"
-        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
-        assert not is_heredoc
-        assert terminator == ""
+        assert parser.detect_heredoc(line, line) is None
 
     def test_heredoc_with_pipeline(self):
         # cat <<EOF|grep is valid bash: EOF is the terminator, |grep is a pipeline.
         # Previously the regex had | as a literal inside [_|\w] and matched 'EOF|grep'.
         line = "cat <<EOF|grep foo"
-        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
-        assert is_heredoc
-        assert terminator == "EOF"
+        assert parser.detect_heredoc(line, line) == "EOF"
 
     def test_arithmetic_command_with_dollar_var(self):
         # $shift prevents \w+ from matching at that position; previously
         # this set the whole line as terminator.
         line = "(( result = x << $shift ))"
-        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
-        assert not is_heredoc
-        assert terminator == ""
+        assert parser.detect_heredoc(line, line) is None
 
 
 class TestIsLineContinuation:
-    """Tests for BashParser.is_line_continuation()"""
+    """Tests for parser.is_line_continuation()"""
 
     def test_line_with_backslash(self):
-        assert BashParser.is_line_continuation('echo "test" \\')
+        assert parser.is_line_continuation('echo "test" \\')
 
     def test_line_without_backslash(self):
-        assert not BashParser.is_line_continuation('echo "test"')
+        assert not parser.is_line_continuation('echo "test"')
 
     def test_empty_line(self):
-        assert not BashParser.is_line_continuation("")
+        assert not parser.is_line_continuation("")
 
     def test_backslash_in_middle(self):
         # Backslash in middle doesn't count
-        assert not BashParser.is_line_continuation('echo "test\\nmore"')
+        assert not parser.is_line_continuation('echo "test\\nmore"')
 
 
 class TestIsHeredocQuoted:
-    """Tests for BashParser.is_heredoc_quoted()"""
+    """Tests for parser.is_heredoc_quoted()"""
 
     def test_single_quoted_terminator(self):
-        assert BashParser.is_heredoc_quoted("cat <<'EOF'")
+        assert parser.is_heredoc_quoted("cat <<'EOF'")
 
     def test_double_quoted_terminator(self):
-        assert BashParser.is_heredoc_quoted('cat <<"EOF"')
+        assert parser.is_heredoc_quoted('cat <<"EOF"')
 
     def test_backslash_escaped_terminator(self):
-        assert BashParser.is_heredoc_quoted(r"cat <<\EOF")
+        assert parser.is_heredoc_quoted(r"cat <<\EOF")
 
     def test_unquoted_terminator(self):
-        assert not BashParser.is_heredoc_quoted("cat <<EOF")
+        assert not parser.is_heredoc_quoted("cat <<EOF")
 
     def test_dash_heredoc_single_quoted(self):
-        assert BashParser.is_heredoc_quoted("cat <<-'END'")
+        assert parser.is_heredoc_quoted("cat <<-'END'")
 
     def test_dash_heredoc_double_quoted(self):
-        assert BashParser.is_heredoc_quoted('cat <<-"END"')
+        assert parser.is_heredoc_quoted('cat <<-"END"')
 
     def test_dash_heredoc_backslash(self):
-        assert BashParser.is_heredoc_quoted(r"cat <<-\END")
+        assert parser.is_heredoc_quoted(r"cat <<-\END")
 
     def test_dash_heredoc_unquoted(self):
-        assert not BashParser.is_heredoc_quoted("cat <<-EOF")
+        assert not parser.is_heredoc_quoted("cat <<-EOF")
 
     def test_with_spaces_before_quotes(self):
-        assert BashParser.is_heredoc_quoted("cat << 'EOF'")
+        assert parser.is_heredoc_quoted("cat << 'EOF'")
 
     def test_with_redirect(self):
-        assert BashParser.is_heredoc_quoted("cat <<'EOF' > file")
+        assert parser.is_heredoc_quoted("cat <<'EOF' > file")
 
     def test_quotes_in_command_not_heredoc(self):
         # Command has quotes, but terminator doesn't
-        assert not BashParser.is_heredoc_quoted('echo "test" <<EOF')
+        assert not parser.is_heredoc_quoted('echo "test" <<EOF')
 
     def test_partial_backslash_escape(self):
         # Any backslash after << means quoted
-        assert BashParser.is_heredoc_quoted(r"cat <<E\OF")
+        assert parser.is_heredoc_quoted(r"cat <<E\OF")
 
     def test_not_a_heredoc(self):
         # Should handle gracefully
-        assert not BashParser.is_heredoc_quoted("echo hello")
+        assert not parser.is_heredoc_quoted("echo hello")

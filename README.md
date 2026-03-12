@@ -128,29 +128,19 @@ You can also call beautysh as a module:
 ```python3
 from beautysh import BashFormatter
 
-source = "my_string"
+source = "if true;then\necho x\nfi"
 
 formatter = BashFormatter(indent_size=4)
-result, error = formatter.beautify_string(source)
+result = formatter.beautify_string(source)
+
+if result.error is None:
+    print(result.output)
+else:
+    print(f"error: {result.error}")
 ```
 
-For more control, you can use individual components:
-
-```python3
-from beautysh import BashParser, StyleTransformer, BashFormatter
-
-# Parse and analyze Bash syntax
-parser = BashParser()
-test_record = parser.get_test_record('if [ "$x" = "y" ]; then')
-
-# Transform styles
-transformer = StyleTransformer()
-transformed = transformer.apply_variable_style('echo $HOME', 'braces')  # -> 'echo ${HOME}'
-
-# Format complete scripts
-formatter = BashFormatter(indent_size=2, variable_style='braces')
-formatted, error = formatter.beautify_string(script)
-```
+`beautify_string` returns a `FormatResult(output: str, error: Optional[str])`.
+The output is best-effort even when `error` is set.
 
 As written, beautysh can beautify large numbers of Bash scripts when called
 from a variety of means,including a Bash script:
@@ -286,8 +276,12 @@ See [tools/README.md](tools/README.md) for details.
 # Install dependencies
 uv sync
 
-# Activate virtual environment and run tests
-uv run pytest tests/
+# Run tests
+uv run pytest
+
+# Type-check and lint
+uv run mypy beautysh/
+uv run ruff check
 ```
 
 ## Contributing
@@ -321,7 +315,7 @@ pre-commit run --all-files
 
 This will run:
 
-- pytest (all 172 tests including property-based tests)
+- pytest (all tests including property-based tests)
 - mypy (type checking)
 - ruff (linting and formatting)
 - treefmt (Nix, YAML, Markdown formatting)

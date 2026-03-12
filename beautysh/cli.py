@@ -53,13 +53,8 @@ class BeautyshCLI:
         sys.stdout.write(
             "\nBash function styles that can be specified via --force-function-style are:\n"
         )
-        sys.stdout.write(
-            "  fnpar: function keyword, open/closed parentheses, e.g.      function foo()\n"
-        )
-        sys.stdout.write(
-            "  fnonly: function keyword, no open/closed parentheses, e.g.  function foo\n"
-        )
-        sys.stdout.write("  paronly: no function keyword, open/closed parentheses, e.g. foo()\n")
+        for style in FunctionStyle:
+            sys.stdout.write(f"  {style.style_name}: {style.description}\n")
         sys.stdout.write("\n")
 
     def create_parser(self, config: dict[str, Any]) -> argparse.ArgumentParser:
@@ -189,8 +184,10 @@ class BeautyshCLI:
         if args.force_function_style is not None:
             apply_function_style = FunctionStyle.from_name(args.force_function_style)
             if apply_function_style is None:
-                sys.stderr.write("Invalid value for the function style. See --help for details.\n")
-                sys.exit(1)
+                raise ValueError(
+                    f"Invalid value {args.force_function_style!r} for --force-function-style. "
+                    f"See --help for details."
+                )
 
         self.formatter = BashFormatter(
             indent_size=indent_size,
@@ -247,34 +244,40 @@ class BeautyshCLI:
         if path == "-":
             # Read from stdin, write to stdout
             data = sys.stdin.read()
-            result, error = self.formatter.beautify_string(data, "(stdin)")
-            sys.stdout.write(result)
-        else:
-            # Process named file
-            data = self.read_file(path)
-            result, error = self.formatter.beautify_string(data, path)
+            result = self.formatter.beautify_string(data)
+            if result.error:
+                sys.stderr.write(f"(stdin): {result.error}\n")
+            sys.stdout.write(result.output)
+            return result.error is not None
 
-            if data != result:
-                if self.check_only:
-                    # Check mode: any diff is a failure. Only show the diff if the
-                    # formatter succeeded (otherwise the output is unreliable).
-                    if not error and self.diff_formatter:
-                        self.diff_formatter.print_diff(data, result, path)
-                    error = True
-                elif error and not self.force:
-                    sys.stderr.write(
-                        f"Not writing {path}: formatter reported an error "
-                        f"(use --force to write anyway)\n"
-                    )
-                else:
-                    if self.backup:
-                        self.write_file(path + ".bak", data)
-                        logger.info(f"Created backup: {path}.bak")
+        # Process named file
+        data = self.read_file(path)
+        result = self.formatter.beautify_string(data)
 
-                    self.write_file(path, result)
-                    logger.info(f"Formatted: {path}")
+        if result.error:
+            sys.stderr.write(f"{path}: {result.error}\n")
 
-        return error
+        if data != result.output:
+            if self.check_only:
+                # Check mode: any diff is a failure. Only show the diff if the
+                # formatter succeeded (otherwise the output is unreliable).
+                if result.error is None and self.diff_formatter:
+                    self.diff_formatter.print_diff(data, result.output, path)
+                return True
+            elif result.error is not None and not self.force:
+                sys.stderr.write(
+                    f"Not writing {path}: formatter reported an error "
+                    f"(use --force to write anyway)\n"
+                )
+            else:
+                if self.backup:
+                    self.write_file(path + ".bak", data)
+                    logger.info(f"Created backup: {path}.bak")
+
+                self.write_file(path, result.output)
+                logger.info(f"Formatted: {path}")
+
+        return result.error is not None
 
     def main(self, argv: list[str]) -> int:
         """Main entry point for CLI.
@@ -310,7 +313,11 @@ class BeautyshCLI:
             return 1
 
         # Configure formatter
-        self.configure_formatter(args)
+        try:
+            self.configure_formatter(args)
+        except ValueError as e:
+            sys.stderr.write(f"{e}\n")
+            return 1
 
         # Process files
         error = False

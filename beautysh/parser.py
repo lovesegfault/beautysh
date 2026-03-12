@@ -1,273 +1,239 @@
-"""Bash script parsing utilities."""
+"""Bash script parsing utilities.
+
+All functions here are pure: they take a line (or simplified test record) and
+return an analysis result. No state, no I/O.
+"""
 
 import logging
 from typing import Optional
 
-from .function_styles import FunctionStyle
+from .constants import (
+    ARITHMETIC_PATTERN,
+    BACKTICK_STRING,
+    CASE_SPLIT_PATTERN,
+    COMMENT,
+    DO_CASE_PATTERN,
+    DOUBLE_QUOTED_STRING,
+    ESCAPED_CHAR,
+    ESCAPED_DOUBLE_QUOTE,
+    ESCAPED_SINGLE_QUOTE,
+    HEREDOC_PATTERN,
+    HEREDOC_QUOTED_PATTERN,
+    HEREDOC_TERMINATOR,
+    HERESTRING_PATTERN,
+    LET_SHIFT_PATTERN,
+    LINE_CONTINUATION,
+    SINGLE_QUOTED_STRING,
+    WEIRD_BACKTICK_STRING,
+)
+from .types import QuoteChar
 
 logger = logging.getLogger(__name__)
 
 
-class BashParser:
-    """Parser for Bash script syntax analysis.
+def get_test_record(source_line: str) -> str:
+    """Simplify a Bash source line for indentation analysis.
 
-    This class provides utilities for analyzing Bash syntax to determine
-    indentation and formatting requirements. It handles the complexities
-    of Bash syntax including quotes, comments, and special constructs.
+    Removes content that doesn't affect indentation calculation:
+    - Escaped special characters (\\', \\")
+    - String literals (single/double/backtick quoted)
+    - Comments (# ...)
+    - Other escaped characters
+
+    This simplification makes it easier to detect keywords and brackets
+    that affect indentation without false matches inside strings.
+
+    Args:
+        source_line: Raw line from Bash script
+
+    Returns:
+        Simplified line with only indent-relevant syntax
+
+    Example:
+        >>> get_test_record('if [ "$x" = "y" ]; then  # comment')
+        'if [ = ]; then  '
+        >>> get_test_record("echo 'hello world'")
+        'echo '
     """
+    # First, remove escaped quotes that may impact later collapsing
+    test_record = ESCAPED_SINGLE_QUOTE.sub("", source_line)
+    test_record = ESCAPED_DOUBLE_QUOTE.sub("", test_record)
 
-    @staticmethod
-    def get_test_record(source_line: str) -> str:
-        """Simplify a Bash source line for indentation analysis.
+    # Collapse single-quoted strings
+    test_record = SINGLE_QUOTED_STRING.sub("", test_record)
+    # Collapse double-quoted strings
+    test_record = DOUBLE_QUOTED_STRING.sub("", test_record)
+    # Collapse backtick command substitutions
+    test_record = BACKTICK_STRING.sub("", test_record)
+    # Collapse weird case: \\` ... '
+    test_record = WEIRD_BACKTICK_STRING.sub("", test_record)
+    # Strip out any escaped single characters
+    test_record = ESCAPED_CHAR.sub("", test_record)
+    # Remove comments (# to end of line)
+    test_record = COMMENT.sub("", test_record, 1)
 
-        Removes content that doesn't affect indentation calculation:
-        - Escaped special characters (\\', \\")
-        - String literals (single/double/backtick quoted)
-        - Comments (# ...)
-        - Other escaped characters
+    return test_record
 
-        This simplification makes it easier to detect keywords and brackets
-        that affect indentation without false matches inside strings.
 
-        Args:
-            source_line: Raw line from Bash script
+def detect_unclosed_quote(test_record: str) -> Optional[QuoteChar]:
+    """Detect an unclosed quote on a test record.
 
-        Returns:
-            Simplified line with only indent-relevant syntax
+    After get_test_record() has collapsed all properly closed quotes on
+    the same line, any remaining quote indicates an unclosed multiline string.
 
-        Example:
-            >>> BashParser.get_test_record('if [ "$x" = "y" ]; then  # comment')
-            'if [ = ]; then  '
-            >>> BashParser.get_test_record("echo 'hello world'")
-            'echo '
-        """
-        from .constants import (
-            BACKTICK_STRING,
-            COMMENT,
-            DOUBLE_QUOTED_STRING,
-            ESCAPED_CHAR,
-            ESCAPED_DOUBLE_QUOTE,
-            ESCAPED_SINGLE_QUOTE,
-            SINGLE_QUOTED_STRING,
-            WEIRD_BACKTICK_STRING,
-        )
+    Args:
+        test_record: Simplified line from get_test_record()
 
-        # First, remove escaped quotes that may impact later collapsing
-        test_record = ESCAPED_SINGLE_QUOTE.sub("", source_line)
-        test_record = ESCAPED_DOUBLE_QUOTE.sub("", test_record)
+    Returns:
+        The unclosed quote character, or None if all quotes are balanced.
+        Double quotes take precedence if both are unclosed.
 
-        # Collapse single-quoted strings
-        test_record = SINGLE_QUOTED_STRING.sub("", test_record)
-        # Collapse double-quoted strings
-        test_record = DOUBLE_QUOTED_STRING.sub("", test_record)
-        # Collapse backtick command substitutions
-        test_record = BACKTICK_STRING.sub("", test_record)
-        # Collapse weird case: \\` ... '
-        test_record = WEIRD_BACKTICK_STRING.sub("", test_record)
-        # Strip out any escaped single characters
-        test_record = ESCAPED_CHAR.sub("", test_record)
-        # Remove comments (# to end of line)
-        test_record = COMMENT.sub("", test_record, 1)
+    Example:
+        >>> detect_unclosed_quote('echo "test')
+        '"'
+        >>> detect_unclosed_quote("echo 'test")
+        "'"
+        >>> detect_unclosed_quote('echo ')
+    """
+    if test_record.count('"') % 2 == 1:
+        return '"'
+    if test_record.count("'") % 2 == 1:
+        return "'"
+    return None
 
-        return test_record
 
-    @staticmethod
-    def detect_unclosed_quote(test_record: str) -> tuple[bool, bool]:
-        """Detect if test_record has an unclosed quote.
+def normalize_do_case_lines(data: str) -> str:
+    """Split lines where 'do case' or 'then case' appear together.
 
-        After get_test_record() has collapsed all properly closed quotes on
-        the same line, any remaining quotes indicate an unclosed multiline string.
+    This normalizes Bash code like:
+        while x; do case $y in
+    Into:
+        while x; do
+        case $y in
 
-        Args:
-            test_record: Simplified line from get_test_record()
+    This makes indentation handling more straightforward by ensuring
+    that keywords appear on separate lines.
 
-        Returns:
-            Tuple of (has_unclosed_double_quote, has_unclosed_single_quote)
+    Args:
+        data: Complete Bash script as string
 
-        Example:
-            >>> BashParser.detect_unclosed_quote('echo "test')
-            (True, False)
-            >>> BashParser.detect_unclosed_quote("echo 'test")
-            (False, True)
-            >>> BashParser.detect_unclosed_quote('echo "test" "more')
-            (True, False)
-        """
-        unclosed_double = test_record.count('"') % 2 == 1
-        unclosed_single = test_record.count("'") % 2 == 1
-        return (unclosed_double, unclosed_single)
+    Returns:
+        Script with do/then and case on separate lines
 
-    @staticmethod
-    def detect_function_style(test_record: str) -> Optional[FunctionStyle]:
-        """Detect the function declaration style in a line.
+    Example:
+        >>> script = 'while true; do case $x in'
+        >>> normalize_do_case_lines(script)
+        'while true; do\\ncase $x in'
+    """
+    lines = []
 
-        Args:
-            test_record: Simplified line from get_test_record()
+    for line in data.split("\n"):
+        # Check if line contains both 'do' and 'case' or 'then' and 'case'
+        test_line = get_test_record(line)
 
-        Returns:
-            Detected FunctionStyle, or None if no function declaration found
-
-        Example:
-            >>> BashParser.detect_function_style('function foo() {')
-            <FunctionStyle.FNPAR: ...>
-            >>> BashParser.detect_function_style('echo hello')
-            None
-        """
-        style = FunctionStyle.detect(test_record)
-        if style is not None:
-            logger.debug(f"Detected function style {style.style_name} in: {test_record}")
-        return style
-
-    @staticmethod
-    def normalize_do_case_lines(data: str) -> str:
-        """Split lines where 'do case' or 'then case' appear together.
-
-        This normalizes Bash code like:
-            while x; do case $y in
-        Into:
-            while x; do
-            case $y in
-
-        This makes indentation handling more straightforward by ensuring
-        that keywords appear on separate lines.
-
-        Args:
-            data: Complete Bash script as string
-
-        Returns:
-            Script with do/then and case on separate lines
-
-        Example:
-            >>> script = 'while true; do case $x in'
-            >>> BashParser.normalize_do_case_lines(script)
-            'while true; do\\ncase $x in'
-        """
-        from .constants import CASE_SPLIT_PATTERN, DO_CASE_PATTERN
-
-        lines = []
-
-        for line in data.split("\n"):
-            # Check if line contains both 'do' and 'case' or 'then' and 'case'
-            test_line = BashParser.get_test_record(line)
-
-            # Look for patterns like 'do case' or 'then case'
-            match = DO_CASE_PATTERN.search(test_line)
-            if match:
-                # Find the position in the original line
-                # We need to preserve any content before 'case'
-                case_match = CASE_SPLIT_PATTERN.search(line)
-                if case_match:
-                    split_pos = case_match.start(2)  # Position of 'case'
-                    before = line[:split_pos].rstrip()
-                    after = line[split_pos:]
-                    lines.append(before)
-                    lines.append(after)
-                    logger.debug("Split 'do/then case' line into two lines")
-                else:
-                    lines.append(line)
+        # Look for patterns like 'do case' or 'then case'
+        match = DO_CASE_PATTERN.search(test_line)
+        if match:
+            # Find the position in the original line
+            # We need to preserve any content before 'case'
+            case_match = CASE_SPLIT_PATTERN.search(line)
+            if case_match:
+                split_pos = case_match.start(2)  # Position of 'case'
+                before = line[:split_pos].rstrip()
+                after = line[split_pos:]
+                lines.append(before)
+                lines.append(after)
+                logger.debug("Split 'do/then case' line into two lines")
             else:
                 lines.append(line)
+        else:
+            lines.append(line)
 
-        return "\n".join(lines)
+    return "\n".join(lines)
 
-    @staticmethod
-    def detect_heredoc(test_record: str, stripped_record: str) -> tuple[bool, str]:
-        """Detect here-document and extract termination string.
 
-        Detects here-docs (<<EOF or <<-EOF) while avoiding false positives
-        from:
-        - Here-strings (<<<)
-        - Arithmetic expressions with shift operator ($((x << 2)))
+def detect_heredoc(test_record: str, stripped_record: str) -> Optional[str]:
+    """Detect a here-document and extract its termination string.
 
-        Args:
-            test_record: Simplified line from get_test_record()
-            stripped_record: Original stripped line
+    Detects here-docs (<<EOF or <<-EOF) while avoiding false positives
+    from:
+    - Here-strings (<<<)
+    - Arithmetic expressions with shift operator ($((x << 2)))
 
-        Returns:
-            Tuple of (is_heredoc, termination_string)
+    Args:
+        test_record: Simplified line from get_test_record()
+        stripped_record: Original stripped line
 
-        Example:
-            >>> BashParser.detect_heredoc('cat <<EOF', 'cat <<EOF')
-            (True, 'EOF')
-            >>> BashParser.detect_heredoc('cat <<-"END"', 'cat <<-"END"')
-            (True, 'END')
-            >>> BashParser.detect_heredoc('echo <<<$var', 'echo <<<$var')
-            (False, '')
-            >>> BashParser.detect_heredoc('$(( x << 2 ))', '$(( x << 2 ))')
-            (False, '')
-        """
-        from .constants import (
-            ARITHMETIC_PATTERN,
-            HEREDOC_PATTERN,
-            HEREDOC_TERMINATOR,
-            HERESTRING_PATTERN,
-            LET_SHIFT_PATTERN,
-        )
+    Returns:
+        The terminator string, or None if this line does not start a heredoc.
 
-        has_heredoc = HEREDOC_PATTERN.search(test_record)
-        is_herestring = HERESTRING_PATTERN.search(test_record)
-        is_arithmetic = ARITHMETIC_PATTERN.search(test_record) or LET_SHIFT_PATTERN.search(
-            test_record
-        )
+    Example:
+        >>> detect_heredoc('cat <<EOF', 'cat <<EOF')
+        'EOF'
+        >>> detect_heredoc('cat <<-"END"', 'cat <<-"END"')
+        'END'
+        >>> detect_heredoc('echo <<<$var', 'echo <<<$var')
+        >>> detect_heredoc('$(( x << 2 ))', '$(( x << 2 ))')
+    """
+    has_heredoc = HEREDOC_PATTERN.search(test_record)
+    is_herestring = HERESTRING_PATTERN.search(test_record)
+    is_arithmetic = ARITHMETIC_PATTERN.search(test_record) or LET_SHIFT_PATTERN.search(test_record)
 
-        if has_heredoc and not is_herestring and not is_arithmetic:
-            match = HEREDOC_TERMINATOR.search(stripped_record)
-            if match:
-                here_string = match.group(1)
-                logger.debug(f"Detected here-doc with terminator: {here_string}")
-                return (True, here_string)
+    if has_heredoc and not is_herestring and not is_arithmetic:
+        match = HEREDOC_TERMINATOR.search(stripped_record)
+        if match:
+            here_string = match.group(1)
+            logger.debug(f"Detected here-doc with terminator: {here_string}")
+            return here_string
 
-        return (False, "")
+    return None
 
-    @staticmethod
-    def is_heredoc_quoted(heredoc_line: str) -> bool:
-        r"""Detect if heredoc terminator is quoted (suppresses expansion).
 
-        In bash, heredoc terminators can be quoted in three ways:
-        - Single quotes: <<'EOF'
-        - Double quotes: <<"EOF"
-        - Backslash escape: <<\EOF (or <<E\OF - any escaping)
+def is_heredoc_quoted(heredoc_line: str) -> bool:
+    r"""Detect if heredoc terminator is quoted (suppresses expansion).
 
-        All quoted forms suppress variable expansion inside the heredoc.
+    In bash, heredoc terminators can be quoted in three ways:
+    - Single quotes: <<'EOF'
+    - Double quotes: <<"EOF"
+    - Backslash escape: <<\EOF (or <<E\OF - any escaping)
 
-        Args:
-            heredoc_line: The line containing the heredoc declaration
+    All quoted forms suppress variable expansion inside the heredoc.
 
-        Returns:
-            True if terminator has any quoting (expansion disabled)
-            False if terminator is unquoted (expansion enabled)
+    Args:
+        heredoc_line: The line containing the heredoc declaration
 
-        Example:
-            >>> BashParser.is_heredoc_quoted("cat <<'EOF'")
-            True
-            >>> BashParser.is_heredoc_quoted('cat <<"END"')
-            True
-            >>> BashParser.is_heredoc_quoted(r'cat <<\MARKER')
-            True
-            >>> BashParser.is_heredoc_quoted("cat <<EOF")
-            False
-        """
-        from .constants import HEREDOC_QUOTED_PATTERN
+    Returns:
+        True if terminator has any quoting (expansion disabled)
+        False if terminator is unquoted (expansion enabled)
 
-        # Handles: <<'...'  <<"..."  <<\...  <<-'...'  <<-"..."  <<-\...
-        # Also handles partial escaping like <<E\OF (backslash anywhere means quoted)
-        return bool(HEREDOC_QUOTED_PATTERN.search(heredoc_line))
+    Example:
+        >>> is_heredoc_quoted("cat <<'EOF'")
+        True
+        >>> is_heredoc_quoted('cat <<"END"')
+        True
+        >>> is_heredoc_quoted(r'cat <<\MARKER')
+        True
+        >>> is_heredoc_quoted("cat <<EOF")
+        False
+    """
+    # Handles: <<'...'  <<"..."  <<\...  <<-'...'  <<-"..."  <<-\...
+    # Also handles partial escaping like <<E\OF (backslash anywhere means quoted)
+    return bool(HEREDOC_QUOTED_PATTERN.search(heredoc_line))
 
-    @staticmethod
-    def is_line_continuation(line: str) -> bool:
-        """Check if line ends with backslash continuation.
 
-        Args:
-            line: Line to check
+def is_line_continuation(line: str) -> bool:
+    """Check if line ends with backslash continuation.
 
-        Returns:
-            True if line ends with backslash
+    Args:
+        line: Line to check
 
-        Example:
-            >>> BashParser.is_line_continuation('echo "test" \\\\')
-            True
-            >>> BashParser.is_line_continuation('echo "test"')
-            False
-        """
-        from .constants import LINE_CONTINUATION
+    Returns:
+        True if line ends with backslash
 
-        return LINE_CONTINUATION.search(line) is not None
+    Example:
+        >>> is_line_continuation('echo "test" \\\\')
+        True
+        >>> is_line_continuation('echo "test"')
+        False
+    """
+    return LINE_CONTINUATION.search(line) is not None

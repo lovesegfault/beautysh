@@ -11,14 +11,12 @@ class TestFormatterProperties:
     """Property-based tests for BashFormatter."""
 
     @given(st.text())
-    def test_beautify_string_always_returns_tuple(self, script):
-        """beautify_string should always return (str, bool) tuple."""
+    def test_beautify_string_always_returns_format_result(self, script):
+        """beautify_string should always return FormatResult(str, Optional[str])."""
         formatter = BashFormatter()
         result = formatter.beautify_string(script)
-        assert isinstance(result, tuple)
-        assert len(result) == 2
-        assert isinstance(result[0], str)
-        assert isinstance(result[1], bool)
+        assert isinstance(result.output, str)
+        assert result.error is None or isinstance(result.error, str)
 
     @given(st.integers(min_value=1, max_value=8))
     def test_beautify_string_with_custom_indent(self, indent_size):
@@ -59,9 +57,8 @@ class TestFormatterProperties:
     def test_beautify_string_no_crashes(self, script):
         """Formatter should not crash on any simple text input."""
         formatter = BashFormatter()
-        formatted, error = formatter.beautify_string(script)
-        assert isinstance(formatted, str)
-        assert isinstance(error, bool)
+        result = formatter.beautify_string(script)
+        assert isinstance(result.output, str)
 
     @given(
         st.lists(

@@ -19,16 +19,19 @@ class FunctionStyle(Enum):
 
     FNPAR = (
         "fnpar",
+        "function keyword, open/closed parentheses, e.g.      function foo()",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*\(\s*\)\s*"),
         r"function \g<1>() ",
     )
     FNONLY = (
         "fnonly",
+        "function keyword, no open/closed parentheses, e.g.  function foo",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*"),
         r"function \g<1> ",
     )
     PARONLY = (
         "paronly",
+        "no function keyword, open/closed parentheses, e.g. foo()",
         re.compile(r"\b\s*([\w:@-]+)\s*\(\s*\)\s*"),
         r"\g<1>() ",
     )
@@ -36,6 +39,7 @@ class FunctionStyle(Enum):
     def __init__(
         self,
         style_name: str,
+        description: str,
         pattern: Pattern[str],
         replacement: str,
     ):
@@ -43,10 +47,12 @@ class FunctionStyle(Enum):
 
         Args:
             style_name: String name (fnpar/fnonly/paronly)
+            description: Human-readable description for --help output
             pattern: Pre-compiled regex pattern
             replacement: Replacement string for re.sub
         """
         self.style_name = style_name
+        self.description = description
         self.pattern = pattern
         self.replacement = replacement
 
@@ -130,16 +136,3 @@ class FunctionStyle(Enum):
             if style.style_name == name:
                 return style
         return None
-
-    @classmethod
-    def all_names(cls) -> list[str]:
-        """Get all valid style names.
-
-        Returns:
-            List of style names
-
-        Example:
-            >>> FunctionStyle.all_names()
-            ['fnpar', 'fnonly', 'paronly']
-        """
-        return [style.style_name for style in cls]

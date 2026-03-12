@@ -8,18 +8,20 @@ Example:
     >>> from beautysh import BashFormatter
     >>> formatter = BashFormatter(indent_size=2)
     >>> script = 'if true;then\\necho "test"\\nfi'
-    >>> formatted, error = formatter.beautify_string(script)
-    >>> print(formatted)
+    >>> result = formatter.beautify_string(script)
+    >>> print(result.output)
     if true; then
       echo "test"
     fi
+    >>> result.error is None
+    True
 """
 
 from importlib.metadata import version as _version
 
-# Public API exports
 from .cli import BeautyshCLI
 from .config import (
+    ConfigError,
     load_config_from_editorconfig,
     load_config_from_pyproject,
     merge_configs,
@@ -27,9 +29,7 @@ from .config import (
 from .diff import DiffFormatter
 from .formatter import BashFormatter
 from .function_styles import FunctionStyle
-from .parser import BashParser
-from .transformers import StyleTransformer
-from .types import FormatterState
+from .types import FormatResult
 
 try:
     __version__ = _version("beautysh")
@@ -38,12 +38,11 @@ except Exception:  # pragma: no cover
 
 __all__ = [
     "BashFormatter",
-    "BashParser",
     "BeautyshCLI",
+    "ConfigError",
     "DiffFormatter",
-    "FormatterState",
+    "FormatResult",
     "FunctionStyle",
-    "StyleTransformer",
     "load_config_from_editorconfig",
     "load_config_from_pyproject",
     "merge_configs",

@@ -6,10 +6,6 @@ import re
 DEFAULT_TAB_SIZE = 4
 TAB_CHARACTER = "\t"
 
-# Variable style options
-VARIABLE_STYLE_BRACES = "braces"
-
-
 # Pre-compiled regex patterns for performance
 # Special directives
 FORMATTER_OFF_DIRECTIVE = re.compile(r"#\s*@formatter:off")

@@ -17,10 +17,11 @@ class TestFromName:
         assert FunctionStyle.from_name("invalid") is None
 
 
-class TestAllNames:
-    def test_returns_all_three(self):
-        names = FunctionStyle.all_names()
-        assert names == ["fnpar", "fnonly", "paronly"]
+class TestDescription:
+    def test_every_style_has_description(self):
+        for style in FunctionStyle:
+            assert style.description
+            assert style.style_name in {"fnpar", "fnonly", "paronly"}
 
 
 class TestDetect:
