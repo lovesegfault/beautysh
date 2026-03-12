@@ -39,18 +39,19 @@ dev = [
     "build>=1.0.0",
     "hypothesis>=6.0.0",
     "mypy>=0.931",
+    "pytest-cov>=7.0.0",
+    "pytest-xdist >= 3.8.0",
     "pytest>=7.0.0",
     "PyYAML>=6.0.0",
     "ruff>=0.1.0",
     "types-colorama>=0.4.3",
     "types-PyYAML>=6.0.0",
-    "vermin >= 1.7.0",
     "uv >= 0.9",
-    "pytest-cov>=7.0.0",
+    "vermin >= 1.7.0",
 ]
 
 [tool.pytest.ini_options]
-addopts = "-v -Wdefault"
+addopts = "-v -Wdefault -n auto --maxprocesses 4"
 
 [tool.coverage.run]
 source = ["beautysh"]
