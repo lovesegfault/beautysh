@@ -3,6 +3,7 @@
 from hypothesis import given
 from hypothesis import strategies as st
 
+from beautysh.function_styles import FunctionStyle
 from beautysh.parser import BashParser
 
 
@@ -31,10 +32,10 @@ class TestParserProperties:
         assert isinstance(result[1], bool)
 
     @given(st.text())
-    def test_detect_function_style_returns_valid_index(self, line):
-        """detect_function_style should return None or 0-2."""
+    def test_detect_function_style_returns_valid_type(self, line):
+        """detect_function_style should return None or a FunctionStyle."""
         result = BashParser.detect_function_style(line)
-        assert result is None or result in [0, 1, 2]
+        assert result is None or isinstance(result, FunctionStyle)
 
     @given(st.text())
     def test_is_line_continuation_returns_bool(self, line):
@@ -83,19 +84,18 @@ class TestParserProperties:
 
     @given(st.from_regex(r"[a-zA-Z_][a-zA-Z0-9_]*", fullmatch=True))
     def test_function_detection_fnpar_style(self, func_name):
-        """function keyword with parens should be detected as style 0."""
+        """function keyword with parens should be detected as FNPAR."""
         line = f"function {func_name}() {{"
         result = BashParser.detect_function_style(line)
-        # Should match style 0 (fnpar) or possibly style 2 if no 'function' keyword detected
-        assert result in [0, 2] or result is None
+        # Should match FNPAR or possibly PARONLY if no 'function' keyword detected
+        assert result in (FunctionStyle.FNPAR, FunctionStyle.PARONLY) or result is None
 
     @given(st.from_regex(r"[a-zA-Z_][a-zA-Z0-9_]*", fullmatch=True))
     def test_function_detection_paronly_style(self, func_name):
-        """Function name with parens should be detected as style 2."""
+        """Function name with parens should be detected as PARONLY."""
         line = f"{func_name}() {{"
         result = BashParser.detect_function_style(line)
-        # Should match style 2 (paronly)
-        assert result == 2 or result is None
+        assert result is FunctionStyle.PARONLY or result is None
 
     @given(st.text())
     def test_normalize_do_case_preserves_line_count_or_increases(self, script):

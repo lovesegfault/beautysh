@@ -15,7 +15,7 @@ from .config import (
 from .constants import DEFAULT_TAB_SIZE, TAB_CHARACTER
 from .diff import DiffFormatter
 from .formatter import BashFormatter
-from .transformers import FunctionStyleParser
+from .function_styles import FunctionStyle
 
 logger = logging.getLogger(__name__)
 
@@ -179,9 +179,7 @@ class BeautyshCLI:
 
         apply_function_style = None
         if args.force_function_style is not None:
-            apply_function_style = FunctionStyleParser.parse_function_style(
-                args.force_function_style
-            )
+            apply_function_style = FunctionStyle.from_name(args.force_function_style)
             if apply_function_style is None:
                 sys.stderr.write("Invalid value for the function style. See --help for details.\n")
                 sys.exit(1)

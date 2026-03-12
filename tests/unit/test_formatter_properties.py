@@ -4,6 +4,7 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from beautysh.formatter import BashFormatter
+from beautysh.function_styles import FunctionStyle
 
 # Strategy for generating valid bash-like scripts
 bash_keywords = st.sampled_from(
@@ -101,10 +102,10 @@ class TestFormatterProperties:
             # Second formatting should not change result
             assert first == second
 
-    @given(st.integers(min_value=1, max_value=3))
+    @given(st.sampled_from(list(FunctionStyle)))
     def test_beautify_string_with_function_styles(self, style):
         """Formatter should work with different function styles."""
-        formatter = BashFormatter(apply_function_style=style - 1)  # 0, 1, 2
+        formatter = BashFormatter(apply_function_style=style)
         script = "function foo() {\necho test\n}"
         formatted, error = formatter.beautify_string(script)
         assert isinstance(formatted, str)

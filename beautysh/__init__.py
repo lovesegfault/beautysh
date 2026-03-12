@@ -28,7 +28,7 @@ from .diff import DiffFormatter
 from .formatter import BashFormatter
 from .function_styles import FunctionStyle
 from .parser import BashParser
-from .transformers import FunctionStyleParser, StyleTransformer
+from .transformers import StyleTransformer
 from .types import FormatterState
 
 try:
@@ -43,7 +43,6 @@ __all__ = [
     "BashParser",
     "StyleTransformer",
     "DiffFormatter",
-    "FunctionStyleParser",
     "FunctionStyle",
     # Configuration
     "load_config_from_pyproject",

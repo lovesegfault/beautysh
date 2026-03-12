@@ -18,19 +18,16 @@ class FunctionStyle(Enum):
     """
 
     FNPAR = (
-        0,
         "fnpar",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*\(\s*\)\s*"),
         r"function \g<1>() ",
     )
     FNONLY = (
-        1,
         "fnonly",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*"),
         r"function \g<1> ",
     )
     PARONLY = (
-        2,
         "paronly",
         re.compile(r"\b\s*([\w:@-]+)\s*\(\s*\)\s*"),
         r"\g<1>() ",
@@ -38,7 +35,6 @@ class FunctionStyle(Enum):
 
     def __init__(
         self,
-        index: int,
         style_name: str,
         pattern: Pattern,
         replacement: str,
@@ -46,12 +42,10 @@ class FunctionStyle(Enum):
         """Initialize function style.
 
         Args:
-            index: Numeric index (0-2)
             style_name: String name (fnpar/fnonly/paronly)
             pattern: Pre-compiled regex pattern
             replacement: Replacement string for re.sub
         """
-        self.index = index
         self.style_name = style_name
         self.pattern = pattern
         self.replacement = replacement
@@ -134,27 +128,6 @@ class FunctionStyle(Enum):
         """
         for style in cls:
             if style.style_name == name:
-                return style
-        return None
-
-    @classmethod
-    def from_index(cls, index: int) -> "FunctionStyle | None":
-        """Get function style by index.
-
-        Args:
-            index: Style index (0-2)
-
-        Returns:
-            FunctionStyle or None if invalid
-
-        Example:
-            >>> FunctionStyle.from_index(0)
-            <FunctionStyle.FNPAR: ...>
-            >>> FunctionStyle.from_index(5)
-            None
-        """
-        for style in cls:
-            if style.index == index:
                 return style
         return None
 

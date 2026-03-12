@@ -97,38 +97,25 @@ class BashParser:
         return (unclosed_double, unclosed_single)
 
     @staticmethod
-    def detect_function_style(test_record: str) -> Optional[int]:
+    def detect_function_style(test_record: str) -> Optional[FunctionStyle]:
         """Detect the function declaration style in a line.
-
-        Bash supports three function declaration styles:
-        0. function foo()  - fnpar style (function keyword + parentheses)
-        1. function foo    - fnonly style (function keyword only)
-        2. foo()          - paronly style (parentheses only)
-
-        IMPORTANT: Patterns must be tested sequentially to avoid false matches.
 
         Args:
             test_record: Simplified line from get_test_record()
 
         Returns:
-            Style index (0, 1, or 2) if a function declaration is found,
-            None otherwise
+            Detected FunctionStyle, or None if no function declaration found
 
         Example:
             >>> BashParser.detect_function_style('function foo() {')
-            0
-            >>> BashParser.detect_function_style('function bar {')
-            1
-            >>> BashParser.detect_function_style('baz() {')
-            2
-            >>> BashParser.detect_function_style('echo foo()')
+            <FunctionStyle.FNPAR: ...>
+            >>> BashParser.detect_function_style('echo hello')
             None
         """
         style = FunctionStyle.detect(test_record)
         if style is not None:
-            logger.debug(f"Detected function style {style.index} in: {test_record}")
-            return style.index
-        return None
+            logger.debug(f"Detected function style {style.style_name} in: {test_record}")
+        return style
 
     @staticmethod
     def normalize_do_case_lines(data: str) -> str:

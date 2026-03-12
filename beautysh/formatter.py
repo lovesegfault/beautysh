@@ -22,6 +22,7 @@ from .constants import (
     SQUARE_BRACKET_CLOSE,
     SQUARE_BRACKET_OPEN,
 )
+from .function_styles import FunctionStyle
 from .parser import BashParser
 from .transformers import StyleTransformer
 from .types import FormatterState
@@ -40,7 +41,7 @@ class BashFormatter:
         self,
         indent_size: int = 4,
         tab_str: str = " ",
-        apply_function_style: Optional[int] = None,
+        apply_function_style: Optional[FunctionStyle] = None,
         variable_style: Optional[str] = None,
     ):
         """Initialize formatter with configuration.
@@ -48,7 +49,7 @@ class BashFormatter:
         Args:
             indent_size: Number of spaces (or 1 for tabs) for indentation
             tab_str: String to use for indentation (' ' or '\\t')
-            apply_function_style: Function style to enforce (0-2) or None
+            apply_function_style: Function style to enforce, or None
             variable_style: Variable style to enforce ('braces' or None)
         """
         self.indent_size = indent_size

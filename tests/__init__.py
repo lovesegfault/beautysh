@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Optional
 
-from beautysh import BashFormatter
+from beautysh import BashFormatter, FunctionStyle
 
 
 def read_file(file: Path) -> str:
@@ -48,7 +48,10 @@ def assert_equal_multiline_strings(actual: str, expected: str):
 
 
 def assert_formatting(
-    fixture_dir: Path, test_name: str, apply_function_style: Optional[int] = None, **options
+    fixture_dir: Path,
+    test_name: str,
+    apply_function_style: Optional[FunctionStyle] = None,
+    **options,
 ):
     """Assert that beautifying a raw file produces the expected formatted output.
 

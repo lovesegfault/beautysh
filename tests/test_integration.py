@@ -2,7 +2,7 @@
 
 import pytest
 
-from beautysh import BashFormatter
+from beautysh import BashFormatter, FunctionStyle
 
 from . import assert_equal_multiline_strings, assert_formatting, read_file
 
@@ -81,8 +81,8 @@ def test_function_styles(fixture_dir):
     """Test all three function style formatting options."""
     raw = read_file(fixture_dir / "function_styles_raw.sh")
 
-    for style in range(3):
-        formatted = read_file(fixture_dir / f"function_styles_{style}.sh")
+    for idx, style in enumerate(FunctionStyle):
+        formatted = read_file(fixture_dir / f"function_styles_{idx}.sh")
 
         formatter = BashFormatter(apply_function_style=style)
 

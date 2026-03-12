@@ -24,50 +24,35 @@ class StyleTransformer:
     @staticmethod
     def change_function_style(
         stripped_record: str,
-        detected_style: Optional[int],
-        target_style: Optional[int],
+        detected_style: Optional[FunctionStyle],
+        target_style: Optional[FunctionStyle],
     ) -> str:
         """Convert function declaration from one style to another.
 
-        Converts between three Bash function styles:
-        0. function foo()  - fnpar style
-        1. function foo    - fnonly style
-        2. foo()          - paronly style
-
         Args:
             stripped_record: The line containing function declaration
-            detected_style: The style detected in the line (0-2), or None
-            target_style: The desired target style (0-2), or None for no change
+            detected_style: The style detected in the line, or None
+            target_style: The desired target style, or None for no change
 
         Returns:
             Line with function style converted, or unchanged if no conversion needed
 
         Example:
-            >>> StyleTransformer.change_function_style('function foo() {', 0, 2)
+            >>> StyleTransformer.change_function_style(
+            ...     'function foo() {', FunctionStyle.FNPAR, FunctionStyle.PARONLY)
             'foo() {'
-            >>> StyleTransformer.change_function_style('foo() {', 2, 1)
-            'function foo {'
-            >>> StyleTransformer.change_function_style('echo test', None, 0)
+            >>> StyleTransformer.change_function_style('echo test', None, FunctionStyle.FNPAR)
             'echo test'
         """
-        if detected_style is None:
-            return stripped_record
-
-        if target_style is None:
-            # User does not want to enforce any specific function style
-            return stripped_record
-
-        detected = FunctionStyle.from_index(detected_style)
-        target = FunctionStyle.from_index(target_style)
-        if detected is None or target is None:
+        if detected_style is None or target_style is None:
             return stripped_record
 
         # Always apply the replacement to normalize spacing, even if same style
-        changed_record = detected.transform_to(stripped_record, target)
+        changed_record = detected_style.transform_to(stripped_record, target_style)
 
         logger.debug(
-            f"Changed function style from {detected_style} to {target_style}: "
-            f"{stripped_record} -> {changed_record}"
+            f"Changed function style from {detected_style.style_name} to "
+            f"{target_style.style_name}: {stripped_record} -> {changed_record}"
         )
 
         return changed_record
@@ -156,41 +141,3 @@ class StyleTransformer:
             'foo ;;'
         """
         return SPACE_BEFORE_DOUBLE_SEMICOLON.sub(r"\1 ;;", line)
-
-
-class FunctionStyleParser:
-    """Parser for function style command-line arguments."""
-
-    @classmethod
-    def parse_function_style(cls, style_name: str) -> Optional[int]:
-        """Parse function style name to internal index.
-
-        Args:
-            style_name: Style name ('fnpar', 'fnonly', or 'paronly')
-
-        Returns:
-            Style index (0, 1, or 2) or None if invalid
-
-        Example:
-            >>> FunctionStyleParser.parse_function_style('fnpar')
-            0
-            >>> FunctionStyleParser.parse_function_style('paronly')
-            2
-            >>> FunctionStyleParser.parse_function_style('invalid')
-            None
-        """
-        style = FunctionStyle.from_name(style_name)
-        return style.index if style is not None else None
-
-    @classmethod
-    def get_style_names(cls) -> list:
-        """Get list of valid style names.
-
-        Returns:
-            List of valid style name strings
-
-        Example:
-            >>> FunctionStyleParser.get_style_names()
-            ['fnpar', 'fnonly', 'paronly']
-        """
-        return FunctionStyle.all_names()

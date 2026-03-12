@@ -1,52 +1,50 @@
 """Unit tests for beautysh.transformers module."""
 
-from beautysh.transformers import (
-    FunctionStyleParser,
-    StyleTransformer,
-)
+from beautysh.function_styles import FunctionStyle
+from beautysh.transformers import StyleTransformer
+
+FNPAR = FunctionStyle.FNPAR
+FNONLY = FunctionStyle.FNONLY
+PARONLY = FunctionStyle.PARONLY
 
 
 class TestChangeFunctionStyle:
     """Tests for StyleTransformer.change_function_style()"""
 
     def test_fnpar_to_fnonly(self):
-        result = StyleTransformer.change_function_style("function foo() {", 0, 1)
+        result = StyleTransformer.change_function_style("function foo() {", FNPAR, FNONLY)
         assert result == "function foo {"
 
     def test_fnpar_to_paronly(self):
-        result = StyleTransformer.change_function_style("function foo() {", 0, 2)
+        result = StyleTransformer.change_function_style("function foo() {", FNPAR, PARONLY)
         assert result == "foo() {"
 
     def test_fnonly_to_fnpar(self):
-        result = StyleTransformer.change_function_style("function bar {", 1, 0)
+        result = StyleTransformer.change_function_style("function bar {", FNONLY, FNPAR)
         assert result == "function bar() {"
 
     def test_fnonly_to_paronly(self):
-        result = StyleTransformer.change_function_style("function bar {", 1, 2)
+        result = StyleTransformer.change_function_style("function bar {", FNONLY, PARONLY)
         assert result == "bar() {"
 
     def test_paronly_to_fnpar(self):
-        result = StyleTransformer.change_function_style("baz() {", 2, 0)
+        result = StyleTransformer.change_function_style("baz() {", PARONLY, FNPAR)
         assert result == "function baz() {"
 
     def test_paronly_to_fnonly(self):
-        result = StyleTransformer.change_function_style("baz() {", 2, 1)
+        result = StyleTransformer.change_function_style("baz() {", PARONLY, FNONLY)
         assert result == "function baz {"
 
-    def test_no_change_when_none_style(self):
-        result = StyleTransformer.change_function_style("function foo() {", 0, None)
+    def test_no_change_when_none_target(self):
+        result = StyleTransformer.change_function_style("function foo() {", FNPAR, None)
         assert result == "function foo() {"
 
     def test_no_change_when_no_function(self):
-        result = StyleTransformer.change_function_style("echo test", None, 0)
+        result = StyleTransformer.change_function_style("echo test", None, FNPAR)
         assert result == "echo test"
 
     def test_same_style_unchanged(self):
-        result = StyleTransformer.change_function_style("function foo() {", 0, 0)
-        assert result == "function foo() {"
-
-    def test_invalid_style_index_returns_unchanged(self):
-        result = StyleTransformer.change_function_style("function foo() {", 0, 99)
+        result = StyleTransformer.change_function_style("function foo() {", FNPAR, FNPAR)
         assert result == "function foo() {"
 
 
@@ -103,30 +101,3 @@ class TestEnsureSpaceBeforeDoubleSemicolon:
     def test_handles_multiple_semicolons(self):
         result = StyleTransformer.ensure_space_before_double_semicolon("foo;;bar;;")
         assert result == "foo ;;bar ;;"
-
-
-class TestFunctionStyleParser:
-    """Tests for FunctionStyleParser"""
-
-    def test_parse_fnpar(self):
-        result = FunctionStyleParser.parse_function_style("fnpar")
-        assert result == 0
-
-    def test_parse_fnonly(self):
-        result = FunctionStyleParser.parse_function_style("fnonly")
-        assert result == 1
-
-    def test_parse_paronly(self):
-        result = FunctionStyleParser.parse_function_style("paronly")
-        assert result == 2
-
-    def test_parse_invalid(self):
-        result = FunctionStyleParser.parse_function_style("invalid")
-        assert result is None
-
-    def test_get_style_names(self):
-        names = FunctionStyleParser.get_style_names()
-        assert "fnpar" in names
-        assert "fnonly" in names
-        assert "paronly" in names
-        assert len(names) == 3

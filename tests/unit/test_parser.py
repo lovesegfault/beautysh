@@ -1,5 +1,6 @@
 """Unit tests for beautysh.parser module."""
 
+from beautysh.function_styles import FunctionStyle
 from beautysh.parser import BashParser
 
 
@@ -82,15 +83,15 @@ class TestDetectFunctionStyle:
 
     def test_fnpar_style(self):
         result = BashParser.detect_function_style("function foo() {")
-        assert result == 0
+        assert result is FunctionStyle.FNPAR
 
     def test_fnonly_style(self):
         result = BashParser.detect_function_style("function bar {")
-        assert result == 1
+        assert result is FunctionStyle.FNONLY
 
     def test_paronly_style(self):
         result = BashParser.detect_function_style("baz() {")
-        assert result == 2
+        assert result is FunctionStyle.PARONLY
 
     def test_no_function(self):
         # foo() is actually a valid function declaration, so use a different example
@@ -99,15 +100,15 @@ class TestDetectFunctionStyle:
 
     def test_function_with_hyphens(self):
         result = BashParser.detect_function_style("function test-func() {")
-        assert result == 0
+        assert result is FunctionStyle.FNPAR
 
     def test_function_with_colons(self):
         result = BashParser.detect_function_style("function namespace:func() {")
-        assert result == 0
+        assert result is FunctionStyle.FNPAR
 
     def test_function_with_at_sign(self):
         result = BashParser.detect_function_style("function @special() {")
-        assert result == 0
+        assert result is FunctionStyle.FNPAR
 
 
 class TestNormalizeDocaseLines:

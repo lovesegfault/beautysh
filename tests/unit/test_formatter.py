@@ -64,7 +64,9 @@ class TestBashFormatter:
         assert "esac" in formatted
 
     def test_function_style_enforcement(self):
-        formatter = BashFormatter(apply_function_style=2)  # paronly
+        from beautysh.function_styles import FunctionStyle
+
+        formatter = BashFormatter(apply_function_style=FunctionStyle.PARONLY)
         script = 'function foo() {\necho "test"\n}'
         formatted, error = formatter.beautify_string(script)
 
