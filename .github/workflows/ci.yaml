@@ -1,4 +1,4 @@
-name: CI
+name: ci
 on:
   push:
     branches: [master, main]
@@ -58,3 +58,11 @@ jobs:
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
         run: nix build -L '.#${{ matrix.attr }}'
+  ci-gate:
+    if: always()
+    needs: [nix-eval, nix-matrix]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
