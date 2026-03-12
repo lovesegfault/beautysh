@@ -183,7 +183,7 @@ class BeautyshCLI:
                 args.force_function_style
             )
             if apply_function_style is None:
-                sys.stdout.write("Invalid value for the function style. See --help for details.\n")
+                sys.stderr.write("Invalid value for the function style. See --help for details.\n")
                 sys.exit(1)
 
         self.formatter = BashFormatter(
@@ -293,7 +293,7 @@ class BeautyshCLI:
             return 0
 
         if not args.files:
-            sys.stdout.write("Please provide at least one input file\n")
+            sys.stderr.write("Please provide at least one input file\n")
             return 1
 
         # Configure formatter

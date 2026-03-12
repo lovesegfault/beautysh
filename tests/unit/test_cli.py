@@ -61,7 +61,7 @@ class TestCLIMain:
         exit_code = BeautyshCLI().main(["-i", "2"])
         captured = capsys.readouterr()
         assert exit_code == 1
-        assert "at least one input file" in captured.out
+        assert "at least one input file" in captured.err
 
     def test_formats_file_in_place(self, unformatted_file):
         exit_code = BeautyshCLI().main([str(unformatted_file)])
@@ -97,7 +97,7 @@ class TestCLIMain:
             BeautyshCLI().main(["-s", "bogus", str(unformatted_file)])
         assert exc_info.value.code == 1
         captured = capsys.readouterr()
-        assert "Invalid value" in captured.out
+        assert "Invalid value" in captured.err
 
     def test_valid_function_style(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
