@@ -194,6 +194,14 @@ class TestDetectHeredoc:
         assert not is_heredoc
         assert terminator == ""
 
+    def test_heredoc_with_pipeline(self):
+        # cat <<EOF|grep is valid bash: EOF is the terminator, |grep is a pipeline.
+        # Previously the regex had | as a literal inside [_|\w] and matched 'EOF|grep'.
+        line = "cat <<EOF|grep foo"
+        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
+        assert is_heredoc
+        assert terminator == "EOF"
+
     def test_arithmetic_command_with_dollar_var(self):
         # $shift prevents \w+ from matching at that position; previously
         # this set the whole line as terminator.

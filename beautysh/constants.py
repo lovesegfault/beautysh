@@ -45,7 +45,7 @@ SQUARE_BRACKET_CLOSE = re.compile(r"\]")
 HEREDOC_PATTERN = re.compile(r"<<-?")
 HERESTRING_PATTERN = re.compile(r".*<<<")
 ARITHMETIC_PATTERN = re.compile(r"\$\(\(.*<<.*\)\)")
-HEREDOC_TERMINATOR = re.compile(r'.*<<-?\s*[\'|"]?([_|\w]+)[\'|"]?.*')
+HEREDOC_TERMINATOR = re.compile(r'.*<<-?\s*[\'"]?(\w+)[\'"]?.*')
 
 # Case statement patterns
 CASE_KEYWORD_PATTERN = re.compile(r"(\s|\A|;)case\s")
