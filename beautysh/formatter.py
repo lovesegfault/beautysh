@@ -153,7 +153,7 @@ class BashFormatter:
             and state.started_multiline_quoted_string
         ):
             # Remove contents of strings ending on this line
-            [test_record, num_subs] = MULTILINE_STRING_END.subn("", test_record)
+            test_record, num_subs = MULTILINE_STRING_END.subn("", test_record)
             state.ended_multiline_quoted_string = num_subs > 0
             # Continuation sequence has ended - reset the tracking flag
             state.started_multiline_quoted_string = False

@@ -45,20 +45,21 @@ class DiffFormatter:
             else:
                 yield line
 
-    def print_diff(self, original: str, formatted: str) -> None:
+    def print_diff(self, original: str, formatted: str, path: str = "(unknown)") -> None:
         """Print unified diff between original and formatted content.
 
         Args:
             original: Original file content
             formatted: Formatted file content
+            path: File path, used in diff headers so multi-file output is readable
 
         Example:
             >>> formatter = DiffFormatter()
             >>> original = 'if true;then\\necho "test"'
             >>> formatted = 'if true; then\\n    echo "test"'
-            >>> formatter.print_diff(original, formatted)
-            --- original
-            +++ formatted
+            >>> formatter.print_diff(original, formatted, "foo.sh")
+            --- foo.sh (original)
+            +++ foo.sh (formatted)
             @@ -1,2 +1,2 @@
             -if true;then
             -echo "test"
@@ -71,8 +72,8 @@ class DiffFormatter:
         delta = difflib.unified_diff(
             original_lines,
             formatted_lines,
-            fromfile="original",
-            tofile="formatted",
+            fromfile=f"{path} (original)",
+            tofile=f"{path} (formatted)",
             lineterm="",
         )
 

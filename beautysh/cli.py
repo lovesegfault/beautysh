@@ -8,6 +8,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import Any, Optional
 
 from .config import (
+    ConfigError,
     load_config_from_editorconfig,
     load_config_from_pyproject,
     merge_configs,
@@ -29,6 +30,7 @@ class BeautyshCLI:
         self.diff_formatter: Optional[DiffFormatter] = None
         self.backup = False
         self.check_only = False
+        self.force = False
 
     def get_version(self) -> str:
         """Get beautysh version.
@@ -87,6 +89,12 @@ class BeautyshCLI:
             action="store_true",
             default=config.get("backup", False),
             help="Beautysh will create a backup file in the same path as the original.",
+        )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            default=config.get("force", False),
+            help="Write output even if the formatter reports an error (best-effort mode).",
         )
         parser.add_argument(
             "--check",
@@ -195,6 +203,7 @@ class BeautyshCLI:
         self.diff_formatter = DiffFormatter(use_color=use_color)
         self.backup = args.backup
         self.check_only = args.check
+        self.force = args.force
 
         logger.debug(
             f"Configured formatter: indent_size={indent_size}, "
@@ -235,8 +244,6 @@ class BeautyshCLI:
         if self.formatter is None:
             raise RuntimeError("Formatter not configured")
 
-        error = False
-
         if path == "-":
             # Read from stdin, write to stdout
             data = sys.stdin.read()
@@ -249,13 +256,17 @@ class BeautyshCLI:
 
             if data != result:
                 if self.check_only:
-                    # Check mode: show diff and return error if different
-                    if not error:
-                        error = result != data
-                        if error and self.diff_formatter:
-                            self.diff_formatter.print_diff(data, result)
+                    # Check mode: any diff is a failure. Only show the diff if the
+                    # formatter succeeded (otherwise the output is unreliable).
+                    if not error and self.diff_formatter:
+                        self.diff_formatter.print_diff(data, result, path)
+                    error = True
+                elif error and not self.force:
+                    sys.stderr.write(
+                        f"Not writing {path}: formatter reported an error "
+                        f"(use --force to write anyway)\n"
+                    )
                 else:
-                    # Format mode: write changes
                     if self.backup:
                         self.write_file(path + ".bak", data)
                         logger.info(f"Created backup: {path}.bak")
@@ -275,7 +286,11 @@ class BeautyshCLI:
             Exit code (0 for success, 1 for error)
         """
         # Load configuration
-        config = self.load_configuration(argv)
+        try:
+            config = self.load_configuration(argv)
+        except ConfigError as e:
+            sys.stderr.write(f"{e}\n")
+            return 2
 
         # Create and parse arguments
         parser = self.create_parser(config)
@@ -302,7 +317,7 @@ class BeautyshCLI:
         for path in args.files:
             try:
                 error |= self.beautify_file(path)
-            except Exception as e:
+            except (OSError, UnicodeDecodeError) as e:
                 logger.error(f"Error processing {path}: {e}")
                 sys.stderr.write(f"Error processing {path}: {e}\n")
                 error = True

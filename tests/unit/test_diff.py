@@ -34,10 +34,10 @@ class TestPrintDiff:
 
     def test_prints_unified_diff(self, capsys):
         formatter = DiffFormatter(use_color=False)
-        formatter.print_diff("a\nb", "a\nc")
+        formatter.print_diff("a\nb", "a\nc", "foo.sh")
         captured = capsys.readouterr()
-        assert "--- original" in captured.out
-        assert "+++ formatted" in captured.out
+        assert "--- foo.sh (original)" in captured.out
+        assert "+++ foo.sh (formatted)" in captured.out
         assert "@@" in captured.out
         assert "-b" in captured.out
         assert "+c" in captured.out

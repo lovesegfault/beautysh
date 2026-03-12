@@ -9,6 +9,8 @@ from beautysh.cli import BeautyshCLI
 
 UNFORMATTED = "if true; then\necho x\nfi\n"
 FORMATTED = "if true; then\n    echo x\nfi\n"
+# Unbalanced if/fi: formatter will report indent/outdent mismatch
+BROKEN = "if true; then\necho x\n"
 
 
 @pytest.fixture
@@ -127,6 +129,53 @@ class TestCLIMain:
         captured = capsys.readouterr()
         assert exit_code == 1
         assert "Error processing" in captured.err
+
+    def test_formatter_error_does_not_write_file(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        f = tmp_path / "broken.sh"
+        f.write_text(BROKEN)
+        exit_code = BeautyshCLI().main([str(f)])
+        captured = capsys.readouterr()
+        assert exit_code == 1
+        assert f.read_text() == BROKEN
+        assert "Not writing" in captured.err
+        assert "use --force" in captured.err
+
+    def test_force_writes_despite_formatter_error(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        f = tmp_path / "broken.sh"
+        f.write_text(BROKEN)
+        exit_code = BeautyshCLI().main(["--force", str(f)])
+        assert exit_code == 1
+        # File was rewritten with best-effort output (body indented, no fi)
+        assert f.read_text() != BROKEN
+        assert "    echo x" in f.read_text()
+
+    def test_malformed_pyproject_exits_2(self, tmp_path, monkeypatch, capsys):
+        monkeypatch.chdir(tmp_path)
+        (tmp_path / "pyproject.toml").write_text("invalid [[[")
+        (tmp_path / "test.sh").write_text(FORMATTED)
+        exit_code = BeautyshCLI().main([str(tmp_path / "test.sh")])
+        captured = capsys.readouterr()
+        assert exit_code == 2
+        assert "Could not parse pyproject.toml" in captured.err
+
+    def test_multi_file_error_isolated(self, tmp_path, monkeypatch):
+        """One broken file doesn't prevent other files from being formatted."""
+        monkeypatch.chdir(tmp_path)
+        good1 = tmp_path / "good1.sh"
+        good1.write_text(UNFORMATTED)
+        bad = tmp_path / "bad.sh"
+        bad.write_text(BROKEN)
+        good2 = tmp_path / "good2.sh"
+        good2.write_text(UNFORMATTED)
+
+        exit_code = BeautyshCLI().main([str(good1), str(bad), str(good2)])
+
+        assert exit_code == 1
+        assert good1.read_text() == FORMATTED
+        assert bad.read_text() == BROKEN  # not overwritten
+        assert good2.read_text() == FORMATTED
 
 
 class TestCLIInternals:
