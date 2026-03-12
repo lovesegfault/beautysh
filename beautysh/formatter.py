@@ -333,8 +333,9 @@ class BashFormatter:
     def _is_case_pattern(self, test_record: str, stripped_record: str) -> bool:
         """Detect case patterns including quoted strings.
 
-        This handles both:
+        This handles:
         - Quoted patterns (including empty): "" or '' or " " (issue #265)
+        - Escaped patterns: \\?) or \\*) (issue #270)
         - Prevents false positives from standalone ) (issue #78)
 
         Args:
@@ -351,7 +352,17 @@ class BashFormatter:
 
         # Check for patterns with content: foo) or bar)
         # The + quantifier prevents standalone ) from matching (preserves issue #78 fix)
-        return bool(CASE_CHOICE_PATTERN.search(test_record))
+        if CASE_CHOICE_PATTERN.search(test_record):
+            return True
+
+        # Escaped patterns like \?) or \*) become bare ) after ESCAPED_CHAR
+        # stripping. Distinguish from a standalone ) closing a multiline array
+        # (issue #78) by checking whether the original line had content before
+        # the ) that get_test_record removed.
+        if test_record.lstrip().startswith(")") and not stripped_record.startswith(")"):
+            return True
+
+        return False
 
     def _format_line(
         self,
