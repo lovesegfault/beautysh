@@ -80,7 +80,7 @@ class StyleTransformer:
             >>> StyleTransformer.apply_variable_style('echo ${VAR}', 'braces')
             'echo ${VAR}'
             >>> StyleTransformer.apply_variable_style('echo $1', 'braces')
-            'echo ${1}'
+            'echo $1'
             >>> StyleTransformer.apply_variable_style("foo='$bar'", 'braces')
             "foo='$bar'"
         """
