@@ -141,6 +141,14 @@ class TestNormalizeDocaseLines:
         lines = result.split("\n")
         assert len(lines) == 4
 
+    def test_quoted_content_creates_false_do_case_no_split(self):
+        # After quote stripping, test_record sees 'do case', but in the
+        # original there is no whitespace before 'case' (it's ""case).
+        # CASE_SPLIT_PATTERN can't match, so the line must be preserved as-is.
+        script = 'do ""case x in'
+        result = BashParser.normalize_do_case_lines(script)
+        assert result == script
+
 
 class TestDetectHeredoc:
     """Tests for BashParser.detect_heredoc()"""

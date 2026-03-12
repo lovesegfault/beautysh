@@ -4,7 +4,7 @@ import logging
 import re
 from typing import Optional
 
-from .constants import FUNCTION_STYLE_PATTERNS
+from .function_styles import FunctionStyle
 
 logger = logging.getLogger(__name__)
 
@@ -125,11 +125,10 @@ class BashParser:
             >>> BashParser.detect_function_style('echo foo()')
             None
         """
-        # IMPORTANT: apply regex sequentially and stop on the first match
-        for index, pattern in enumerate(FUNCTION_STYLE_PATTERNS):
-            if re.search(pattern, test_record):
-                logger.debug(f"Detected function style {index} in: {test_record}")
-                return index
+        style = FunctionStyle.detect(test_record)
+        if style is not None:
+            logger.debug(f"Detected function style {style.index} in: {test_record}")
+            return style.index
         return None
 
     @staticmethod

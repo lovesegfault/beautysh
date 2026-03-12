@@ -78,17 +78,3 @@ SIMPLE_VARIABLE = re.compile(r"\$(?!{)([a-zA-Z_][a-zA-Z0-9_]*)\b")
 # Multiline string continuation patterns
 MULTILINE_STRING_START = re.compile(r'"[^"]*?\\$')
 MULTILINE_STRING_END = re.compile(r'^[^"]*"')
-
-# Legacy function style patterns (kept for backward compatibility with transformers)
-# Note: FunctionStyle enum should be used instead for new code
-FUNCTION_STYLE_PATTERNS = [
-    r"\bfunction\s+([\w:@-]+)\s*\(\s*\)\s*",  # function foo()
-    r"\bfunction\s+([\w:@-]+)\s*",  # function foo
-    r"\b\s*([\w:@-]+)\s*\(\s*\)\s*",  # foo()
-]
-
-FUNCTION_STYLE_REPLACEMENTS = [
-    r"function \g<1>() ",  # fnpar style
-    r"function \g<1> ",  # fnonly style
-    r"\g<1>() ",  # paronly style
-]

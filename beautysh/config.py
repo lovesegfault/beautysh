@@ -6,12 +6,10 @@ from typing import Any, Optional
 
 try:
     import tomllib  # novermin
-except ModuleNotFoundError:
+except ModuleNotFoundError:  # pragma: no cover
     import tomli as tomllib  # type: ignore[import-not-found,no-redef]
 
 from editorconfig import EditorConfigError, get_properties
-
-from .constants import TAB_CHARACTER
 
 logger = logging.getLogger(__name__)
 
@@ -137,37 +135,3 @@ def merge_configs(
 
     logger.debug(f"Merged configuration: {merged}")
     return merged
-
-
-def apply_config_to_instance(instance: Any, config: dict[str, Any]) -> None:
-    """Apply configuration dictionary to a Beautify instance.
-
-    Maps configuration keys to instance attributes with appropriate
-    transformations.
-
-    Args:
-        instance: The Beautify instance to configure
-        config: Configuration dictionary
-
-    Example:
-        config = {"indent_size": 2, "tab": True, "backup": True}
-        apply_config_to_instance(beautifier, config)
-    """
-    if "indent_size" in config:
-        instance.tab_size = config["indent_size"]
-
-    if "tab" in config and config["tab"]:
-        instance.tab_size = 1
-        instance.tab_str = TAB_CHARACTER
-
-    if "backup" in config:
-        instance.backup = config["backup"]
-
-    if "check" in config:
-        instance.check_only = config["check"]
-
-    if "force_function_style" in config:
-        instance.apply_function_style = config["force_function_style"]
-
-    if "variable_style" in config:
-        instance.variable_style = config["variable_style"]

@@ -5,12 +5,11 @@ import re
 from typing import Optional
 
 from .constants import (
-    FUNCTION_STYLE_PATTERNS,
-    FUNCTION_STYLE_REPLACEMENTS,
     SIMPLE_VARIABLE,
     SPACE_BEFORE_DOUBLE_SEMICOLON,
     VARIABLE_STYLE_BRACES,
 )
+from .function_styles import FunctionStyle
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +57,20 @@ class StyleTransformer:
             # User does not want to enforce any specific function style
             return stripped_record
 
+        detected = FunctionStyle.from_index(detected_style)
+        target = FunctionStyle.from_index(target_style)
+        if detected is None or target is None:
+            return stripped_record
+
         # Always apply the replacement to normalize spacing, even if same style
-        regex = FUNCTION_STYLE_PATTERNS[detected_style]
-        replacement = FUNCTION_STYLE_REPLACEMENTS[target_style]
-        changed_record = re.sub(regex, replacement, stripped_record)
+        changed_record = detected.transform_to(stripped_record, target)
 
         logger.debug(
             f"Changed function style from {detected_style} to {target_style}: "
-            f"{stripped_record} -> {changed_record.strip()}"
+            f"{stripped_record} -> {changed_record}"
         )
 
-        return changed_record.strip()
+        return changed_record
 
     @staticmethod
     def apply_variable_style(line: str, style: Optional[str]) -> str:
@@ -163,12 +165,6 @@ class StyleTransformer:
 class FunctionStyleParser:
     """Parser for function style command-line arguments."""
 
-    STYLE_NAMES = {
-        "fnpar": 0,
-        "fnonly": 1,
-        "paronly": 2,
-    }
-
     @classmethod
     def parse_function_style(cls, style_name: str) -> Optional[int]:
         """Parse function style name to internal index.
@@ -187,7 +183,8 @@ class FunctionStyleParser:
             >>> FunctionStyleParser.parse_function_style('invalid')
             None
         """
-        return cls.STYLE_NAMES.get(style_name)
+        style = FunctionStyle.from_name(style_name)
+        return style.index if style is not None else None
 
     @classmethod
     def get_style_names(cls) -> list:
@@ -200,4 +197,4 @@ class FunctionStyleParser:
             >>> FunctionStyleParser.get_style_names()
             ['fnpar', 'fnonly', 'paronly']
         """
-        return list(cls.STYLE_NAMES.keys())
+        return FunctionStyle.all_names()

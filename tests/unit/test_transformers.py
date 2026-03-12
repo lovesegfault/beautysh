@@ -45,6 +45,10 @@ class TestChangeFunctionStyle:
         result = StyleTransformer.change_function_style("function foo() {", 0, 0)
         assert result == "function foo() {"
 
+    def test_invalid_style_index_returns_unchanged(self):
+        result = StyleTransformer.change_function_style("function foo() {", 0, 99)
+        assert result == "function foo() {"
+
 
 class TestApplyVariableStyle:
     """Tests for StyleTransformer.apply_variable_style()"""
