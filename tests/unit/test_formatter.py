@@ -99,8 +99,7 @@ class TestBashFormatter:
         formatted, error = formatter.beautify_string(script)
 
         assert not error
-        assert "case $x in" in formatted
-        assert "esac" in formatted
+        assert formatted == 'case $x in\n    a) echo "a" ;;\nesac'
 
     def test_function_style_enforcement(self):
         from beautysh.function_styles import FunctionStyle
@@ -125,9 +124,19 @@ class TestBashFormatter:
     def test_error_on_mismatch(self):
         formatter = BashFormatter()
         script = 'if true;then\necho "test"'  # Missing fi
-        formatted, error = formatter.beautify_string(script)
+        result = formatter.beautify_string(script)
 
-        assert error  # Should report error
+        assert result.error is not None
+        assert "indent/outdent mismatch" in result.error
+
+    def test_orphan_esac_reports_error(self):
+        formatter = BashFormatter()
+        script = "esac\necho ok"
+        result = formatter.beautify_string(script)
+
+        assert result.error is not None
+        assert '"esac" before "case"' in result.error
+        assert "line 1" in result.error
 
     def test_multiline_string_preserved(self):
         formatter = BashFormatter()
@@ -204,3 +213,30 @@ class TestFormatterEdgeCases:
         assert not error
         # Should not confuse <<< with heredoc
         assert "<<<" in formatted
+
+
+class TestIsCasePattern:
+    """Direct tests for BashFormatter._is_case_pattern().
+
+    Covers the three detection paths plus the issue-#78 exclusion.
+    """
+
+    def setup_method(self):
+        self.f = BashFormatter()
+
+    def test_content_pattern(self):
+        # foo) matches CASE_CHOICE_PATTERN
+        assert self.f._is_case_pattern("foo)", "foo)")
+
+    def test_quoted_pattern(self):
+        # "") matches QUOTED_CASE_PATTERN on the original stripped line
+        assert self.f._is_case_pattern(")", '"")')
+
+    def test_escaped_char_pattern(self):
+        # \?) becomes bare ) in test_record after ESCAPED_CHAR stripping,
+        # but stripped_record still starts with the backslash, so it's a case pattern.
+        assert self.f._is_case_pattern(")", r"\?)")
+
+    def test_standalone_close_paren_is_not_pattern(self):
+        # Issue #78: a lone ) closing a multiline array is NOT a case pattern.
+        assert not self.f._is_case_pattern(")", ")")
