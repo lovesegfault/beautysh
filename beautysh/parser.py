@@ -222,10 +222,11 @@ class BashParser:
         is_arithmetic = ARITHMETIC_PATTERN.search(test_record)
 
         if has_heredoc and not is_herestring and not is_arithmetic:
-            here_string = HEREDOC_TERMINATOR.sub(r"\1", stripped_record, 1)
-            is_heredoc = len(here_string) > 0
-            logger.debug(f"Detected here-doc with terminator: {here_string}")
-            return (is_heredoc, here_string)
+            match = HEREDOC_TERMINATOR.search(stripped_record)
+            if match:
+                here_string = match.group(1)
+                logger.debug(f"Detected here-doc with terminator: {here_string}")
+                return (True, here_string)
 
         return (False, "")
 

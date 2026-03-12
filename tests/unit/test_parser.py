@@ -186,6 +186,22 @@ class TestDetectHeredoc:
         is_heredoc, terminator = BashParser.detect_heredoc(test_record, stripped)
         assert not is_heredoc
 
+    def test_unmatched_delimiter_not_heredoc(self):
+        # Dot is not a word character, so HEREDOC_TERMINATOR won't match.
+        # Previously re.sub() returned the input unchanged, setting the
+        # entire line as the terminator and breaking the rest of the file.
+        is_heredoc, terminator = BashParser.detect_heredoc("cat << .", "cat << .")
+        assert not is_heredoc
+        assert terminator == ""
+
+    def test_arithmetic_command_with_dollar_var(self):
+        # $shift prevents \w+ from matching at that position; previously
+        # this set the whole line as terminator.
+        line = "(( result = x << $shift ))"
+        is_heredoc, terminator = BashParser.detect_heredoc(line, line)
+        assert not is_heredoc
+        assert terminator == ""
+
 
 class TestIsLineContinuation:
     """Tests for BashParser.is_line_continuation()"""
