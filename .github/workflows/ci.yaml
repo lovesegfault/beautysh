@@ -60,7 +60,11 @@ jobs:
         run: nix build -L '.#${{ matrix.attr }}'
   ci-gate:
     if: always()
-    needs: [nix-eval, nix-matrix]
+    # nix-eval is covered transitively: nix-matrix needs it, so if nix-eval
+    # fails nix-matrix skips, and alls-green treats skip as failure.
+    # Including nix-eval directly breaks alls-green because its matrix output
+    # contains escaped quotes that get mangled through the action's heredoc.
+    needs: [nix-matrix]
     runs-on: ubuntu-latest
     steps:
       - uses: re-actors/alls-green@release/v1
