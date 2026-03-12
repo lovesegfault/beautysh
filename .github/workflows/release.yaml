@@ -1,12 +1,55 @@
-name: Release
+name: release
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
 permissions:
   contents: write
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.check.outputs.is_release }}
+    steps:
+      - name: check-is-release
+        id: check
+        env:
+          HEAD_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          # Manual dispatch always releases. For pushes, only proceed when
+          # the head commit message is a release bump from tools/release.sh.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          elif printf '%s' "$HEAD_MSG" | head -n1 | grep -Eq '^chore: release [0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "is_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_release=false" >> "$GITHUB_OUTPUT"
+            echo "Not a release commit; skipping."
+          fi
+      - name: check-is-signed
+        if: steps.check.outputs.is_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub verifies the signature against keys registered to the
+          # committer's account (SSH or GPG). Failing hard here prevents an
+          # unsigned `chore: release` commit from publishing a release.
+          VERIFICATION="$(gh api 'repos/${{ github.repository }}/commits/${{ github.sha }}' --jq '.commit.verification')"
+          VERIFIED="$(jq -r '.verified' <<< "$VERIFICATION")"
+          REASON="$(jq -r '.reason' <<< "$VERIFICATION")"
+          if [ "$VERIFIED" != "true" ]; then
+            echo "::error::Release commit ${{ github.sha }} is not signed (reason: $REASON)."
+            echo "Sign your commits with a key registered to your GitHub account."
+            exit 1
+          fi
+          echo "Commit signature verified ($REASON)."
   ci:
+    needs: gate
+    if: needs.gate.outputs.is_release == 'true'
     uses: ./.github/workflows/ci.yaml
   validate:
+    needs: gate
+    if: needs.gate.outputs.is_release == 'true'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
