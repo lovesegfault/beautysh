@@ -33,7 +33,7 @@ from .types import FormatterState
 
 try:
     __version__ = _version("beautysh")
-except Exception:
+except Exception:  # pragma: no cover
     __version__ = "unknown"
 
 __all__ = [
