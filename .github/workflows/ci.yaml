@@ -36,6 +36,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.nix-eval.outputs.matrix) }}
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
@@ -58,27 +60,10 @@ jobs:
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
         run: nix build -L '.#${{ matrix.attr }}'
-      - name: Stage coverage report
-        if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
-        run: cp result/coverage.xml coverage.xml
-      - uses: actions/upload-artifact@v7
-        if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
-        with:
-          name: coverage-report
-          path: coverage.xml
-  coverage-upload:
-    needs: nix-matrix
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v8
-        with:
-          name: coverage-report
       - uses: codecov/codecov-action@v5
+        if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
         with:
-          files: coverage.xml
+          files: result/coverage.xml
           use_oidc: true
           fail_ci_if_error: true
   ci-gate:
