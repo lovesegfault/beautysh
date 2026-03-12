@@ -22,21 +22,18 @@ class FunctionStyle(Enum):
         "fnpar",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*\(\s*\)\s*"),
         r"function \g<1>() ",
-        "function foo()",
     )
     FNONLY = (
         1,
         "fnonly",
         re.compile(r"\bfunction\s+([\w:@-]+)\s*"),
         r"function \g<1> ",
-        "function foo",
     )
     PARONLY = (
         2,
         "paronly",
         re.compile(r"\b\s*([\w:@-]+)\s*\(\s*\)\s*"),
         r"\g<1>() ",
-        "foo()",
     )
 
     def __init__(
@@ -45,7 +42,6 @@ class FunctionStyle(Enum):
         style_name: str,
         pattern: Pattern,
         replacement: str,
-        example: str,
     ):
         """Initialize function style.
 
@@ -54,13 +50,11 @@ class FunctionStyle(Enum):
             style_name: String name (fnpar/fnonly/paronly)
             pattern: Pre-compiled regex pattern
             replacement: Replacement string for re.sub
-            example: Example of this style
         """
         self.index = index
         self.style_name = style_name
         self.pattern = pattern
         self.replacement = replacement
-        self.example = example
 
     def matches(self, line: str) -> bool:
         """Check if line matches this function style.
