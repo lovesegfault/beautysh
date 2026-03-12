@@ -169,10 +169,10 @@ class BashFormatter:
         # and must reach _format_line so indentation is tracked correctly.
         if state.in_here_doc or inside_multiline_quoted:
             # Test for here-doc termination
-            if state.here_string is not None:
-                # Stricter terminator check: must be on its own line (issue #265)
-                # Use rstrip() to allow leading whitespace for <<- heredocs with tab indentation
-                if stripped_record.rstrip() == state.here_string and "<<" not in test_record:
+            if state.in_here_doc:
+                # Stricter terminator check: must be on its own line (issue #265).
+                # stripped_record is already .strip()'d above, which handles <<- tab indentation.
+                if stripped_record == state.here_string and "<<" not in test_record:
                     state.in_here_doc = False
                     state.heredoc_quoted = False  # Reset quote tracking
                     logger.debug(f"Here-doc terminated at line {line_num}")
