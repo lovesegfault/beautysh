@@ -19,9 +19,11 @@
 
     pyproject-build-systems = {
       url = "github:pyproject-nix/build-system-pkgs";
-      inputs.pyproject-nix.follows = "pyproject-nix";
-      inputs.uv2nix.follows = "uv2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        pyproject-nix.follows = "pyproject-nix";
+        uv2nix.follows = "uv2nix";
+        nixpkgs.follows = "nixpkgs";
+      };
     };
 
     treefmt-nix = {
@@ -44,7 +46,6 @@
     inputs@{
       self,
       flake-parts,
-      nixpkgs,
       pyproject-build-systems,
       pyproject-nix,
       uv2nix,
@@ -170,10 +171,7 @@
                 enable = true;
                 format = true;
               };
-              nixfmt = {
-                enable = true;
-                package = pkgs.nixfmt-rfc-style;
-              };
+              nixfmt.enable = true;
               yamlfmt.enable = true;
               mdformat.enable = true;
             };
@@ -182,6 +180,15 @@
           pre-commit.settings = {
             hooks = {
               treefmt.enable = true;
+              convco.enable = true;
+              ripsecrets.enable = true;
+              check-added-large-files.enable = true;
+              check-merge-conflicts.enable = true;
+              end-of-file-fixer.enable = true;
+              trim-trailing-whitespace.enable = true;
+              deadnix.enable = true;
+              nil.enable = true;
+              statix.enable = true;
               ruff = {
                 enable = true;
                 entry = lib.mkForce "${devVenv}/bin/ruff check";
