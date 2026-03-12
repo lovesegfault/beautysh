@@ -29,7 +29,7 @@ from .formatter import BashFormatter
 from .function_styles import FunctionStyle
 from .parser import BashParser
 from .transformers import FunctionStyleParser, StyleTransformer
-from .types import BeautyshConfig, FormatterState
+from .types import FormatterState
 
 try:
     __version__ = _version("beautysh")
@@ -46,7 +46,6 @@ __all__ = [
     "FunctionStyleParser",
     "FunctionStyle",
     # Configuration
-    "BeautyshConfig",
     "load_config_from_pyproject",
     "load_config_from_editorconfig",
     "merge_configs",

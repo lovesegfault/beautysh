@@ -41,29 +41,3 @@ class FormatterState:
     here_string: str = ""
     heredoc_quoted: bool = False
     formatter_enabled: bool = True
-
-
-@dataclass
-class BeautyshConfig:
-    """Configuration for Beautysh formatter.
-
-    This dataclass holds all configuration options with their defaults.
-    Configuration priority: CLI args > pyproject.toml > EditorConfig
-
-    Attributes:
-        indent_size: Number of spaces for indentation (or 1 for tabs)
-        tab_str: String to use for indentation (' ' or '\\t')
-        backup: Whether to create .bak backup files
-        check_only: Only check formatting without modifying files
-        apply_function_style: Function style to enforce (0=fnpar, 1=fnonly, 2=paronly)
-        variable_style: Variable style to enforce ('braces' or None)
-        color: Whether to use colored diff output
-    """
-
-    indent_size: int = 4
-    tab_str: str = " "
-    backup: bool = False
-    check_only: bool = False
-    apply_function_style: Optional[int] = None
-    variable_style: Optional[str] = None
-    color: bool = True
