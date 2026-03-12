@@ -15,6 +15,8 @@ Example:
     fi
 """
 
+from importlib.metadata import version as _version
+
 # Public API exports
 from .cli import BeautyshCLI
 from .config import (
@@ -29,7 +31,10 @@ from .parser import BashParser
 from .transformers import FunctionStyleParser, StyleTransformer
 from .types import BeautyshConfig, FormatterState
 
-__version__ = "6.3.3"
+try:
+    __version__ = _version("beautysh")
+except Exception:
+    __version__ = "unknown"
 
 __all__ = [
     # Main classes
