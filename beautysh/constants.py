@@ -31,6 +31,7 @@ HERESTRING_PATTERN = re.compile(r".*<<<")
 ARITHMETIC_PATTERN = re.compile(r"\(\(.*<<.*\)\)")
 LET_SHIFT_PATTERN = re.compile(r"\blet\b.*<<")
 HEREDOC_TERMINATOR = re.compile(r'.*<<-?\s*[\'"]?(\w+)[\'"]?.*')
+HEREDOC_QUOTED_PATTERN = re.compile(r'<<-?\s*([\'"]|[^\s]*\\)')
 
 # Case statement patterns
 CASE_KEYWORD_PATTERN = re.compile(r"(\s|\A|;)case\s")

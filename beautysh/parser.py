@@ -1,7 +1,6 @@
 """Bash script parsing utilities."""
 
 import logging
-import re
 from typing import Optional
 
 from .function_styles import FunctionStyle
@@ -260,11 +259,11 @@ class BashParser:
             >>> BashParser.is_heredoc_quoted("cat <<EOF")
             False
         """
-        # Pattern: Check for any quote character or backslash after <<
+        from .constants import HEREDOC_QUOTED_PATTERN
+
         # Handles: <<'...'  <<"..."  <<\...  <<-'...'  <<-"..."  <<-\...
         # Also handles partial escaping like <<E\OF (backslash anywhere means quoted)
-        quoted_pattern = re.compile(r'<<-?\s*([\'"]|[^\s]*\\)')
-        return bool(quoted_pattern.search(heredoc_line))
+        return bool(HEREDOC_QUOTED_PATTERN.search(heredoc_line))
 
     @staticmethod
     def is_line_continuation(line: str) -> bool:
