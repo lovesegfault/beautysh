@@ -212,7 +212,7 @@ class BeautyshCLI:
         Returns:
             File content as string
         """
-        with open(filepath) as f:
+        with open(filepath, encoding="utf-8") as f:
             return f.read()
 
     def write_file(self, filepath: str, content: str) -> None:
@@ -222,7 +222,7 @@ class BeautyshCLI:
             filepath: Path to file
             content: Content to write
         """
-        with open(filepath, "w", newline="\n") as f:
+        with open(filepath, "w", newline="\n", encoding="utf-8") as f:
             f.write(content)
 
     def beautify_file(self, path: str) -> bool:
