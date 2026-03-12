@@ -1,6 +1,9 @@
 """Unit tests for beautysh.config module."""
 
+import pytest
+
 from beautysh.config import (
+    ConfigError,
     load_config_from_editorconfig,
     load_config_from_pyproject,
     merge_configs,
@@ -41,14 +44,14 @@ value = 123
         config = load_config_from_pyproject()
         assert config == {}
 
-    def test_handles_invalid_toml(self, tmp_path, monkeypatch):
+    def test_raises_on_invalid_toml(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text("invalid toml content [[[")
-        config = load_config_from_pyproject()
-        assert config == {}
+        with pytest.raises(ConfigError, match=r"Could not parse pyproject\.toml"):
+            load_config_from_pyproject()
 
-    def test_handles_unreadable_file(self, tmp_path, monkeypatch):
+    def test_raises_on_unreadable_file(self, tmp_path, monkeypatch):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text("[tool.beautysh]\nindent_size = 2\n")
@@ -57,8 +60,8 @@ value = 123
             raise OSError("Permission denied")
 
         monkeypatch.setattr("builtins.open", fail_open)
-        config = load_config_from_pyproject()
-        assert config == {}
+        with pytest.raises(ConfigError, match=r"Could not read pyproject\.toml"):
+            load_config_from_pyproject()
 
 
 class TestLoadConfigFromEditorconfig:

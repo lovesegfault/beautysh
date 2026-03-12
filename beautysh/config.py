@@ -14,6 +14,10 @@ from editorconfig import EditorConfigError, get_properties
 logger = logging.getLogger(__name__)
 
 
+class ConfigError(Exception):
+    """Raised when a configuration source is present but malformed."""
+
+
 def load_config_from_pyproject() -> dict[str, Any]:
     """Load beautysh configuration from pyproject.toml if it exists.
 
@@ -21,8 +25,10 @@ def load_config_from_pyproject() -> dict[str, Any]:
     in the current working directory.
 
     Returns:
-        Dictionary with configuration values, or empty dict if file not found
-        or cannot be parsed.
+        Dictionary with configuration values, or empty dict if file not found.
+
+    Raises:
+        ConfigError: if the file exists but can't be read or parsed.
 
     Example:
         # pyproject.toml
@@ -45,11 +51,9 @@ def load_config_from_pyproject() -> dict[str, Any]:
             logger.debug(f"Loaded configuration from pyproject.toml: {config}")
         return config
     except OSError as e:
-        logger.warning(f"Could not read pyproject.toml: {e}")
-        return {}
+        raise ConfigError(f"Could not read pyproject.toml: {e}") from e
     except tomllib.TOMLDecodeError as e:
-        logger.warning(f"Could not parse pyproject.toml: {e}")
-        return {}
+        raise ConfigError(f"Could not parse pyproject.toml: {e}") from e
 
 
 def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
@@ -84,8 +88,10 @@ def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
                 config["tab"] = False
                 logger.debug(f"EditorConfig: using space indentation for {filepath}")
 
-        # Map EditorConfig indent_size to beautysh indent_size
-        if "indent_size" in props:
+        # Map EditorConfig indent_size to beautysh indent_size.
+        # The spec allows `indent_size = tab` (meaning "use tab_width"); skip it
+        # rather than emitting a spurious warning.
+        if "indent_size" in props and props["indent_size"] != "tab":
             try:
                 indent_size = int(props["indent_size"])
                 config["indent_size"] = indent_size
@@ -95,7 +101,7 @@ def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
 
         return config
     except EditorConfigError as e:
-        logger.debug(f"EditorConfig parsing failed for {filepath}: {e}")
+        logger.warning(f"EditorConfig parsing failed for {filepath}: {e}")
         return {}
 
 
