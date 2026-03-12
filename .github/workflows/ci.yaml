@@ -58,6 +58,14 @@ jobs:
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
         run: nix build -L '.#${{ matrix.attr }}'
+      - name: Stage coverage report
+        if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
+        run: cp result/coverage.xml coverage.xml
+      - uses: actions/upload-artifact@v7
+        if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
+        with:
+          name: coverage-report
+          path: coverage.xml
   coverage-upload:
     needs: nix-matrix
     runs-on: ubuntu-latest
@@ -65,19 +73,12 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/download-artifact@v8
         with:
-          extra_nix_config: |
-            experimental-features = nix-command flakes
-            accept-flake-config = true
-      - uses: cachix/cachix-action@v16
-        with:
-          name: beautysh
-          skipPush: true
-      - run: nix build -L '.#checks.x86_64-linux.coverage'
+          name: coverage-report
       - uses: codecov/codecov-action@v5
         with:
-          files: result/coverage.xml
+          files: coverage.xml
           use_oidc: true
           fail_ci_if_error: true
   ci-gate:
