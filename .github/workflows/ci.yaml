@@ -53,14 +53,14 @@ jobs:
           key: nix-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('flake.lock') }}
           restore-keys: |
             nix-${{ runner.os }}-${{ runner.arch }}-
-      - uses: cachix/cachix-action@v16
+      - uses: cachix/cachix-action@v17
         with:
           name: beautysh
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: ${{ github.event_name == 'pull_request' }}
       - name: Build ${{ matrix.name }} (${{ matrix.system }})
         run: nix build -L '.#${{ matrix.attr }}'
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
         if: matrix.name == 'coverage' && matrix.system == 'x86_64-linux'
         with:
           files: result/coverage.xml
