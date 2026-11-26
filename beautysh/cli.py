@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Any, Optional
 
 from .config import (
@@ -207,7 +208,7 @@ class BeautyshCLI:
             f"tab_str={tab_str!r}, function_style={apply_function_style}"
         )
 
-    def read_file(self, filepath: str) -> str:
+    def read_file(self, filepath: str | Path) -> str:
         """Read file content.
 
         Args:
@@ -216,20 +217,20 @@ class BeautyshCLI:
         Returns:
             File content as string
         """
-        with open(filepath, encoding="utf-8") as f:
+        with Path(filepath).open(encoding="utf-8") as f:
             return f.read()
 
-    def write_file(self, filepath: str, content: str) -> None:
+    def write_file(self, filepath: str | Path, content: str) -> None:
         """Write content to file.
 
         Args:
             filepath: Path to file
             content: Content to write
         """
-        with open(filepath, "w", newline="\n", encoding="utf-8") as f:
+        with Path(filepath).open("w", newline="\n", encoding="utf-8") as f:
             f.write(content)
 
-    def beautify_file(self, path: str) -> bool:
+    def beautify_file(self, path: str | Path) -> bool:
         """Beautify a single file.
 
         Args:
@@ -238,6 +239,7 @@ class BeautyshCLI:
         Returns:
             True if there was an error
         """
+
         if self.formatter is None:
             raise RuntimeError("Formatter not configured")
 
@@ -249,6 +251,8 @@ class BeautyshCLI:
                 sys.stderr.write(f"(stdin): {result.error}\n")
             sys.stdout.write(result.output)
             return result.error is not None
+        else:
+            path = Path(path)
 
         # Process named file
         data = self.read_file(path)
@@ -271,8 +275,9 @@ class BeautyshCLI:
                 )
             else:
                 if self.backup:
-                    self.write_file(path + ".bak", data)
-                    logger.info(f"Created backup: {path}.bak")
+                    backup_path = path.with_name(f"{path.name}.bak")
+                    self.write_file(backup_path, data)
+                    logger.info(f"Created backup: {backup_path}")
 
                 self.write_file(path, result.output)
                 logger.info(f"Formatted: {path}")
