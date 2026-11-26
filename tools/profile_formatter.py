@@ -4,7 +4,7 @@
 import cProfile
 import pstats
 
-from beautysh import BashFormatter
+from ..beautysh import BashFormatter
 
 
 def generate_test_script(lines: int = 2000) -> str:
