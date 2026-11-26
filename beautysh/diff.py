@@ -3,6 +3,7 @@
 import difflib
 import logging
 from collections.abc import Iterator
+from pathlib import Path
 
 from colorama import Fore
 
@@ -45,7 +46,7 @@ class DiffFormatter:
             else:
                 yield line
 
-    def print_diff(self, original: str, formatted: str, path: str = "(unknown)") -> None:
+    def print_diff(self, original: str, formatted: str, path: str | Path = "(unknown)") -> None:
         """Print unified diff between original and formatted content.
 
         Args:
