@@ -1,8 +1,10 @@
 """Unit tests for beautysh.config module."""
 
+from pathlib import Path
+
 import pytest
 
-from beautysh.config import (
+from ...beautysh.config import (
     ConfigError,
     load_config_from_editorconfig,
     load_config_from_pyproject,
@@ -13,12 +15,20 @@ from beautysh.config import (
 class TestLoadConfigFromPyproject:
     """Tests for load_config_from_pyproject()"""
 
-    def test_returns_empty_dict_when_no_file(self, tmp_path, monkeypatch):
+    def test_returns_empty_dict_when_no_file(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         config = load_config_from_pyproject()
         assert config == {}
 
-    def test_loads_config_from_tool_section(self, tmp_path, monkeypatch):
+    def test_loads_config_from_tool_section(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text(
@@ -32,7 +42,11 @@ tab = false
         assert config["indent_size"] == 2
         assert config["tab"] is False
 
-    def test_returns_empty_dict_when_no_beautysh_section(self, tmp_path, monkeypatch):
+    def test_returns_empty_dict_when_no_beautysh_section(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text(
@@ -44,14 +58,22 @@ value = 123
         config = load_config_from_pyproject()
         assert config == {}
 
-    def test_raises_on_invalid_toml(self, tmp_path, monkeypatch):
+    def test_raises_on_invalid_toml(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text("invalid toml content [[[")
         with pytest.raises(ConfigError, match=r"Could not parse pyproject\.toml"):
             load_config_from_pyproject()
 
-    def test_raises_on_unreadable_file(self, tmp_path, monkeypatch):
+    def test_raises_on_unreadable_file(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         pyproject = tmp_path / "pyproject.toml"
         pyproject.write_text("[tool.beautysh]\nindent_size = 2\n")
@@ -67,7 +89,7 @@ value = 123
 class TestLoadConfigFromEditorconfig:
     """Tests for load_config_from_editorconfig()"""
 
-    def test_loads_space_indentation(self, tmp_path):
+    def test_loads_space_indentation(self, tmp_path: Path):
         editorconfig = tmp_path / ".editorconfig"
         editorconfig.write_text(
             """
@@ -83,7 +105,7 @@ indent_size = 2
         assert config["tab"] is False
         assert config["indent_size"] == 2
 
-    def test_loads_tab_indentation(self, tmp_path):
+    def test_loads_tab_indentation(self, tmp_path: Path):
         editorconfig = tmp_path / ".editorconfig"
         editorconfig.write_text(
             """
@@ -97,14 +119,14 @@ indent_style = tab
         config = load_config_from_editorconfig(str(testfile))
         assert config["tab"] is True
 
-    def test_returns_empty_dict_when_no_editorconfig(self, tmp_path):
+    def test_returns_empty_dict_when_no_editorconfig(self, tmp_path: Path):
         testfile = tmp_path / "test.sh"
         testfile.write_text("#!/bin/bash\n")
 
         config = load_config_from_editorconfig(str(testfile))
         assert config == {}
 
-    def test_handles_invalid_indent_size(self, tmp_path):
+    def test_handles_invalid_indent_size(self, tmp_path: Path):
         editorconfig = tmp_path / ".editorconfig"
         editorconfig.write_text(
             """
