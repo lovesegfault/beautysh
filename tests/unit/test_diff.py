@@ -1,8 +1,9 @@
 """Unit tests for beautysh.diff module."""
 
+import pytest
 from colorama import Fore
 
-from beautysh.diff import DiffFormatter
+from ...beautysh.diff import DiffFormatter
 
 
 class TestColorDiff:
@@ -32,7 +33,7 @@ class TestColorDiff:
 class TestPrintDiff:
     """Tests for DiffFormatter.print_diff()"""
 
-    def test_prints_unified_diff(self, capsys):
+    def test_prints_unified_diff(self, capsys: pytest.CaptureFixture[str]):
         formatter = DiffFormatter(use_color=False)
         formatter.print_diff("a\nb", "a\nc", "foo.sh")
         captured = capsys.readouterr()
@@ -42,20 +43,20 @@ class TestPrintDiff:
         assert "-b" in captured.out
         assert "+c" in captured.out
 
-    def test_identical_prints_nothing(self, capsys):
+    def test_identical_prints_nothing(self, capsys: pytest.CaptureFixture[str]):
         formatter = DiffFormatter(use_color=False)
         formatter.print_diff("same\n", "same\n")
         captured = capsys.readouterr()
         assert captured.out == ""
 
-    def test_no_color_skips_coloring(self, capsys):
+    def test_no_color_skips_coloring(self, capsys: pytest.CaptureFixture[str]):
         formatter = DiffFormatter(use_color=False)
         formatter.print_diff("a", "b")
         captured = capsys.readouterr()
         assert Fore.GREEN not in captured.out
         assert Fore.RED not in captured.out
 
-    def test_color_applies_ansi_codes(self, capsys):
+    def test_color_applies_ansi_codes(self, capsys: pytest.CaptureFixture[str]):
         formatter = DiffFormatter(use_color=True)
         formatter.print_diff("a", "b")
         captured = capsys.readouterr()
