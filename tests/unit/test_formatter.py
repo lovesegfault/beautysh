@@ -2,21 +2,21 @@
 
 import pytest
 
-from beautysh.formatter import BashFormatter
+from ...beautysh.formatter import BashFormatter
 
 
 class TestKeywordAsArgument:
     """Keywords used as command arguments must not affect indentation."""
 
     @pytest.mark.parametrize("arg", ["done", "fi", "elif", "esac"])
-    def test_decrease_keyword_as_echo_arg(self, arg):
+    def test_decrease_keyword_as_echo_arg(self, arg: str):
         f = BashFormatter()
         r, e = f.beautify_string(f"if [ 1 ]; then\necho {arg}\necho ok\nfi\n")
         assert not e
         assert r == f"if [ 1 ]; then\n    echo {arg}\n    echo ok\nfi\n"
 
     @pytest.mark.parametrize("arg", ["then", "do", "case"])
-    def test_increase_keyword_as_echo_arg(self, arg):
+    def test_increase_keyword_as_echo_arg(self, arg: str):
         f = BashFormatter()
         r, e = f.beautify_string(f"if [ 1 ]; then\necho {arg} foo\necho ok\nfi\n")
         assert not e
@@ -102,7 +102,7 @@ class TestBashFormatter:
         assert formatted == 'case $x in\n    a) echo "a" ;;\nesac'
 
     def test_function_style_enforcement(self):
-        from beautysh.function_styles import FunctionStyle
+        from ...beautysh.function_styles import FunctionStyle
 
         formatter = BashFormatter(apply_function_style=FunctionStyle.PARONLY)
         script = 'function foo() {\necho "test"\n}'
