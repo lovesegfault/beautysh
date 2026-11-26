@@ -3,7 +3,7 @@
 import logging
 import sys
 
-from beautysh.cli import BeautyshCLI
+from .cli import BeautyshCLI
 
 
 def main() -> None:
