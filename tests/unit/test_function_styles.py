@@ -1,6 +1,6 @@
 """Unit tests for beautysh.function_styles module."""
 
-from beautysh.function_styles import FunctionStyle
+from ...beautysh.function_styles import FunctionStyle
 
 
 class TestFromName:

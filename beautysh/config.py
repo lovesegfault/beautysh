@@ -4,7 +4,7 @@ import logging
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Optional, TypedDict
+from typing import Any, Optional, TypedDict, Union
 
 if sys.version_info >= (3, 11):  # novermin
     import tomllib
@@ -98,7 +98,7 @@ def load_config_from_pyproject() -> BeautyshConfig:
         return {}
 
     try:
-        with open(pyproject_path, "rb") as f:
+        with pyproject_path.open("rb") as f:
             data = tomllib.load(f)
         raw: dict[str, Any] = data.get("tool", {}).get("beautysh", {})
         if raw:
@@ -110,7 +110,7 @@ def load_config_from_pyproject() -> BeautyshConfig:
         raise ConfigError(f"Could not parse pyproject.toml: {e}") from e
 
 
-def load_config_from_editorconfig(filepath: str) -> dict[str, Any]:
+def load_config_from_editorconfig(filepath: Union[str,Path]) -> dict[str, Any]:
     """Load configuration from .editorconfig for the given file.
 
     Maps EditorConfig properties to beautysh configuration:

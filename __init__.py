@@ -1,0 +1,1 @@
+"""base init beautysh project"""

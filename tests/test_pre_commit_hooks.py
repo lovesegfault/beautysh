@@ -23,7 +23,7 @@ def test_pre_commit_hooks_yaml_valid():
     """Verify .pre-commit-hooks.yaml is valid YAML with required fields."""
     hooks_file = Path(__file__).parent.parent / ".pre-commit-hooks.yaml"
 
-    with open(hooks_file) as f:
+    with hooks_file.open("r") as f:
         hooks = yaml.safe_load(f)
 
     # Should be a list of hooks

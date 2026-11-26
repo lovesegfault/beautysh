@@ -8,7 +8,7 @@ performance improvements from pattern pre-compilation and other optimizations.
 import time
 from pathlib import Path
 
-from beautysh import BashFormatter
+from ..beautysh import BashFormatter
 
 
 def generate_test_script(lines: int) -> str:

@@ -2,10 +2,11 @@
 
 import io
 import sys
+from pathlib import Path
 
 import pytest
 
-from beautysh.cli import BeautyshCLI
+from ...beautysh.cli import BeautyshCLI
 
 UNFORMATTED = "if true; then\necho x\nfi\n"
 FORMATTED = "if true; then\n    echo x\nfi\n"
@@ -14,7 +15,7 @@ BROKEN = "if true; then\necho x\n"
 
 
 @pytest.fixture
-def unformatted_file(tmp_path, monkeypatch):
+def unformatted_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Unformatted script in clean tmp_path (no pyproject/editorconfig)."""
     monkeypatch.chdir(tmp_path)
     f = tmp_path / "test.sh"
@@ -23,7 +24,7 @@ def unformatted_file(tmp_path, monkeypatch):
 
 
 @pytest.fixture
-def formatted_file(tmp_path, monkeypatch):
+def formatted_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
     """Create a tmp_path with an already-formatted script."""
     monkeypatch.chdir(tmp_path)
     f = tmp_path / "test.sh"
@@ -34,7 +35,12 @@ def formatted_file(tmp_path, monkeypatch):
 class TestCLIMain:
     """Tests for BeautyshCLI.main()"""
 
-    def test_empty_argv_prints_help(self, capsys, tmp_path, monkeypatch):
+    def test_empty_argv_prints_help(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         exit_code = BeautyshCLI().main([])
         captured = capsys.readouterr()
@@ -44,33 +50,53 @@ class TestCLIMain:
         assert "fnonly" in captured.out
         assert "paronly" in captured.out
 
-    def test_help_flag(self, capsys, tmp_path, monkeypatch):
+    def test_help_flag(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         exit_code = BeautyshCLI().main(["--help"])
         captured = capsys.readouterr()
         assert exit_code == 0
         assert "Bash beautifier" in captured.out
 
-    def test_version_flag(self, capsys, tmp_path, monkeypatch):
+    def test_version_flag(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         exit_code = BeautyshCLI().main(["--version"])
         captured = capsys.readouterr()
         assert exit_code == 0
         assert captured.out.strip() != ""
 
-    def test_no_files_returns_1(self, capsys, tmp_path, monkeypatch):
+    def test_no_files_returns_1(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         exit_code = BeautyshCLI().main(["-i", "2"])
         captured = capsys.readouterr()
         assert exit_code == 1
         assert "at least one input file" in captured.err
 
-    def test_formats_file_in_place(self, unformatted_file):
+    def test_formats_file_in_place(self, unformatted_file: Path):
         exit_code = BeautyshCLI().main([str(unformatted_file)])
         assert exit_code == 0
         assert unformatted_file.read_text() == FORMATTED
 
-    def test_check_mode_returns_1_when_unformatted(self, unformatted_file, capsys, monkeypatch):
+    def test_check_mode_returns_1_when_unformatted(
+        self,
+        unformatted_file: Path,
+        capsys: pytest.CaptureFixture[str],
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.setenv("NO_COLOR", "1")
         exit_code = BeautyshCLI().main(["--check", str(unformatted_file)])
         captured = capsys.readouterr()
@@ -81,12 +107,12 @@ class TestCLIMain:
         assert "---" in captured.out
         assert "+++" in captured.out
 
-    def test_check_mode_returns_0_when_formatted(self, formatted_file):
+    def test_check_mode_returns_0_when_formatted(self, formatted_file: Path):
         exit_code = BeautyshCLI().main(["--check", str(formatted_file)])
         assert exit_code == 0
         assert formatted_file.read_text() == FORMATTED
 
-    def test_backup_creates_bak_file(self, unformatted_file):
+    def test_backup_creates_bak_file(self, unformatted_file: Path):
         exit_code = BeautyshCLI().main(["--backup", str(unformatted_file)])
         assert exit_code == 0
         bak = unformatted_file.with_suffix(".sh.bak")
@@ -94,7 +120,11 @@ class TestCLIMain:
         assert bak.read_text() == UNFORMATTED
         assert unformatted_file.read_text() == FORMATTED
 
-    def test_invalid_function_style_returns_1(self, unformatted_file, capsys):
+    def test_invalid_function_style_returns_1(
+        self,
+        unformatted_file: Path,
+        capsys: pytest.CaptureFixture[str],
+    ):
         exit_code = BeautyshCLI().main(["-s", "bogus", str(unformatted_file)])
         assert exit_code == 1
         captured = capsys.readouterr()
@@ -102,7 +132,11 @@ class TestCLIMain:
         # File should not have been touched
         assert unformatted_file.read_text() == UNFORMATTED
 
-    def test_valid_function_style(self, tmp_path, monkeypatch):
+    def test_valid_function_style(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         f = tmp_path / "test.sh"
         f.write_text("function foo() {\necho x\n}\n")
@@ -111,12 +145,17 @@ class TestCLIMain:
         assert "foo()" in f.read_text()
         assert "function" not in f.read_text()
 
-    def test_tab_flag(self, unformatted_file):
+    def test_tab_flag(self, unformatted_file: Path):
         exit_code = BeautyshCLI().main(["--tab", str(unformatted_file)])
         assert exit_code == 0
         assert "\techo x" in unformatted_file.read_text()
 
-    def test_stdin_path(self, monkeypatch, capsys, tmp_path):
+    def test_stdin_path(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+    ):
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(sys, "stdin", io.StringIO(UNFORMATTED))
         exit_code = BeautyshCLI().main(["-"])
@@ -124,14 +163,24 @@ class TestCLIMain:
         assert exit_code == 0
         assert captured.out == FORMATTED
 
-    def test_missing_file_returns_1(self, capsys, tmp_path, monkeypatch):
+    def test_missing_file_returns_1(
+        self,
+        capsys: pytest.CaptureFixture[str],
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         exit_code = BeautyshCLI().main(["/nonexistent/path/to/file.sh"])
         captured = capsys.readouterr()
         assert exit_code == 1
         assert "Error processing" in captured.err
 
-    def test_formatter_error_does_not_write_file(self, tmp_path, monkeypatch, capsys):
+    def test_formatter_error_does_not_write_file(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ):
         monkeypatch.chdir(tmp_path)
         f = tmp_path / "broken.sh"
         f.write_text(BROKEN)
@@ -142,7 +191,11 @@ class TestCLIMain:
         assert "Not writing" in captured.err
         assert "use --force" in captured.err
 
-    def test_force_writes_despite_formatter_error(self, tmp_path, monkeypatch):
+    def test_force_writes_despite_formatter_error(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         monkeypatch.chdir(tmp_path)
         f = tmp_path / "broken.sh"
         f.write_text(BROKEN)
@@ -152,7 +205,12 @@ class TestCLIMain:
         assert f.read_text() != BROKEN
         assert "    echo x" in f.read_text()
 
-    def test_malformed_pyproject_exits_2(self, tmp_path, monkeypatch, capsys):
+    def test_malformed_pyproject_exits_2(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ):
         monkeypatch.chdir(tmp_path)
         (tmp_path / "pyproject.toml").write_text("invalid [[[")
         (tmp_path / "test.sh").write_text(FORMATTED)
@@ -161,7 +219,11 @@ class TestCLIMain:
         assert exit_code == 2
         assert "Could not parse pyproject.toml" in captured.err
 
-    def test_multi_file_error_isolated(self, tmp_path, monkeypatch):
+    def test_multi_file_error_isolated(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
         """One broken file doesn't prevent other files from being formatted."""
         monkeypatch.chdir(tmp_path)
         good1 = tmp_path / "good1.sh"
@@ -182,7 +244,7 @@ class TestCLIMain:
 class TestCLIInternals:
     """Tests for internal CLI helpers."""
 
-    def test_version_fallback(self, monkeypatch):
+    def test_version_fallback(self, monkeypatch: pytest.MonkeyPatch):
         from importlib.metadata import PackageNotFoundError
 
         def fake_version(name):
@@ -198,11 +260,15 @@ class TestCLIInternals:
             cli.beautify_file("-")
 
 
-def test_module_main(monkeypatch, capsys, tmp_path):
+def test_module_main(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+):
     """Smoke test for __main__.main()."""
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["beautysh", "--version"])
-    from beautysh.__main__ import main
+    from ...beautysh.__main__ import main
 
     with pytest.raises(SystemExit) as exc_info:
         main()

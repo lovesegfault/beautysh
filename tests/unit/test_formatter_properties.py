@@ -3,8 +3,8 @@
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from beautysh.formatter import BashFormatter
-from beautysh.function_styles import FunctionStyle
+from ...beautysh.formatter import BashFormatter
+from ...beautysh.function_styles import FunctionStyle
 
 
 class TestFormatterProperties:

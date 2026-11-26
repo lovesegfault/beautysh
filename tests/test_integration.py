@@ -6,8 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from beautysh import BashFormatter, FunctionStyle
-
+from ..beautysh import BashFormatter, FunctionStyle
 from . import assert_equal_multiline_strings, assert_formatting, read_file
 
 _FIXTURE_DIR = Path(__file__).parent / "fixtures"

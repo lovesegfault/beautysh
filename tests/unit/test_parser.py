@@ -1,7 +1,7 @@
 """Unit tests for beautysh.parser module."""
 
-from beautysh import parser
-from beautysh.function_styles import FunctionStyle
+from ...beautysh import parser
+from ...beautysh.function_styles import FunctionStyle
 
 
 class TestGetTestRecord:

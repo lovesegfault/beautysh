@@ -1,7 +1,7 @@
 """Unit tests for beautysh.transformers module."""
 
-from beautysh.function_styles import FunctionStyle
-from beautysh.transformers import (
+from ...beautysh.function_styles import FunctionStyle
+from ...beautysh.transformers import (
     apply_variable_style,
     change_function_style,
     ensure_space_before_double_semicolon,
