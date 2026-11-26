@@ -3,12 +3,12 @@
 from pathlib import Path
 from typing import Optional
 
-from beautysh import BashFormatter, FunctionStyle
+from ..beautysh import BashFormatter, FunctionStyle
 
 
 def read_file(file: Path) -> str:
     """Read file into string."""
-    with open(file) as f:
+    with file.open("r") as f:
         return f.read()
 
 
