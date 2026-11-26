@@ -3,8 +3,8 @@
 from hypothesis import assume, given
 from hypothesis import strategies as st
 
-from beautysh import parser
-from beautysh.function_styles import FunctionStyle
+from ...beautysh import parser
+from ...beautysh.function_styles import FunctionStyle
 
 
 class TestParserProperties:
