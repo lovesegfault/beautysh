@@ -81,7 +81,7 @@ value = 123
         def fail_open(*args, **kwargs):
             raise OSError("Permission denied")
 
-        monkeypatch.setattr("builtins.open", fail_open)
+        monkeypatch.setattr("io.open", fail_open)
         with pytest.raises(ConfigError, match=r"Could not read pyproject\.toml"):
             load_config_from_pyproject()
 

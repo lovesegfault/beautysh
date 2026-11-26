@@ -6,7 +6,7 @@ import os
 import sys
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from .config import (
     ConfigError,
@@ -208,7 +208,7 @@ class BeautyshCLI:
             f"tab_str={tab_str!r}, function_style={apply_function_style}"
         )
 
-    def read_file(self, filepath: str | Path) -> str:
+    def read_file(self, filepath: Union[str,Path]) -> str:
         """Read file content.
 
         Args:
@@ -220,7 +220,7 @@ class BeautyshCLI:
         with Path(filepath).open(encoding="utf-8") as f:
             return f.read()
 
-    def write_file(self, filepath: str | Path, content: str) -> None:
+    def write_file(self, filepath: Union[str,Path], content: str) -> None:
         """Write content to file.
 
         Args:
@@ -230,7 +230,7 @@ class BeautyshCLI:
         with Path(filepath).open("w", newline="\n", encoding="utf-8") as f:
             f.write(content)
 
-    def beautify_file(self, path: str | Path) -> bool:
+    def beautify_file(self, path: Union[str,Path]) -> bool:
         """Beautify a single file.
 
         Args:
