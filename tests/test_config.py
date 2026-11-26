@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
 
-from beautysh import BeautyshCLI
+from ..beautysh import BeautyshCLI
 
 
 @contextmanager
